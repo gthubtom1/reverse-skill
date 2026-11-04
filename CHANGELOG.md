@@ -7,6 +7,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-11-04
+### Added
+- Knowledge confidence contract separating source support, cross-source review, method confidence, local reproduction and target validation.
+- Full domain coverage baseline for all current reverse-skill routes, with explicit gaps and boundaries.
+- Confidence annotations for the 40 distilled knowledge units: source review is separated from local/target execution.
+
+### Changed
+- Knowledge maintenance now treats “credible method, not locally reproduced” as a valid baseline state instead of collapsing it into unsupported.
+
 ## [1.1.1] — 2026-11-04
 ### Added
 - Second high-difficulty knowledge batch: challenge/session risk state, registration protocol and HTTP replay, JS VM/WASM/browser observation, Android runtime boundaries, and PE protection evidence.
@@ -155,7 +164,8 @@ First **formal** public release of the reverse-skill skill-router pack.
 - Tag: `v1.0.0`
 - Repository: https://github.com/zhaoxuya520/reverse-skill
 
-[Unreleased]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/gthubtom1/reverse-skill/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/gthubtom1/reverse-skill/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/zhaoxuya520/reverse-skill/compare/v1.0.0...v1.0.1

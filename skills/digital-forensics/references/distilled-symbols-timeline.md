@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 面向 Volatility 3 当前符号文档，不照搬 Volatility 2 的 profile 名称。不同内核配置可能改变结构；拿相近版本的符号强行解析，即使输出格式漂亮，也可能读错偏移。插件成功退出和符号文件存在都不足以证明解释正确；单插件阴性不能排除未覆盖或已丢失的行为。
 
-**验证状态：未验证。** 原文来源：[S22：Volatility 3 符号表与匹配要求](https://volatility3.readthedocs.io/en/latest/symbol-tables.html)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S22：Volatility 3 符号表与匹配要求](https://volatility3.readthedocs.io/en/latest/symbol-tables.html)。
 
 ## DK-DF-02：先统一时间解释，再推断事件顺序
 
@@ -20,4 +20,4 @@
 
 **版本/边界/反例：** 所引 Sleuth Kit 手册明确 `-z` 指定采集数据时区，名称受系统影响；`-y` 显示 ISO8601，并注明不与 `-z` 配合使用。执行前核安装版本帮助，不把二者机械拼接。单个 mtime 变化既可能来自普通写入也可能被复制/改写，不能独自证明执行或攻击；校正显示时区也不能自动修复主机时钟漂移。
 
-**验证状态：未验证。** 原文来源：[S23：mactime 输入、时区与格式选项](https://www.sleuthkit.org/sleuthkit/man/mactime.html)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S23：mactime 输入、时区与格式选项](https://www.sleuthkit.org/sleuthkit/man/mactime.html)。

@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 依据 Java SE 24 JNI 规范；实际以目标 NDK 头文件与 ABI 复核。不能把 `0x35C` 标作 ARM64 偏移，也不能把“第三参数”误读成零起算的 `args[3]`。包装函数和自定义跳板须先还原原型。
 
-**验证状态：未验证。** 原文来源：[S04：RegisterNatives 原型、结构与槽号](https://docs.oracle.com/en/java/javase/24/docs/specs/jni/functions.html#registernatives)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S04：RegisterNatives 原型、结构与槽号](https://docs.oracle.com/en/java/javase/24/docs/specs/jni/functions.html#registernatives)。
 
 ## DK-AND-02：类加载失败不等于类不存在
 
@@ -20,7 +20,7 @@
 
 **版本/边界/反例：** Android JNI 的线程与引用规则；不要把局部 `jclass` 或某线程的 env 缓存在全局反复使用。原生线程查找失败，不能反推 APK 没有该类；动态加载场景还需核加载时机。
 
-**验证状态：未验证。** 原文来源：[S05：Android JNI tips，Threads、引用与 FindClass](https://developer.android.com/training/articles/perf-jni)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S05：Android JNI tips，Threads、引用与 FindClass](https://developer.android.com/training/articles/perf-jni)。
 
 ## DK-AND-03：DEX 魔数命中后仍要检查容器版本
 
@@ -30,4 +30,4 @@
 
 **版本/边界/反例：** 官方文档对 040 及更早版本规定头长 `0x70`，041 为 `0x78`，并引入 container_size/header_offset；041 在 Android 16 中标为实验用途、不用于生产。沿用旧头长并按 file_size 截断，可能漏掉共享数据；ODEX/VDEX 也不能直接套普通 DEX 规则。
 
-**验证状态：未验证。** 原文来源：[S06：DEX 文件与容器格式](https://source.android.com/docs/core/runtime/dex-format)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S06：DEX 文件与容器格式](https://source.android.com/docs/core/runtime/dex-format)。

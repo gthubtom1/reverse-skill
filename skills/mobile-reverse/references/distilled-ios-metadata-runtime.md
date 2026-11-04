@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 以 Apple objc4 当前公开头文件为依据，具体系统仍须核运行时接口。纯 Swift 路径未必暴露为 Objective-C 方法；元数据能恢复接口线索，不能恢复原始源码，也不能把继承方法的缺席解释成混淆。后续加载或运行时替换同样会使一次快照失效。
 
-**验证状态：未验证。** 原文来源：[S07：Apple runtime.h 的方法枚举与父类查找注释](https://raw.githubusercontent.com/apple-oss-distributions/objc4/main/runtime/runtime.h)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S07：Apple runtime.h 的方法枚举与父类查找注释](https://raw.githubusercontent.com/apple-oss-distributions/objc4/main/runtime/runtime.h)。
 
 ## DK-IOS-02：加密状态、签名和可调试性分别核验
 
@@ -20,4 +20,4 @@
 
 **版本/边界/反例：** Frida 文档说明自动注入 Gadget 自 12.7.12 起提供，建议 iOS 13 及以上，旧系统支持属实验；这是文档条件，不是本批实测兼容矩阵。单改 cryptid 不会解密字节，零值也不能证明整个应用已具备独立运行条件；商店应用不因具备 IPA 文件就自动可调试。
 
-**验证状态：未验证。** 原文来源：[S08：Frida iOS 前提](https://frida.re/docs/ios/)、[S09：Apple Mach-O 加密命令定义](https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/EXTERNAL_HEADERS/mach-o/loader.h)。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S08：Frida iOS 前提](https://frida.re/docs/ios/)、[S09：Apple Mach-O 加密命令定义](https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/EXTERNAL_HEADERS/mach-o/loader.h)。

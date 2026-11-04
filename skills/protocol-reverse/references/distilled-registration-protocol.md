@@ -12,7 +12,7 @@
 
 **边界/反例**：页面加载顺序不一定等于服务端状态依赖；一个响应中出现 user id 也不证明注册完成，必须观察后续会话或业务查询。
 
-**状态**：未验证。**来源**：[RFC 9110 HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)；规范已核，目标协议未运行。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[RFC 9110 HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)；规范已核，目标协议未运行。
 
 ## DK2-PROTO-02：canonicalization 是字节契约
 
@@ -24,7 +24,7 @@
 
 **边界/反例**：RFC 8785 只规定 JSON Canonicalization Scheme，不等于目标使用 JCS；WHATWG URL/Fetch 的解析和编码也不能直接替代应用自定义规则。
 
-**状态**：未验证。**来源**：[RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html)、[WHATWG URL](https://url.spec.whatwg.org/)、[Fetch Standard](https://fetch.spec.whatwg.org/)；原文已核，目标规则未复现。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html)、[WHATWG URL](https://url.spec.whatwg.org/)、[Fetch Standard](https://fetch.spec.whatwg.org/)；原文已核，目标规则未复现。
 
 ## DK2-PROTO-03：原样重放和构造新请求是两种验收
 
@@ -36,4 +36,4 @@
 
 **边界/反例**：Playwright 把请求重定向链作为一个请求单元处理，cookie 仍来自 cookie store；因此拦截日志不能直接等同于线上原始报文。
 
-**状态**：未验证。**来源**：[Playwright Network](https://playwright.dev/docs/network)、[RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html)；文档已核，未运行目标站点。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Playwright Network](https://playwright.dev/docs/network)、[RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html)；文档已核，未运行目标站点。
