@@ -7,6 +7,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-11-04
+### Added
+- Second high-difficulty knowledge batch: challenge/session risk state, registration protocol and HTTP replay, JS VM/WASM/browser observation, Android runtime boundaries, and PE protection evidence.
+- Public-source inventory for 15 new units; all remain `未验证` until reproduced with matching target, platform and tool versions.
+
+### Fixed
+- Updated public release metadata and Codex adapter version to 1.1.0.
+- Removed an inherited target-specific pentest report from the public working tree; private case material is not part of the enhanced distribution.
+- Installer Codex TOML recovery now ignores formatting-only trailing whitespace when the managed table is unchanged.
+
 ## [1.1.0] — 2026-11-04
 ### Added
 - Evidence-driven `reconstruction` stage, official REA/Spec Kit handoff guidance, and three-way upstream follow updates that retain our implementation and UI.
@@ -145,7 +155,8 @@ First **formal** public release of the reverse-skill skill-router pack.
 - Tag: `v1.0.0`
 - Repository: https://github.com/zhaoxuya520/reverse-skill
 
-[Unreleased]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/gthubtom1/reverse-skill/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/zhaoxuya520/reverse-skill/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zhaoxuya520/reverse-skill/releases/tag/v1.0.0
