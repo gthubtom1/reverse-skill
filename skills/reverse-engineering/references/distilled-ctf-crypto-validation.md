@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 依据 Z3 bit-vector 理论指南；复现时记录绑定版本。整数模型不自动模拟模溢出，bit-vector 也不自动描述 C 的所有未定义行为。把字节相加写成无界整数，或把高位为一的字节按错误符号比较，能得到满足错误模型的解。
 
-**验证状态：未验证。** 原文来源：[S17：Z3 Bitvectors](https://microsoft.github.io/z3guide/docs/theories/Bitvectors/)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S17：Z3 Bitvectors](https://microsoft.github.io/z3guide/docs/theories/Bitvectors/)。
 
 ## DK-CTF-02：标准向量先校实现，认证失败要拒绝
 
@@ -20,7 +20,7 @@
 
 **版本/边界/反例：** 面向 RFC 8439 的 IETF 96 位 nonce 变体，不套到其他 ChaCha 变体；同密钥下 nonce 不能复用。只比较密文、跳过认证或把标签截短至碰巧匹配，均不能证明恢复正确；通过标准向量也仅验证该实现路径，不证明题目密钥来源。
 
-**验证状态：未验证。** 原文来源：[S18：RFC 8439 §2.8 与安全事项](https://www.rfc-editor.org/rfc/rfc8439.html)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S18：RFC 8439 §2.8 与安全事项](https://www.rfc-editor.org/rfc/rfc8439.html)。
 
 ## DK-CTF-03：found 只是达到搜索条件
 
@@ -30,4 +30,4 @@
 
 **版本/边界/反例：** 对照 angr 当前在线 SimulationManager 文档，运行需另固定版本。过早的成功字符串、诱饵分支或 unconstrained 指令指针都不能作最终验题依据；退出码零本身不足以证明 flag 正确。
 
-**验证状态：未验证。** 原文来源：[S19：angr 状态分组与探索条件](https://docs.angr.io/en/latest/core-concepts/pathgroups.html)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S19：angr 状态分组与探索条件](https://docs.angr.io/en/latest/core-concepts/pathgroups.html)。

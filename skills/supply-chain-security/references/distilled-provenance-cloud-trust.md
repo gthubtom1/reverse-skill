@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 依据 SLSA v1.2 的验证说明和 provenance/v1。可信构建仍可能忠实构建恶意源码；SLSA 等级不是漏洞扫描结果。同版本号的另一份包、摘要不符或未预期的构建参数，都不能因签名通过而放行。
 
-**验证状态：未验证。** 原文来源：[S24：SLSA v1.2 验证产物](https://slsa.dev/spec/v1.2/verifying-artifacts)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S24：SLSA v1.2 验证产物](https://slsa.dev/spec/v1.2/verifying-artifacts)。
 
 ## DK-SC-02：无密钥签名仍需指定预期身份
 
@@ -20,7 +20,7 @@
 
 **版本/边界/反例：** 对照当前 Sigstore 文档；cosign 具体版本、bundle 格式和信任材料需另固定。发行方身份匹配只证明该身份签署了这份材料，不证明软件无恶意。过宽正则或跳过摘要检查会改变验证承诺，不能沿用原结论。
 
-**验证状态：未验证。** 原文来源：[S25：Sigstore 身份约束与 blob 验证](https://docs.sigstore.dev/cosign/verifying/verify/)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S25：Sigstore 身份约束与 blob 验证](https://docs.sigstore.dev/cosign/verifying/verify/)。
 
 ## DK-SC-03：OIDC 的短期令牌不自动缩小授权范围
 
@@ -30,4 +30,4 @@
 
 **版本/边界/反例：** 仅限 GitHub Actions→AWS 所引流程；subject 模板可定制，迁移或加入不可变标识后需重核，不能永久写死示例字符串。`repo:*` 的宽匹配会扩大信任面；STS 换取成功只说明该次身份交换被接受，不证明最小权限或业务操作合规。
 
-**验证状态：未验证。** 原文来源：[S26：GitHub 的 AWS OIDC aud/sub 与环境规则](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S26：GitHub 的 AWS OIDC aud/sub 与环境规则](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws)。

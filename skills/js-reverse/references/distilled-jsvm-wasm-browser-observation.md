@@ -10,7 +10,7 @@
 
 **边界/反例**：一个自定义 `switch` 可能只是状态机；一个 WASM export 被调用也不证明加密逻辑在 WASM 内。没有确定输入输出向量时保持未验证。
 
-**状态**：未验证。**来源**：[WebAssembly Core Specification](https://www.w3.org/TR/wasm-core-2/)、[Chrome Network](https://developer.chrome.com/docs/devtools/network)；规范和工具文档已核，未对目标执行。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[WebAssembly Core Specification](https://www.w3.org/TR/wasm-core-2/)、[Chrome Network](https://developer.chrome.com/docs/devtools/network)；规范和工具文档已核，未对目标执行。
 
 ## DK2-JS-VM-02：JS 与 WASM 边界用确定性向量连接
 
@@ -22,7 +22,7 @@
 
 **边界/反例**：WASM 规范说明模块有独立 memory、table、imports 和 exports，但规范不告诉你具体应用如何编码参数。边界观察通过不等于算法复刻完成。
 
-**状态**：未验证。**来源**：[WebAssembly Core Specification](https://www.w3.org/TR/wasm-core-2/)、[Playwright Network](https://playwright.dev/docs/network)；未运行具体目标。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[WebAssembly Core Specification](https://www.w3.org/TR/wasm-core-2/)、[Playwright Network](https://playwright.dev/docs/network)；未运行具体目标。
 
 ## DK2-JS-VM-03：浏览器爬虫是动作—请求—状态图
 
@@ -34,4 +34,4 @@
 
 **边界/反例**：Playwright 文档说明 Service Worker 可能影响网络事件观察，必要时需要显式控制；缺少事件不等于页面没有发出请求。
 
-**状态**：未验证。**来源**：[Playwright Network](https://playwright.dev/docs/network)、[Chrome DevTools Network](https://developer.chrome.com/docs/devtools/network/reference)；方法已核，未运行目标站点。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Playwright Network](https://playwright.dev/docs/network)、[Chrome DevTools Network](https://developer.chrome.com/docs/devtools/network/reference)；方法已核，未运行目标站点。

@@ -10,7 +10,7 @@
 
 **边界/反例**：TLS 目录存在不证明 callback 一定改变控制流；入口事件配置正确也不证明保护层已通过。
 
-**状态**：未验证。**来源**：[x64dbg Events](https://help.x64dbg.com/en/latest/gui/settings/Events.html)、[Microsoft PE Format](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)；官方正文已核。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[x64dbg Events](https://help.x64dbg.com/en/latest/gui/settings/Events.html)、[Microsoft PE Format](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)；官方正文已核。
 
 ## DK2-PE-02：反调试检测要记录触发与观察者副作用
 
@@ -22,7 +22,7 @@
 
 **边界/反例**：Check Point Anti-Debug DB 和 ScyllaHide 能作为机制与工具参考，但具体保护器版本可能使用额外检查，不能把通用 PEB 处理写成完整绕过。
 
-**状态**：未验证。**来源**：[Check Point Anti-Debug DB](https://github.com/CheckPointSW/Anti-Debug-DB)、[ScyllaHide](https://github.com/x64dbg/ScyllaHide)；来源已核，目标未执行。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Check Point Anti-Debug DB](https://github.com/CheckPointSW/Anti-Debug-DB)、[ScyllaHide](https://github.com/x64dbg/ScyllaHide)；来源已核，目标未执行。
 
 ## DK2-PE-03：OEP、dump 和 IAT 修复是三项不同结论
 
@@ -34,7 +34,7 @@
 
 **边界/反例**：公开解包流程和 Scylla 文档能支持常见工作顺序，不能保证 Themida/VMProtect 虚拟化目标有单一干净 OEP。
 
-**状态**：未验证。**来源**：[公开解包方法](https://inventivehq.com/blog/malware-unpacking-guide)、[x64dbg ScyllaHide](https://github.com/x64dbg/ScyllaHide)；方法来源已核，未执行目标。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[公开解包方法](https://inventivehq.com/blog/malware-unpacking-guide)、[x64dbg ScyllaHide](https://github.com/x64dbg/ScyllaHide)；方法来源已核，未执行目标。
 
 ## DK2-PE-04：商业壳要分档，不用“脱壳成功”统称
 
@@ -46,4 +46,4 @@
 
 **边界/反例**：公开 VMProtect 案例可说明跨位数、系统版本和 direct syscall 会改变路线，但只支持该案例条件；“能 dump”不等于“完整去虚拟化”。
 
-**状态**：未验证。**来源**：[Defeating VMProtect’s Latest Tricks](https://cyber.wtf/2023/02/09/defeating-vmprotects-latest-tricks)、[Check Point Evasions](https://github.com/CheckPointSW/Evasions)；来源已核，目标未执行。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Defeating VMProtect’s Latest Tricks](https://cyber.wtf/2023/02/09/defeating-vmprotects-latest-tricks)、[Check Point Evasions](https://github.com/CheckPointSW/Evasions)；来源已核，目标未执行。

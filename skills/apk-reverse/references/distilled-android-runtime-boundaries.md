@@ -10,7 +10,7 @@
 
 **边界/反例**：OWASP MASTG 明确指出 Android 逆向需要同时处理 Java bytecode 和 native code，JNI 也可能被用来增加分析复杂度。文档覆盖不等于目标 APK 的壳已经拆开。
 
-**状态**：未验证。**来源**：[OWASP MASTG Android Reverse Engineering](https://mas.owasp.org/MASTG/techniques/android/MASTG-TECH-0013)、[Android JNI](https://developer.android.com/training/articles/perf-jni)；原文已核。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[OWASP MASTG Android Reverse Engineering](https://mas.owasp.org/MASTG/techniques/android/MASTG-TECH-0013)、[Android JNI](https://developer.android.com/training/articles/perf-jni)；原文已核。
 
 ## DK2-AND-RT-02：Flutter/Dart AOT 是独立边界
 
@@ -22,7 +22,7 @@
 
 **边界/反例**：OWASP MASTG 将 Flutter 逆向列为需要专门方法的场景；外部工具生成输出不等于完整源码恢复，也不等于重建包可运行。
 
-**状态**：未验证。**来源**：[OWASP MASTG Flutter Reverse Engineering](https://mas.owasp.org/MASTG/techniques/android/MASTG-TECH-0156)；来源已核，未运行具体 APK。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[OWASP MASTG Flutter Reverse Engineering](https://mas.owasp.org/MASTG/techniques/android/MASTG-TECH-0156)；来源已核，未运行具体 APK。
 
 ## DK2-AND-RT-03：签名、重打包与业务验证分开
 
@@ -34,4 +34,4 @@
 
 **边界/反例**：AOSP 文档说明不同 Android 版本对签名 scheme 的兼容不同；不能把“我在一个设备安装成功”推广成所有设备兼容。
 
-**状态**：未验证。**来源**：[AOSP APK Signing](https://source.android.com/docs/security/features/apksigning)；来源已核，未运行设备。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[AOSP APK Signing](https://source.android.com/docs/security/features/apksigning)；来源已核，未运行设备。

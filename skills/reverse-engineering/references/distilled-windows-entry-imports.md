@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 面向 PE32/PE32+，位宽和目录布局须分别解析；DLL 入口可以为零。跳入库初始化、诱饵函数或仍由调度器解释执行的片段，均不能据此宣布找到原程序 OEP。上述四项是建议核验方法，不是 PE 规范提供的脱壳保证。
 
-**验证状态：未验证。** 原文来源：[S01：PE 格式、入口与 TLS 目录](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S01：PE 格式、入口与 TLS 目录](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。
 
 ## DK-WIN-02：区分 API 返回值、查询状态与输出缓冲区
 
@@ -20,7 +20,7 @@
 
 **版本/边界/反例：** `ProcessDebugPort` 使用 `DWORD_PTR`，不能固定按四字节读。微软明确提示该内部接口可能跨 Windows 版本变化。把查询成功的零状态当成“没有调试器”，或把此信息类的语义套到其他类，是错误推断。
 
-**验证状态：未验证。** 原文来源：[S02：IsDebuggerPresent](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-isdebuggerpresent)、[S03：NtQueryInformationProcess](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess)。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S02：IsDebuggerPresent](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-isdebuggerpresent)、[S03：NtQueryInformationProcess](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess)。
 
 ## DK-WIN-03：IAT 修复失败时恢复行为证据
 
@@ -30,4 +30,4 @@
 
 **版本/边界/反例：** 按 PE 位宽解析 thunk；动态解析函数未出现在静态表中，不证明对应行为不存在。业务功能可观察、dump 可分析、修复后独立运行，是三个不同验证范围。
 
-**验证状态：未验证。** 原文来源：[S01：RVA、导入和延迟导入表](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S01：RVA、导入和延迟导入表](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。

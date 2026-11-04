@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 依据 Pointer Events Level 3；coalesced/predicted events 的实际支持需核浏览器与设备，预测点不等于已经发生的输入。合成事件样例不证明可替代可信硬件事件。失败也可能来自 pointercancel、触摸滚动或捕获迁移；“多加随机点就会通过”没有通用依据，最终停点一致也不代表服务端判断一致。
 
-**验证状态：未验证。** 原文来源：[S15：Pointer Events，捕获、取消与合并事件](https://www.w3.org/TR/pointerevents3/)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S15：Pointer Events，捕获、取消与合并事件](https://www.w3.org/TR/pointerevents3/)。
 
 ## DK-CAP-02：挑战完成、令牌签发和业务接受分开验证
 
@@ -20,4 +20,4 @@
 
 **版本/边界/反例：** 仅适用于所引 reCAPTCHA 校验接口，不泛化到所有厂商、v3 分数阈值或其他附加策略。刷新页面或重试业务可能复用已消费令牌；再次失败不证明图像识别退化。测试钥匙或测试模式通过，也不证明生产环境风险判断通过；本批没有调用校验接口，未持有或记录任何真实令牌。
 
-**验证状态：未验证。** 原文来源：[S16：reCAPTCHA 响应验证、有效期及错误码](https://developers.google.com/recaptcha/docs/verify)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S16：reCAPTCHA 响应验证、有效期及错误码](https://developers.google.com/recaptcha/docs/verify)。

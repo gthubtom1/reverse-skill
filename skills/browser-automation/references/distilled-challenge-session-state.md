@@ -12,7 +12,7 @@
 
 **边界/反例**：Google reCAPTCHA 文档规定 response token 需要服务端校验，并且 token 单次使用、两分钟内有效；这能支持生命周期模型，不能推出其他厂商相同。HTTP 200 也不代表业务接受。
 
-**状态**：未验证。**来源**：[Google response verification](https://developers.google.com/recaptcha/docs/verify)；原文已核，具体目标未运行。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Google response verification](https://developers.google.com/recaptcha/docs/verify)；原文已核，具体目标未运行。
 
 ## DK2-CAP-02：轨迹字段先做采样契约，再谈算法
 
@@ -24,7 +24,7 @@
 
 **边界/反例**：事件捕获工具能说明浏览器观测到什么，不能证明服务端使用了哪一个字段。没有业务响应或接受/拒绝对照时，算法结论保持 unknown。
 
-**状态**：未验证。**来源**：[W3C Pointer Events](https://www.w3.org/TR/pointerevents3/)；原文已核，未用于任何具体站点复现。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[W3C Pointer Events](https://www.w3.org/TR/pointerevents3/)；原文已核，未用于任何具体站点复现。
 
 ## DK2-CAP-03：风险分数、动作名和业务决策是三层
 
@@ -36,4 +36,4 @@
 
 **边界/反例**：官方 reCAPTCHA v3 文档说明返回 score，由站点自行决定下一步动作；不能把 score 解释成跨站点通用阈值，也不能把单站点结果推广到所有风控服务。
 
-**状态**：未验证。**来源**：[Google reCAPTCHA overview](https://developers.google.com/recaptcha)；原文已核，未验证具体阈值。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。**来源**：[Google reCAPTCHA overview](https://developers.google.com/recaptcha)；原文已核，未验证具体阈值。

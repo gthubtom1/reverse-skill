@@ -10,7 +10,7 @@
 
 **版本/边界/反例：** 依据当前 ECMAScript 在线规范；具体引擎版本须随复现记录。返回空函数无法自动满足宿主对象的品牌检查或内部槽要求。把所有未知属性都返回函数，会把布尔判断、类型判断和分支一起改掉；“脚本不再报错”只是异常减少，不是行为一致。
 
-**验证状态：未验证。** 原文来源：[S10：Proxy 的 Get 算法与不变量](https://tc39.es/ecma262/multipage/ordinary-and-exotic-objects-behaviours.html#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver)。
+**方法评审：来源支持（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S10：Proxy 的 Get 算法与不变量](https://tc39.es/ecma262/multipage/ordinary-and-exotic-objects-behaviours.html#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver)。
 
 ## DK-JS-02：canonicalization 必须有协议依据
 
@@ -20,4 +20,4 @@
 
 **版本/边界/反例：** RFC 8785 是信息性 RFC，WHATWG URL 是动态标准，本批只核当前原文。JCS 属性排序不是按 UTF-8 字节排序；擅自排序数组、做 NFC 或先解码再重编码，都可能改变签名输入。即使标准测试向量匹配，仍需用目标协议的已知接受与拒绝样例检验。
 
-**验证状态：未验证。** 原文来源：[S11：RFC 8785 §3.2](https://www.rfc-editor.org/rfc/rfc8785.html#section-3.2)、[S12：URLSearchParams 序列化](https://url.spec.whatwg.org/#interface-urlsearchparams)。
+**方法评审：交叉核对（来源正文已核，已检查适用条件与反例；未做本方目标实测）。** **本方状态：未复现。** 原文来源：[S11：RFC 8785 §3.2](https://www.rfc-editor.org/rfc/rfc8785.html#section-3.2)、[S12：URLSearchParams 序列化](https://url.spec.whatwg.org/#interface-urlsearchparams)。
