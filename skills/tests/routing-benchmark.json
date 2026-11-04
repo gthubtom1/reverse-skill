@@ -895,6 +895,20 @@
       "hint": "Twitter marketing sentiment for our product",
       "expect": "R0",
       "quick": false
-    }
+    },
+    { "hint": "复刻已确认的功能为独立实现", "expect": "R46", "quick": true },
+    { "hint": "reconstruction implementation from reviewed requirements", "expect": "R46", "quick": false },
+    { "hint": "reconstruction verification", "expect": "R46", "quick": false },
+    { "hint": "behavioral equivalence of the replica implementation", "expect": "R46", "quick": false },
+    { "hint": "APK 分析后复刻", "expect": "R1", "quick": false },
+    { "hint": "js reverse then reconstruction", "expect": "R3", "quick": false },
+    { "hint": "CTF crackme reconstruction", "expect": "R41", "quick": false },
+    { "hint": "case review for reconstruction evidence", "expect": "R40", "quick": false },
+    { "hint": "软件跟随更新，保留我方界面", "expect": "R15", "quick": false },
+    { "hint": "upstream follow update", "expect": "R15", "quick": false },
+    { "hint": "APK 跟随更新", "expect": "R1", "quick": false },
+    { "hint": "REA decompile APK before reconstruction", "expect": "R1", "quick": false },
+    { "hint": "REA unavailable; reconstruction implementation", "expect": "R46", "quick": false },
+    { "hint": "source recovery with IDA", "expect": "R6", "quick": false }
   ]
 }

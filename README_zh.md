@@ -3,6 +3,9 @@
 </p>
 
 <h1 align="center">reverse-skill</h1>
+
+> **公开增强版**：[gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill)，保留 [原作者项目](https://github.com/zhaoxuya520/reverse-skill) 的历史、原生架构与校验。新增证据驱动复刻、三方跟随更新和跨领域蒸馏资料。REA 与 Spec Kit 继续官方原版，Pi/Codex 等组合安装统一从 [独立安装仓库](https://github.com/gthubtom1/reverse-workflow-installer) 进入。详见 [增强工作流](docs/ENHANCED-WORKFLOW.md) 与 [知识来源及状态](skills/references/distillation-sources.md)。
+
 <h3 align="center">Reverse Engineering / Authorized Penetration Testing / Security Research Skill Router Pack</h3>
 
 <p align="center"><em style="font-family: 'KaiTi', 'STKaiti', 'SimSun', serif; font-size: 1.3em; color: #999;">破暗而行，逆水为舟</em></p>
@@ -72,7 +75,7 @@
 
 | 路由规则 | 回归基准 | 核心 Skill | CI 平台 | 客户端模型 |
 |---:|---:|---:|---|---|
-| 44 条（R0–R45） | 175 条用例 | 45 个已跟踪模块 | Windows + Ubuntu | 平台无关 |
+| 45 条（保留原 ID，新增 R46） | 192 条用例（原 178 条不变） | 46 个已跟踪模块 | Windows + Ubuntu | 平台无关 |
 
 路由核心由单一结构化配置驱动，通过跨平台 CI 验证，并与各客户端的可选适配层保持分离。
 

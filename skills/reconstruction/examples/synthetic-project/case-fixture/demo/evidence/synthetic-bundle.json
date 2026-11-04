@@ -1,0 +1,9 @@
+{
+  "fixture_only": true,
+  "notice": "Not a REA bundle; opaque document for handoff integrity tests only",
+  "unknowns": [
+    {
+      "description": "Synthetic question: nonempty input behavior is not specified"
+    }
+  ]
+}

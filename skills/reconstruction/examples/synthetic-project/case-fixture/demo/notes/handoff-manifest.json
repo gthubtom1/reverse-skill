@@ -1,0 +1,70 @@
+{
+  "manifest_version": 1,
+  "case_root": "case-fixture/demo",
+  "context_refs": {
+    "scope": {
+      "path": "case-fixture/demo/scope.md",
+      "sha256": "85285480417a705e4c3c11a3fc2b5eea7b11c86b8d07c78563a2591bb16ce75c"
+    },
+    "timeline": {
+      "path": "case-fixture/demo/timeline.md",
+      "sha256": "091ad6b1355cbe21e3ff1961ae1268ee8ff67787ececfa13d9bb25f58e95ae61"
+    },
+    "workitems": {
+      "path": "case-fixture/demo/workitems.md",
+      "sha256": "2316bdb4d61b6ac9dd03bda2255e39f9eb8b3bdcd6996b153335b8df47a63c0b"
+    }
+  },
+  "feature_refs": {
+    "spec": {
+      "path": "specs/001-literal-v1/spec.md",
+      "sha256": "4e0e3f2b78279e5399a834e21da3a1bd87abbf5ee9b2c77be9726331b64a33a2"
+    },
+    "plan": {
+      "path": "specs/001-literal-v1/plan.md",
+      "sha256": "716cbfef78912e8b4619632ee31e1a2dadb7b2e7c825583b934d8d9cd0628180"
+    },
+    "tasks": {
+      "path": "specs/001-literal-v1/tasks.md",
+      "sha256": "a82cc54345885cf01c79ce8b520021f68eccee087f2e0d82bcc0dfa857633b4e"
+    }
+  },
+  "bundle_refs": [
+    {
+      "path": "case-fixture/demo/evidence/synthetic-bundle.json",
+      "sha256": "1ac05397a2b39bc66c3b537249288972cb0461e49747f0e0bb78ed6e4f9f7116"
+    }
+  ],
+  "requirements": [
+    {
+      "fr_id": "FR-001",
+      "source_kind": "observed",
+      "evidence_refs": [
+        {
+          "evidence_id": "E-001",
+          "record_ref": {
+            "path": "case-fixture/demo/evidence/E-001.md",
+            "sha256": "bba87d682e91975ff89d5d3a64b31cd1f7ded7cf5fb13c2de95e0373417bc0c8"
+          }
+        }
+      ],
+      "obligation_ref": {
+        "document_ref": {
+          "path": "case-fixture/demo/evidence/synthetic-obligations.json",
+          "sha256": "1d14f1713cbf2b3a7c9b5e2cf2bd6421dbd6254f7942321aba1475dff7476223"
+        },
+        "pointer": "/obligations/0"
+      },
+      "unknown_refs": [
+        {
+          "document_ref": {
+            "path": "case-fixture/demo/evidence/synthetic-bundle.json",
+            "sha256": "1ac05397a2b39bc66c3b537249288972cb0461e49747f0e0bb78ed6e4f9f7116"
+          },
+          "pointer": "/unknowns/0",
+          "critical": false
+        }
+      ]
+    }
+  ]
+}

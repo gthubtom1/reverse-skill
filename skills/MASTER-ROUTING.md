@@ -115,12 +115,13 @@ python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --
 | **R12** | API / GraphQL / BOLA / JWT 攻击 | `api-security/` |
 | **R13** | SBOM / Trivy / 供应链 | `supply-chain-security/` |
 | **R14** | LLM / Prompt 注入 / Agent 安全 | `llm-security/` |
-| **R15** | bindiff / 符号迁移 / PDB | `binary-diff/` |
+| **R15** | bindiff / 符号迁移 / PDB / 跟随更新 / 追版 | `binary-diff/` |
 | **R19** | 浏览器/桌面自动化 | `browser-automation/` |
 | **R40** | Case / Evidence 图审查 | `case-review/` |
 | **R20** | 报告 / writeup | `docs-generator/` |
 | **R39** | 图表 / Mermaid / Graphviz / PlantUML / 架构图 | `diagram-generator/` |
 | **R41** | CTF / AWD / 靶场（单入口，不展开 40 个子技能） | `ctf-sandbox/` |
+| **R46** | 已取证功能复刻 / 独立实现 / 行为对照验证（阶段交接） | `reconstruction/` |
 | **R0** | 通用逆向 / 反调试 / OLLVM / 未知二进制 | `reverse-engineering/` |
 
 未命中强关键词 → PRIMARY=`R0`，并提示打开 `routing.md`（歧义附录，不是第二套路由器）。
@@ -130,6 +131,12 @@ python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --
 | 任务 | 处理 |
 |------|------|
 | 纯 CTF 多类型编排 | PRIMARY `ctf-sandbox/` → sidecar `../CTF-Sandbox-Orchestrator/` |
+
+## 复刻与追版交接
+
+混合目标如“分析 APK 后复刻”先保持原领域 PRIMARY。完成可追溯分析后，在同一项目中用明确的阶段任务重新调用原 `master-route`，例如 `reconstruction implementation` 或 `reconstruction verification`；进入 [reconstruction](reconstruction/SKILL.md)。原话与目标身份不改写，新阶段结果追加到同一 case 的 timeline/notes，不重置 scope。
+
+“跟随更新/追版”先进入已有 [binary-diff](binary-diff/SKILL.md)，读取旧上游、我方成果、新上游三方记录，再把需更新的规格/实现任务交给 reconstruction。位置相似不等于语义不变，旧通过记录不等于新版通过。REA 是当前领域可选的执行工具，其连接状态不决定 PRIMARY；宿主安装和资源选择见 [独立安装仓库](https://github.com/gthubtom1/reverse-workflow-installer)。
 
 ## 读序
 

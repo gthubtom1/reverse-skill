@@ -1,0 +1,33 @@
+# Windows：入口证据、反调试语义与导入修复止损
+
+本篇补充入口和导入结论的证据资格；不以壳名称推断脱壳成功。引入批次：首批全领域增补；引入版本待独立 release PR 分配。原有规则的技术细节以本篇所列原文和实际 ABI 为核对依据。
+
+## DK-WIN-01：把 OEP 候选与可运行镜像分开验证
+
+**现象→判定：** 单步进入可读代码，或到达 PE 的入口字段，只得到一个入口候选。`AddressOfEntryPoint` 是相对映像基址的地址；TLS 回调还提供独立初始化路径，文件入口不能证明初始化已经充分完成。
+
+**方法：** 在授权副本上准备记录四项证据：候选所在映像及 RVA、从解码/装载阶段到候选的实际控制流、候选页后续是否继续改写、候选之后是否出现预期业务分支。另列 TLS 回调数组与线程触发条件。分析用 dump 与独立运行验证分别出结论，避免拿反汇编可读代替加载正确。
+
+**版本/边界/反例：** 面向 PE32/PE32+，位宽和目录布局须分别解析；DLL 入口可以为零。跳入库初始化、诱饵函数或仍由调度器解释执行的片段，均不能据此宣布找到原程序 OEP。上述四项是建议核验方法，不是 PE 规范提供的脱壳保证。
+
+**验证状态：未验证。** 原文来源：[S01：PE 格式、入口与 TLS 目录](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。
+
+## DK-WIN-02：区分 API 返回值、查询状态与输出缓冲区
+
+**现象→判定：** 修改某次查询后仍退出，不能直接认定存在“更强反调试”。先确认读取的是调用状态还是输出值：`IsDebuggerPresent` 的非零返回表示被调试；`NtQueryInformationProcess` 返回查询状态，`ProcessDebugPort=7` 的结果另写入输出缓冲区。
+
+**方法：** 对照函数原型记录信息类、缓冲区长度、状态、输出及紧随其后的条件分支；失败查询的输出不作有效观测。先保留未修改基线，再比较一次最小干预后的分支和退出原因。
+
+**版本/边界/反例：** `ProcessDebugPort` 使用 `DWORD_PTR`，不能固定按四字节读。微软明确提示该内部接口可能跨 Windows 版本变化。把查询成功的零状态当成“没有调试器”，或把此信息类的语义套到其他类，是错误推断。
+
+**验证状态：未验证。** 原文来源：[S02：IsDebuggerPresent](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-isdebuggerpresent)、[S03：NtQueryInformationProcess](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess)。
+
+## DK-WIN-03：IAT 修复失败时恢复行为证据
+
+**现象→判定：** dump 能打开但导入修复失败，只能说明当前重建未成立。PE 中 RVA 通常不同于文件偏移；把内存布局直接当磁盘布局，可能先于导入解析就已出错。
+
+**方法：** 先核节映射和目录边界，再区分普通导入、延迟导入与运行期解析。一次自动/半自动修复失败后保留错误和副本，按原 RULES 转为动态 API 观测，记录模块身份、实际解析地址与调用栈，不继续无依据重写文件。
+
+**版本/边界/反例：** 按 PE 位宽解析 thunk；动态解析函数未出现在静态表中，不证明对应行为不存在。业务功能可观察、dump 可分析、修复后独立运行，是三个不同验证范围。
+
+**验证状态：未验证。** 原文来源：[S01：RVA、导入和延迟导入表](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)。
