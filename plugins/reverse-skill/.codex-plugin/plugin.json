@@ -1,6 +1,6 @@
 {
   "name": "reverse-skill",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Codex adapter for the client-neutral reverse-skill security router.",
   "author": {
     "name": "ZhaoXu",
