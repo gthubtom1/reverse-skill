@@ -6,6 +6,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [1.1.0] — 2026-11-04
+### Added
+- Evidence-driven `reconstruction` stage, official REA/Spec Kit handoff guidance, and three-way upstream follow updates that retain our implementation and UI.
+- Routing R46 and follow-update terms in R15, with immutable fingerprints for all original 44 routes, their relative priority, and the original 178 benchmark cases.
+- Source-owned O/C/N comparison fixture with stale-implementation failure controls, explicit comparison boundaries, and retained custom UI assertions.
+- Cross-domain distilled references with per-unit verification status, source inventory and an incremental knowledge-maintenance workflow.
+- Independent installation/client adaptation entry at https://github.com/gthubtom1/reverse-workflow-installer; official REA and Spec Kit remain unmodified.
+
+### Fixed
+- Preserve the original LF bytes of the ctf-demo hash-bound text artifact on Windows; the Evidence hash and strict assertion remain unchanged.
+
+### Inherited upstream changes
+The following pre-existing upstream Unreleased entries are included unchanged from baseline `cab634bd855fc287f6e420c1f36fd1a6b9245960`.
+
 ### Added
 - **CI runs remaining unwired suites** — `test-p0-friction.ps1` on the Windows leg of `routing-tests` (Windows PowerShell 5.1); `case-review/tests/test_review_case.py` in the Linux `case-contract` job. `test-workflow-title-safety.ps1` was already wired.
 - **Binary Ninja route and skill** — added `binary-ninja-reverse` for HLIL/MLIL/LLIL, Python API, and an explicitly enabled loopback community MCP bridge; Binary Ninja remains a manual commercial dependency.
@@ -130,6 +145,7 @@ First **formal** public release of the reverse-skill skill-router pack.
 - Tag: `v1.0.0`
 - Repository: https://github.com/zhaoxuya520/reverse-skill
 
-[Unreleased]: https://github.com/zhaoxuya520/reverse-skill/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/gthubtom1/reverse-skill/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/gthubtom1/reverse-skill/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/zhaoxuya520/reverse-skill/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zhaoxuya520/reverse-skill/releases/tag/v1.0.0

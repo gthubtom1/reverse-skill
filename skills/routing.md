@@ -15,6 +15,12 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 7. **Ops contract** (skill-router form): `ops/scope-contract.md` before ACT; Evidence→Finding→Path; roles in `ops/role-map.md`; timeline/workitems under `work/<case>/`. Identity: `ops/IDENTITY.md`.
 8. **External skills**: do NOT bulk-vendor community packs; map + rules in `references/community-security-skills.md` + `ops/skill-supply-chain.md`. RE stages: `reverse-engineering/references/re-agent-workflow.md`. Recon: `pentest-tools/references/recon-pipeline.md`.
 
+## Reconstruction and follow-update stages
+
+Use [reconstruction](reconstruction/SKILL.md) after the current target-specific analysis has produced reviewed Evidence and a bounded behavior contract. A mixed APK/JS/CTF request keeps its original PRIMARY first. Record the later subtask separately and call the same native router with `reconstruction implementation` or `reconstruction verification`; preserve the original user request and case scope.
+
+For an existing independent implementation following an upstream release, [binary-diff](binary-diff/SKILL.md) compares old upstream, our implementation/design, and new upstream. See the reconstruction follow-update reference for identity, reuse, UI preservation, proof freshness and regression requirements. REA is an optional execution surface within the selected specialist, not an additional PRIMARY. Host-specific setup is maintained in the [separate installer](https://github.com/gthubtom1/reverse-workflow-installer).
+
 ## By Target Type
 
 | Target Type | Recommended Entry | Alternative |

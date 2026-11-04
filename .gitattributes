@@ -4,12 +4,15 @@
 *.bat text eol=crlf
 *.py text eol=lf
 *.js text eol=lf
+*.cjs text eol=lf
 *.java text eol=lf
 *.json text eol=lf
 *.md text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.toml text eol=lf
+# This text artifact has a byte-level Evidence hash; preserve it on Windows too.
+examples/ctf-demo/evidence/checksec-output.txt text eol=lf
 
 # 二进制
 *.jar binary

@@ -1,0 +1,10 @@
+{
+  "fixture_only": true,
+  "notice": "Not a REA result; synthetic reviewed-claim identity for pointer tests only",
+  "obligations": [
+    {
+      "obligation_id": "synthetic.empty-input-exit",
+      "obligation_version": 1
+    }
+  ]
+}

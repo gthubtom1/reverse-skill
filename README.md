@@ -2,6 +2,9 @@
   <img src="reverse-skill.png" alt="reverse-skill" width="140" />
 </p>
 <h1 align="center">reverse-skill</h1>
+
+> **Public enhanced distribution:** [gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill), based on [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) with its original history, architecture and checks retained. Adds evidence-driven reconstruction, upstream follow updates and distilled domain knowledge. Install the three-component environment through the [independent installer](https://github.com/gthubtom1/reverse-workflow-installer). See [enhanced workflow](docs/ENHANCED-WORKFLOW.md) and [knowledge sources/status](skills/references/distillation-sources.md).
+
 <h3 align="center">Cybersecurity Skills Router · 逆向技能路由包</h3>
 
 <p align="center"><em style="font-family: Georgia, serif; font-size: 1.2em; color: #777;">Navigate the dark waters, sail against the stream.</em></p>
@@ -70,7 +73,7 @@ User task
 
 | Routing rules | Regression benchmark | Core skill modules | CI platforms | Client model |
 |---:|---:|---:|---|---|
-| 44 (R0–R45) | 175 cases | 45 tracked modules | Windows + Ubuntu | Client-neutral |
+| 45 (R0–R46, original IDs retained) | 192 cases (original 178 unchanged) | 46 tracked modules | Windows + Ubuntu | Client-neutral |
 
 The routing core is driven by one structured configuration, validated by cross-platform CI, and kept separate from optional client adapters.
 

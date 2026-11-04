@@ -1,0 +1,15 @@
+{
+  "contract": "JSON object requests; compare result exactly; replica UI is a separately required local design",
+  "cases": [
+    {"id": "old-total", "input": {"op": "total", "values": [100, 250, 99]}},
+    {"id": "old-empty", "input": {"op": "total", "values": []}},
+    {"id": "old-invalid-value", "input": {"op": "total", "values": [-1]}},
+    {"id": "old-unknown-operation", "input": {"op": "unknown", "values": [1]}},
+    {"id": "malformed-json", "raw_input": "{"},
+    {"id": "null-request", "input": null},
+    {"id": "new-discount", "input": {"op": "total", "values": [199, 200], "discount_percent": 15}},
+    {"id": "new-discount-boundary", "input": {"op": "total", "values": [1], "discount_percent": 50}},
+    {"id": "new-invalid-discount", "input": {"op": "total", "values": [1], "discount_percent": 51}},
+    {"id": "new-count", "input": {"op": "count", "values": [1, 2, 3]}}
+  ]
+}

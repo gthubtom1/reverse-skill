@@ -485,6 +485,12 @@ anything-analyzer: browser automation + HTTP capture. jshookmcp: JS runtime / CD
 
 ---
 
+## Enhanced distribution and client setup
+
+This public distribution retains the original behavior and routing contracts. Read [ENHANCED-WORKFLOW](docs/ENHANCED-WORKFLOW.md) for reconstruction, upstream follow updates and the limits of verification. Host-specific Pi/Codex installation belongs to the [separate installer](https://github.com/gthubtom1/reverse-workflow-installer), which references this repository instead of copying its router or knowledge.
+
+For a user-requested knowledge refresh, follow [knowledge maintenance](skills/references/knowledge-maintenance.md): compare existing material, distill only the increment, label each knowledge unit's verification state and source, update native indexes and retain all checks. The source inventory reports the new batch separately from inherited unreviewed material.
+
 ## Auto-Evolution Mechanism
 
 ### Evolution Log Directory
@@ -492,7 +498,7 @@ anything-analyzer: browser automation + HTTP capture. jshookmcp: JS runtime / CD
 ```text
 <SKILL_ROOT>\field-journal\
 ├── _template.md              # Write-back template
-├── _index.md                 # Auto-generated experience index
+├── _index.md                 # Experience index maintained with each journal change
 ├── 2026-05-15_apk-xxx-signature-bypass.md
 └── ...
 ```

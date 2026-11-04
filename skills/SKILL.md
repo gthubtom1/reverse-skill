@@ -40,7 +40,8 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 | **技术文档编写** | `docs-generator/` | 任务完成后自动生成逆向报告、渗透报告、CTF writeup、签名逆向报告 |
 | **Evidence 图审查** | `case-review/` | 校验 scope、Evidence→Finding→Path 可追溯性、workitems、timeline 与 artifact hash |
 | **浏览器与桌面自动化** | `browser-automation/` | 浏览器操作（Playwright）+ Windows 桌面应用操作（OpenReverse UIA/CUA）+ 网络观察 |
-| **跨版本符号迁移** | `binary-diff/` | 有旧版符号迁移到新版、缺 PDB 推导、程序更新后批量迁移函数名 |
+| **证据驱动复刻与验证** | `reconstruction/` | 已确认行为→规格→独立实现→原版对照；复用官方 REA 和 Spec Kit，追版保留我方设计 |
+| **跨版本符号迁移** | `binary-diff/` | 有旧版符号迁移到新版、缺 PDB 推导、程序更新后批量迁移函数名；旧上游/我方成果/新上游三方追版 |
 | **N-day 补丁差分→利用** | `patch-diff-exploit/` | 从厂商补丁定位漏洞点、写 PoC、N-day 武器化（与 binary-diff 分工：本 skill 偏攻击侧） |
 | **RE→利用链** | `pwn-chain/` | 从逆向走到可用 exploit：栈/堆/内核 pwn、pwntools、libc-database、CTF 到真实远程的稳定化 |
 | **固件渗透链** | `firmware-pentest/` | OWASP FSTM 九阶段：提取→EMBA 自动化→Firmadyne/QEMU 仿真→AFL++ fuzz→实机利用 |
@@ -173,6 +174,12 @@ bash <package-root>/kali/scripts/bootstrap-reverse.sh 工具名 --start-services
 | **#2** | `field-journal/precedent-reverse.md` 或 `precedent-pentest.md` | 按需 — AI 犹豫时才加载 |
 
 **#1 前置，#2 懒加载。**
+
+## 持续维护与组合使用
+
+本增强版保留原生路由与扩展链。已有领域 PRIMARY 先完成分析，再用同一个 router 进入 [复刻技能](reconstruction/SKILL.md)；REA 只接受当前专业任务的具体分析委派。Pi/Codex 等安装与资源消歧统一由 [独立安装仓库](https://github.com/gthubtom1/reverse-workflow-installer) 维护，本核心不依赖某个宿主。
+
+用户要求“到网上补充知识”时，先读 [知识维护说明](references/knowledge-maintenance.md) 与 [本轮来源清单](references/distillation-sources.md)，比较旧文再蒸馏到所属 references；实际研究经验沿原 field-journal 回写。来源核对、结构检查和技术复现分别记录。历史存量未复核，不以文件数量宣布全领域成功。
 
 ## 自动进化
 

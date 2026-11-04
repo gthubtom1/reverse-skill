@@ -338,6 +338,18 @@ jobs:
         shell: bash
         run: python3 skills/case-review/tests/test_review_case.py
 
+      - name: Original routing compatibility fingerprints
+        shell: bash
+        run: python3 skills/scripts/test-routing-compatibility.py
+
+      - name: Reconstruction handoff contract tests
+        shell: bash
+        run: python3 -m unittest discover -s skills/reconstruction/tests -p 'test_*.py' -v
+
+      - name: Source-owned upstream follow-update comparison
+        shell: bash
+        run: python3 -B examples/reconstruction-demo/run_demo.py
+
       - name: Internal Markdown links resolve
         shell: bash
         run: python3 skills/scripts/verify-doc-links.py
