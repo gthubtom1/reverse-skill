@@ -6,6 +6,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- REA delegation contract with bounded work items, provider/resource reporting, Evidence handoff and explicit unknown states.
+- Process lifecycle contract and Windows process lease helper for owned provider startup, timeout cancellation, descendant cleanup and cleanup verification.
+
+### Changed
+- R0 now treats REA as the post-PRIMARY execution backend, limits heavy native providers to one bounded work item by default, and routes raw CLI use through a cleanup-aware fallback.
+- Preserved `routing.json` as the sole route table and kept the client adapter, global configuration, and official REA package outside the core changes.
 
 ## [1.6.0] — 2026-11-05
 ### Added

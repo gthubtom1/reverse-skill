@@ -20,6 +20,27 @@ metadata:
 4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
 5. `ACT`: 按 re-agent-workflow 推进；进入工作流第一步并执行，不要停在确认状态
 
+## REA execution hook
+
+After PRIMARY is active, create one bounded work item before calling any heavy analysis provider. The work item MUST define one Evidence question, target identity, allowed actions, timeout, memory budget, expected artifacts, and cleanup policy. Use `skills/ops/rea-delegation-contract.md`.
+
+Default R0 sequence:
+
+```text
+triage -> targeted static -> targeted dynamic (only when required) -> synthesis
+```
+
+Use the official REA MCP as the default execution backend after PRIMARY delegation. REA returns Evidence, Unknown, provider/session state, resource usage, process ids, and cleanup state; the R0 workflow records them in the current case before selecting the next work item.
+
+Resource gates:
+
+- artifact/PE triage: 60 seconds, 512 MB, no heavy provider
+- targeted static lookup: 180 seconds, 1 GB, one heavy provider
+- selected-function decompilation: 300 seconds, 1.5 GB, one heavy provider
+- full native analysis: explicit work item with explicit budget
+
+Do not overlap Ghidra, IDA, radare2, capa, or another full native provider for the same target. A timeout or provider error requires cancellation and cleanup before a replacement provider starts. Raw CLI fallback uses the real path from `tool-index.md` and `skills/scripts/process-lease.ps1`; it never uses an untracked background process.
+
 ## Decision-framework entry hook
 
 When triage cannot locate a reliable entry point, severe obfuscation blocks progress, or the analysis is stuck, keep this R0 workflow as the primary route and load the existing ADF overlay instead of creating a new `routing.json` PRIMARY. Follow `references/re-agent-workflow.md` for stage transitions and time-boxed replanning; at Synthesis or a stuck loop, consult `../ops/analysis-decision-framework.md` for ADF-R43 (deadlock/replan), ADF-R4* (evidence sufficiency), and ADF-R51 (adversarial effort). Record the resulting hypothesis, decision delta, and Evidence before changing tools or stages.
@@ -100,6 +121,10 @@ r2pm -ci r2ghidra   # Native Ghidra decompiler for radare2
 - Web app with a small client helper → `js-reverse/`
 - Real malware / C2 / packing → `malware-analysis/`
 - Multi-type CTF contest packaging → `ctf-sandbox/` (sidecar orchestrator)
+
+## Bounded tool selection
+
+The quick references below are technique examples, not permission to launch every tool. For an active case, the R0 execution hook decides the smallest provider-backed action that answers the current Evidence question. A raw command such as `aaa`, full `capa`, or headless Ghidra requires a work item, a bounded timeout, a process lease, and cleanup verification. Prefer targeted strings, imports, references, and selected-function analysis before whole-program decompilation.
 
 ## Problem-Solving Workflow
 

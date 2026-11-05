@@ -20,6 +20,17 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 
 如果路由无法命中，必须先联网补充方法论并提议新增 skill，禁止硬塞到不匹配模块。
 
+## REA 委派与进程生命周期
+
+`reverse-skill` 是唯一的路由、case 和证据总控；REA 是 PRIMARY 选定后的受限分析执行器。两者的边界与返回格式见：
+
+- `skills/ops/rea-delegation-contract.md`
+- `skills/ops/process-lifecycle.md`
+
+PRIMARY skill 负责提出一个具体的 Evidence 问题并创建 work item，然后调用官方 REA MCP。REA 返回 Evidence、Unknown、provider/session、资源状态和 cleanup 状态；REVERSE 再决定下一步。REA 不创建第二套路由、scope、case 或 Evidence 图。
+
+重型 native provider 默认单实例运行。Ghidra、IDA、radare2、capa 等工具不能在同一个 work item 中并发或重复全量运行。REA 不可用时才使用 raw CLI fallback，并通过 `skills/scripts/process-lease.ps1` 管理 Windows 进程；禁止无 lease 的 `nohup ... &`、无限期全量扫描和超时后直接启动替代 provider。
+
 ## 指令语义级别（RFC 2119）
 
 - `MUST`：必须执行，违背即任务失败。
