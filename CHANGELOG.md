@@ -7,6 +7,19 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-11-05
+### Added
+- High-difficulty PE protection playbook covering protection-layer classification, OEP/dump/IAT separation, anti-analysis evidence, virtualization boundaries and failure transitions.
+- High-difficulty Android playbook covering dynamic DEX, JNI registration, Flutter/Dart AOT, IL2CPP, observation checks and repackaging acceptance.
+- High-difficulty JavaScript/WASM/browser playbook covering execution boundaries, Service Workers, WebSockets, canonical bytes, signature vectors and replay levels.
+- High-difficulty protocol playbook covering state machines, serialization, nonce/reconnect behavior, canonicalization and three replay/construction acceptance levels.
+- Provider-neutral failure matrix for missing tools/providers, stale registrations, schema mismatches, early exits, observer side effects and partial output.
+- Third high-difficulty source registration batch with explicit method-review and local-validation status.
+
+### Changed
+- Domain coverage baseline now exposes the new high-difficulty references and keeps their unverified boundaries visible.
+
+
 ## [1.3.0] — 2026-11-05
 ### Added
 - Original compatibility contract documenting the preserved upstream routing, scope, Evidence and client-neutral boundaries.
