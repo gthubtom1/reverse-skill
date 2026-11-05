@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">reverse-skill</h1>
 
-> **Public enhanced distribution:** [gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill), based on [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) with its original history, architecture and checks retained. Adds evidence-driven reconstruction, upstream follow updates and distilled domain knowledge. Install the three-component environment through the [independent installer](https://github.com/gthubtom1/reverse-workflow-installer). See [enhanced workflow](docs/ENHANCED-WORKFLOW.md) and [knowledge sources/status](skills/references/distillation-sources.md).
+> **Public enhanced distribution:** [gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill), based on [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) with its original history, architecture and checks retained. Adds evidence-driven reconstruction, upstream follow updates and distilled domain knowledge. Install the three-component environment through the [independent installer](https://github.com/gthubtom1/reverse-workflow-installer). Pi users may optionally add the official `grilling` companion through that installer; it remains outside this client-neutral core. See [enhanced workflow](docs/ENHANCED-WORKFLOW.md) and [knowledge sources/status](skills/references/distillation-sources.md).
 
 <h3 align="center">Cybersecurity Skills Router · 逆向技能路由包</h3>
 

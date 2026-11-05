@@ -13,6 +13,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Changed
 - R0 now treats REA as the post-PRIMARY execution backend, limits heavy native providers to one bounded work item by default, and routes raw CLI use through a cleanup-aware fallback.
 - Preserved `routing.json` as the sole route table and kept the client adapter, global configuration, and official REA package outside the core changes.
+- Clarified that Pi's optional `grilling` companion is maintained by the independent installer and does not enter the client-neutral routing core.
 
 ## [1.6.0] — 2026-11-05
 ### Added

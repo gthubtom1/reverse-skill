@@ -158,7 +158,7 @@ PRIMARY 快路径：[skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md) · 全�
 
 ### 安装
 
-如果要把 REA、reverse-skill 和 Spec Kit 接入 Pi 或 Codex，请使用独立的 [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer)，不要在本仓复制宿主配置或安装器逻辑。
+如果要把 REA、reverse-skill 和 Spec Kit 接入 Pi 或 Codex，请使用独立的 [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer)，不要在本仓复制宿主配置或安装器逻辑。Pi 用户需要在方案审查阶段使用 `grilling` 时，也按安装仓库教程安装它；`grilling` 属于 Pi 伴随适配，不进入本仓客户端中立路由核心。
 
 只想单独使用本仓的客户端中立路由时，可以获取增强版仓库：
 
