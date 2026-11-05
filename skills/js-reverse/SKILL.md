@@ -141,6 +141,7 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 - 优先使用 `js-reverse_*` 或 jshookmcp 的现成 MCP 能力直接取证，不要先写脚本重造能力
 - 失败时按 `references/fallbacks.md` 回退
 - 输出遵循 `references/output-contract.md`
+- 高难增量：`references/high-difficulty-js-wasm-playbook.md`（JS VM、WASM、Service Worker、WebSocket、签名向量和重放边界）
 
 ## 必读引用
 
@@ -156,6 +157,7 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 - AST 去混淆：`references/ast-deobfuscation.md`
 - 非 PE/JS 混淆菜谱 U–AV：`../reverse-engineering/references/nonpe-format-cookbook.md`（AD/AE/AF）
 - 回退：`references/fallbacks.md`
+- 高难增量：`references/high-difficulty-js-wasm-playbook.md`
 - 输出契约：`references/output-contract.md`
 
 ---

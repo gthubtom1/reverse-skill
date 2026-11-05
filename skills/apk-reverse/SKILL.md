@@ -229,6 +229,8 @@ adb pull /data/local/tmp/file .
    - Magisk/脚本格机特征与远程 curl|sh（AR/AS）→ 特征与 URL 入证，**不执行**破坏命令
    - 持久化路径（AT）：`service.d` / `priv-app` 等 → `E-android-persistence`
 
+困难 APK 增量参考：`references/high-difficulty-android-playbook.md`。它补充动态 dex、JNI、Flutter/IL2CPP、反观察和重打包验收，但不改变本 skill 的原生 Triage→Java/Smali→native→动态流程。
+
 ### 2. Java 逻辑观察
 
 优先从 `jadx_out` 读：

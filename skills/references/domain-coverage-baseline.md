@@ -26,10 +26,10 @@
 
 | 路由 | 入口 | 当前判断 | 主要空档/边界 |
 |---|---|---|---|
-| R0 | reverse-engineering | 入口与通用反分析方法覆盖 | 具体目标仍需目标身份和版本证据 |
-| R1 | apk-reverse | Android/APK流程覆盖 | 厂商加固、设备和业务验收按目标验证 |
+| R0 | reverse-engineering | 入口与通用反分析方法覆盖；新增困难目标决策、PE 保护和 provider-neutral 失败矩阵参考 | 具体目标仍需目标身份和版本证据；高难方法本方多为未复现 |
+| R1 | apk-reverse | Android/APK流程覆盖；新增动态 dex/JNI/Flutter/IL2CPP/反观察/重打包高难参考 | 厂商加固、设备和业务验收按目标验证 |
 | R2 | mobile-reverse | Android/iOS移动入口覆盖 | iOS设备动态链需单独环境 |
-| R3 | js-reverse | JS/前端签名与运行时入口覆盖 | JS VM/WASM、风控站点需具体样本 |
+| R3 | js-reverse | JS/前端签名与运行时入口覆盖；新增 JS VM/WASM/Service Worker/WebSocket 高难参考 | JS VM/WASM、风控站点需具体样本 |
 | R4 | reverse-engineering/dsl-vm-reverse | 自定义VM入口覆盖 | 每种VM需独立字节码/向量证据 |
 | R5 | dotnet-reverse | .NET入口覆盖 | 保护器版本与运行时dump边界 |
 | R6 | ida-reverse | IDA静态入口覆盖 | 商业工具/provider状态按机器核对 |
@@ -47,7 +47,7 @@
 | R18 | edr-bypass-re | EDR研究入口覆盖 | 版本、环境和观察副作用需限定 |
 | R19 | browser-automation | 浏览器/桌面入口覆盖 | 爬虫状态图、worker/WebSocket需样本 |
 | R20 | docs-generator | 文档交付入口覆盖 | 报告不替代证据 |
-| R21 | protocol-reverse | 协议入口覆盖 | 注册、重放、状态和canonicalization需闭环 |
+| R21 | protocol-reverse | 协议入口覆盖；新增注册状态机、canonicalization、WebSocket、nonce/重连和三层重放验收参考 | 注册、重放、状态和 canonicalization 需闭环 |
 | R22 | ghidra-reverse | Ghidra入口覆盖 | provider/版本按机器验证 |
 | R23 | cloud-k8s | 云/容器入口覆盖 | 云身份与真实配置需项目证据 |
 | R24 | windows-ad | Windows身份入口覆盖 | 域环境和协议链需目标条件 |

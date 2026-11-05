@@ -82,6 +82,7 @@ MUST 产出：
 ## 参考
 
 - `references/protocol-workflow.md` — 帧布局与 Protobuf 速查
+- `references/high-difficulty-protocol-playbook.md` — 注册状态机、canonicalization、WebSocket、nonce/重连和三层重放验收
 - 相关：`../ida-reverse/` `../js-reverse/` `../firmware-pentest/` `../pentest-tools/`
 
 ## 路由上下文

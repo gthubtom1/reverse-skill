@@ -179,7 +179,7 @@ bash <package-root>/kali/scripts/bootstrap-reverse.sh 工具名 --start-services
 
 本增强版保留原生路由与扩展链。已有领域 PRIMARY 先完成分析，再用同一个 router 进入 [复刻技能](reconstruction/SKILL.md)；REA 只接受当前专业任务的具体分析委派。Pi/Codex 等安装与资源消歧统一由 [独立安装仓库](https://github.com/gthubtom1/reverse-workflow-installer) 维护，本核心不依赖某个宿主。
 
-用户要求“到网上补充知识”时，先读 [知识可信等级](references/knowledge-confidence.md)、[领域覆盖基线](references/domain-coverage-baseline.md)、[第一批来源清单](references/distillation-sources.md) 与 [第二批高难领域来源登记](references/distillation-sources-batch-2.md)，比较旧文再蒸馏到所属 references；实际研究经验沿原 field-journal 回写。来源核对、结构检查和技术复现分别记录。历史存量未复核，不以文件数量宣布全领域成功。
+用户要求“到网上补充知识”时，先读 [知识可信等级](references/knowledge-confidence.md)、[领域覆盖基线](references/domain-coverage-baseline.md)、[第一批来源清单](references/distillation-sources.md) 与 [第二批高难领域来源登记](references/distillation-sources-batch-2.md) 与 [第三批高难逆向增量来源登记](references/distillation-sources-batch-3.md)，比较旧文再蒸馏到所属 references；实际研究经验沿原 field-journal 回写。来源核对、结构检查和技术复现分别记录。历史存量未复核，不以文件数量宣布全领域成功。
 
 ## 自动进化
 
