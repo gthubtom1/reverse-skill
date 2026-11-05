@@ -7,6 +7,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-11-05
+### Added
+- Provider-neutral hard-target evaluation contract with 16 cases across PE, Android, JavaScript/WASM, protocol and failure/provider boundaries.
+- Offline eval validator wired into CI; each case requires Evidence anchors, a next probe, failure transition, non-claim and explicit validation state.
+
+### Changed
+- Difficult-target references now have a machine-checkable regression layer without changing the original routing architecture.
+
+
 ## [1.5.0] — 2026-11-05
 ### Added
 - External distillation batch 1: PE host-capability gates, AOB four-state decisions, write/readback verification, anti-debug reliability and false-positive classification, VM state mapping, and output coverage rules.
