@@ -23,6 +23,21 @@
 
 例：Triage 完成且唯一合法下一步是 Static 时，transition 只需 `decision_delta: [phase=triage->static]` + `carry_forward_refs: [scope.md, evidence/E-triage.md]`。
 
+## 0.4 REA / provider gate
+
+`reverse-skill` owns the case, work item, Evidence, and stage transition. After PRIMARY has selected the current stage, create one bounded work item before calling REA or a heavy native provider. The work item must contain one Evidence question, target identity, allowed actions, time and memory budgets, expected artifacts, and cleanup policy; see `../../ops/rea-delegation-contract.md`.
+
+Default limits:
+
+| Operation | Wall time | Memory soft limit | Heavy providers |
+|-----------|-----------|-------------------|------------------|
+| artifact/PE triage | 60 s | 512 MB | 0 |
+| targeted static lookup | 180 s | 1 GB | 1 |
+| selected-function decompilation | 300 s | 1.5 GB | 1 |
+| full native analysis | explicit work item | explicit | 1 |
+
+A timeout, provider error, or interruption requires cancellation and cleanup before a replacement provider starts. Raw CLI fallback uses `skills/scripts/process-lease.ps1` on Windows and must record cleanup status in the case timeline. `nohup` background providers, unbounded full scans, and repeated full analysis passes without a new work item are invalid execution states.
+
 ## 0.5 用户指令可行性门闩（Issue #65）
 
 **原则**：服从用户**目标**，不盲从用户**步骤顺序**。跳步前必须说明前提并请确认；确认后的强制步骤必须做，且诚实标注 Evidence 质量。

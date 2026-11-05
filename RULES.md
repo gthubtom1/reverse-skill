@@ -150,6 +150,23 @@ Hot path only:
 - Pentest MUST provide complete PoC (curl commands/scripts/screenshot paths)
 - Uncertain conclusions MUST be labeled with confidence level
 
+### REA delegation and process lifecycle
+
+- `reverse-skill` remains the only router and case authority. Official REA is a bounded execution backend used only after PRIMARY has selected a workflow.
+- Every REA call MUST carry a case id, work item id, one evidence question, allowed actions, a time budget, a memory budget, an expected artifact list, and a cleanup requirement. Use `skills/ops/rea-delegation-contract.md`.
+- REA MUST return evidence, unknowns, provider/session status, resource usage, process ids, and cleanup status before the work item can be promoted.
+- Default to one heavy native provider per work item. Do not overlap Ghidra, IDA, radare2, capa, or another full native provider for the same target without a new work item and an explicit comparison reason.
+- Timeouts, provider errors, and user interruption require cancellation and owned-process cleanup before any replacement provider starts. Use `skills/ops/process-lifecycle.md` and `skills/scripts/process-lease.ps1` for Windows raw fallbacks.
+- `nohup <heavy-provider> ... &`, unbounded full scans, and repeated `aaa`/full-decompilation passes without a new work item are prohibited.
+- Raw CLIs are fallback providers only when REA lacks the required capability or reports a provider failure; they must use the real path from `tool-index.md` and a process lease.
+
+### Evidence quality gate
+
+- Strings, source-path remnants, command names, and package contents are static indicators until a targeted reference or runtime observation confirms behavior.
+- A result without verified cleanup remains `blocked`, even when the analysis output itself looks complete.
+- Provider state and cleanup state are part of the Evidence chain, not optional operator notes.
+
+
 ---
 
 ## Canonical Behavior Chain (All other files reference THIS version)

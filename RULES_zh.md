@@ -204,8 +204,23 @@
 ### 输出质量
 - 关键操作必须给出可复现的命令（不要只描述步骤）
 - 逆向分析必须标注地址/偏移/函数名（不要只说"某个函数"）
-- 渗透测试必须给出完整的 PoC（curl 命令/脚本/截图路径）
 - 不确定的结论必须标注置信度
+
+### REA 委派与进程生命周期
+
+- `reverse-skill` 是唯一的路由、case 和证据总控；官方 REA 只在 PRIMARY 选定后作为受限分析执行器使用。
+- 每次 REA 调用必须带 case id、work item id、一个 Evidence 问题、允许动作、时间预算、内存预算、预期产物和清理要求。规范见 `skills/ops/rea-delegation-contract.md`。
+- REA 返回结果必须包含 Evidence、Unknown、provider/session 状态、资源使用、进程 PID 和 cleanup 状态，才能进入当前 case 的证据链。
+- 同一 work item 默认只允许一个重型 native provider。Ghidra、IDA、radare2、capa 等不能并发或重复全量运行，除非新 work item 记录比较原因和资源预算。
+- 超时、provider 错误或用户中断后，必须先取消并清理自有进程，再启动替代 provider。Windows raw fallback 使用 `skills/ops/process-lifecycle.md` 和 `skills/scripts/process-lease.ps1`。
+- 禁止无 lease 的 `nohup ... &`、无界限全量扫描和没有新 work item 的重复 `aaa`/全量反编译。
+- raw CLI 只能作为 REA 能力缺失或 provider 失败后的 fallback，并且必须使用 tool-index 中的真实路径和进程 lease。
+
+### Evidence 质量门
+
+- strings、源码路径残留、命令名和安装包内容都只能先标为静态指标；必须经过定向引用或运行时观察才能确认行为。
+- provider 状态或清理状态无法确认时，work item 保持 `blocked`，即使分析已有输出也不能宣布完成。
+- provider 和 cleanup 状态属于 Evidence 链的一部分，不是可选的操作员备注。
 
 ---
 

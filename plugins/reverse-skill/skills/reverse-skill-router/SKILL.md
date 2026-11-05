@@ -15,6 +15,6 @@ When the current workspace is the `reverse-skill` repository:
 4. Open the selected `skills/<PRIMARY>/SKILL.md` and follow its task-specific instructions.
 5. Resolve tools only through the generated `skills/tool-index.md`; do not register MCP servers or install tools unless the user requested that action.
 
-If the repository is not the current workspace and no local repository path was supplied, explain that this adapter does not bundle a second copy of the router. Ask the user to open or clone `https://github.com/zhaoxuya520/reverse-skill` and then continue from its `RULES.md`.
+If the repository is not the current workspace and no local repository path was supplied, explain that this adapter does not bundle a second copy of the router. Ask the user to open or clone `https://github.com/gthubtom1/reverse-skill` and then continue from its `RULES.md`.
 
 Do not treat the presence of this plugin, a target name, or a sample path as authorization. Authorization comes from the repository's scope contract.
