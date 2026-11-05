@@ -166,6 +166,15 @@ Hot path only:
 - A result without verified cleanup remains `blocked`, even when the analysis output itself looks complete.
 - Provider state and cleanup state are part of the Evidence chain, not optional operator notes.
 
+### Beginner operator output contract
+
+- The core workflow remains single: route → PRIMARY → case → bounded work item → Evidence. Beginner guidance changes the explanation and selection surface only; it does not create a second router, case system, provider or GOAL engine.
+- After each material stage, the operator-facing response MUST distinguish what was done, confirmed facts, unknowns and the next recommendation. Use `skills/ops/beginner-operator-guidance.md`.
+- Next recommendations MUST be generated from current Evidence and Unknowns. Each option has a stable id, plain-language action, parenthesized technical label, purpose, effect, recommendation marker, expected output and mapped bounded work item.
+- Do not ask a beginner to choose a provider or write technical parameters. A user-selected option id is translated into the corresponding work item by the workflow.
+- When Evidence is sufficient to evaluate longer-term outcomes, provide multiple feasible goal candidates with copyable GOAL text. Candidate feasibility, limits, prerequisites and success criteria MUST be evidence-based; the host owns GOAL execution.
+- Routine deterministic work can proceed within the selected goal. Pause only for user-held inputs, new scope/effects, material Evidence branches, goal conflicts, provider failure or unverified cleanup.
+
 
 ---
 
