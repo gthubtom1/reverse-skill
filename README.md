@@ -11,9 +11,9 @@
 
 <p align="center">
   <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.6.0-blue" alt="release v1.6.0"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="stars"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/forks"><img src="https://img.shields.io/github/forks/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="forks"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/issues"><img src="https://img.shields.io/github/issues/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="issues"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/gthubtom1/reverse-skill?style=flat&logo=github" alt="stars"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/forks"><img src="https://img.shields.io/github/forks/gthubtom1/reverse-skill?style=flat&logo=github" alt="forks"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/issues"><img src="https://img.shields.io/github/issues/gthubtom1/reverse-skill?style=flat&logo=github" alt="issues"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-Keep%20a%20Changelog-orange" alt="changelog"></a>
 </p>
@@ -82,8 +82,8 @@ PRIMARY ladder: [skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md) · Full mat
 <br/>
 
 <div align="center">
-  <a href="https://www.star-history.com/?repos=zhaoxuya520%2Freverse-skill&amp;type=date&amp;legend=top-left">
-    <img src="https://history.apivix.com/star-history.svg?v=hourly-v1" alt="Star History chart for zhaoxuya520/reverse-skill" width="650" />
+  <a href="https://www.star-history.com/?repos=gthubtom1%2Freverse-skill&amp;type=date&amp;legend=top-left">
+    <img src="https://history.apivix.com/star-history.svg?v=hourly-v1" alt="Star History chart for gthubtom1/reverse-skill" width="650" />
   </a>
 </div>
 
@@ -156,9 +156,15 @@ PRIMARY ladder: [skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md) · Full mat
 
 ### Installation
 
+如果要把 REA、reverse-skill 和 Spec Kit 接入 Pi 或 Codex，请使用独立的 [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer)，不要在本仓复制宿主配置或安装器逻辑。
+
+只想单独使用本仓的客户端中立路由时，可以获取增强版仓库：
+
+```text
+git clone https://github.com/gthubtom1/reverse-skill.git
 ```
-git clone https://github.com/zhaoxuya520/reverse-skill.git
-```
+
+安装后先阅读 [README_AI.md](README_AI.md)、[RULES.md](RULES.md) 和 [skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md)。
 
 Then refresh the tool index per platform:
 
@@ -288,8 +294,8 @@ Contributions are welcome! Fork the repo, create a feature branch, and open a PR
 
 ### Contributors
 
-<a href="https://github.com/zhaoxuya520/reverse-skill/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=zhaoxuya520/reverse-skill" alt="contributors" />
+<a href="https://github.com/gthubtom1/reverse-skill/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=gthubtom1/reverse-skill" alt="contributors" />
 </a>
 
 <p align="right">(<a href="#contributing">back to top</a>)</p>
@@ -320,7 +326,7 @@ Special thanks to the OLLVM deobfuscation ecosystem contributors and everyone wh
 ## Contact
 
 - **Email:** [ww7517437@gmail.com](mailto:ww7517437@gmail.com)
-- **Issues:** [GitHub Issues](https://github.com/zhaoxuya520/reverse-skill/issues)
+- **Issues:** [GitHub Issues](https://github.com/gthubtom1/reverse-skill/issues)
 
 ## Disclaimer
 
@@ -334,4 +340,4 @@ See [Security Policy](SECURITY.md), [Installation and Download Security Guidance
 
 ## Community quick start and issue triage
 
-See [Quick Start](docs/QUICKSTART_zh.md) and [Community Issue Triage](docs/COMMUNITY-ISSUE-TRIAGE.md) for installation, client integration, and how community issues are classified. Installation/archive security details remain in [Installation and Download Security Guidance](docs/UV-AND-DOWNLOAD-SECURITY.md).
+See [Quick Start](docs/QUICKSTART_zh.md) for the distinction between standalone reverse-skill use and the three-component Pi/Codex installation. The installer owns host configuration; this repository owns the client-neutral router and domain skills. Community issue classification remains in [Community Issue Triage](docs/COMMUNITY-ISSUE-TRIAGE.md), and installation/archive security details remain in [Installation and Download Security Guidance](docs/UV-AND-DOWNLOAD-SECURITY.md).

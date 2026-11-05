@@ -1,62 +1,102 @@
-# reverse-skill 快速開始與社群問題說明
+# reverse-skill 快速开始与安装边界
 
-## 專案定位
+`reverse-skill` 是客户端中立的逆向工程、安全研究、CTF 和防御测试技能路由仓库。它提供规则、原生 router、PRIMARY 技能、工具发现、案例契约和知识资料，不是 Pi/Codex 安装器，也不复制 REA 或 Spec Kit。
 
-`reverse-skill` 是 AI 客戶端可讀取的逆向工程、安全研究技能、規則與工具文件集合，不是一個單一的可執行應用程式。使用前，請先確認你對分析目標擁有明確授權，或正在使用合法的 CTF、教學或測試環境。
+## 先选择使用路径
 
-## 基本使用方式
+### 通过三件套接入 Pi 或 Codex
 
-先下載專案：
+如果需要同时使用 REA、reverse-skill 和 Spec Kit，请使用独立的 [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer)。安装器负责：
 
-    git clone https://github.com/zhaoxuya520/reverse-skill.git
-    cd reverse-skill
+- 官方 REA 和 Spec Kit 的版本解析与安装；
+- Pi/Codex 的宿主配置和入口适配；
+- reverse-skill 工作副本的身份记录；
+- receipt、更新、恢复和本机验收。
 
-接著將專案目錄交給你使用的 AI 客戶端作為工作區或文件來源。核心文件包括：
+安装后阅读安装仓库的 [安装后快速开始](https://github.com/gthubtom1/reverse-workflow-installer/blob/main/docs/quick-start.md)，依次完成 `verify`、`accept`、宿主重启或 reload，再做一次显式 `/skill:reverse-workflow` 对话测试。
 
-- `RULES.md`：一般規則與安全邊界。
-- `skills/MASTER-ROUTING.md`：技能路由與任務分流。
-- `skills/*/SKILL.md`：各專業領域的技能說明。
-- `docs/platforms/`：不同作業系統的工具安裝說明。
+不要在本仓复制安装器脚本，也不要把 REA MCP 或 Spec Kit CLI 写成本仓的硬依赖。
 
-本專案保持客戶端中立，因此 OpenCode、Codex、Cursor、Claude Code 與其他客戶端的實際載入方式，仍以各客戶端官方文件為準；不要假設某一個客戶端的 plugin 或同步格式能套用到其他客戶端。
+### 单独使用 reverse-skill
 
-最可靠的通用方式是把完整 repository 根目錄作為工作區開啟，而不是只把 `skills/` 子目錄複製進客戶端。確認客戶端能讀取根目錄的 `AGENTS.md` / `RULES.md`，再執行平台原生 `master-route`；若客戶端不會自動載入專案規則，就在對話中明確引用 `RULES.md` 和目標 `SKILL.md`。
+只需要客户端中立路由和专业技能时，获取增强版仓库：
 
-## OpenCode、Codex 與同步問題
+```text
+git clone https://github.com/gthubtom1/reverse-skill.git
+cd reverse-skill
+```
 
-若客戶端顯示 `Not Synchronizable` 或無法同步，先確認工作區是否指向完整的 repository 根目錄、檔案權限是否允許讀取，以及客戶端是否支援該目錄格式。最可靠的替代方式是直接在本地工作區開啟 repository，並在對話中明確引用所需的規則或技能文件。若問題仍可重現，回報時請附上客戶端版本、作業系統、完整錯誤訊息與最小重現步驟。
+先阅读：
 
-## AI 拒絕處理分析請求
+1. `README_AI.md`：AI Agent bootstrap 和平台入口；
+2. `RULES.md`：授权、scope 和行为链；
+3. `skills/MASTER-ROUTING.md`：PRIMARY 快路径；
+4. 当前任务对应的 `skills/*/SKILL.md`。
 
-AI 的安全策略不會因為提示中加入「我已授權」就必然允許所有操作。請只處理合法授權的目標，避免要求未授權入侵、憑證竊取、持久化或破壞性操作；可將請求限定為程式碼理解、樣本分析、漏洞修補、CTF 或防禦性驗證。對於特定 APK、網站或帳戶，請先準備可驗證的授權範圍與測試環境。
+工具索引只在明确需要本机工具状态时刷新。刷新会生成机器相关文件，第一次运行前应先确认写入范围：
 
-## Python 工具與 uv
+```text
+Windows: powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/refresh-tool-index.ps1
+Linux/macOS: bash skills/scripts/refresh-tool-index.sh
+Kali: bash kali/scripts/refresh-tool-index.sh
+```
 
-獨立命令列工具可使用：
+## 新对话怎么开始
 
-    uv tool install PACKAGE_NAME
+专业任务优先使用宿主提供的显式入口：
 
-專案依賴則使用隔離環境：
+```text
+/skill:reverse-workflow
 
-    uv venv
-    uv pip install -r requirements.txt
+这是一个逆向工程任务，请先读取 RULES.md 和本机安装回执（如果当前使用三件套安装），再读取 MASTER-ROUTING.md，并调用原生 router 选择 PRIMARY。
 
-不要機械式把所有 `pip` 字串替換為 `uv pip`；`python -m pip`、`pipx` bootstrap 與已存在的虛擬環境各有不同用途。若尚未安裝 `uv`，請使用作業系統套件管理器或明確建立的虛擬環境，不要把安全工具直接安裝到系統全域 Python。
+任务：
+[填写目标和任务]
 
-更完整的安裝與壓縮檔安全說明見 [安裝與下載安全指引](UV-AND-DOWNLOAD-SECURITY_zh.md)。
+目标对象：
+[文件、项目目录、离线样本或已授权目标]
 
-## ZIP 報毒與下載安全
+范围：
+[只读分析 / 复刻 / 原版对比 / 版本追踪 / 知识维护]
 
-逆向工程工具可能包含二進位檔、除錯器、封裝檔或測試資料，容易觸發防毒軟體的啟發式偵測。防毒警告不代表已證明安全，也不代表已證明惡意。請勿停用防毒軟體或盲目略過警告。
+请先报告已观察、推断、未知、授权范围和下一步，不要绕过原生 router 直接开始普通命令。
+```
 
-開啟壓縮檔前，請從預期的 HTTPS repository 或 release 頁面下載，核對 checksum 或 release digest（若有提供），檢查壓縮檔內容，並使用最新的安全軟體掃描。不要因為檔案成功下載，就直接執行其中未知的二進位檔、腳本或安裝程式。
+如果只使用本仓且宿主没有 `/skill:reverse-workflow`，可以明确要求：
 
-## 帳戶、貢獻與未具體化回報
+```text
+请先读取本仓库的 RULES.md，运行原生 master-route 选择 PRIMARY，再读取对应 PRIMARY 的 SKILL.md。当前任务是：[填写任务]。在 scope 未就绪前不要对目标执行 ACT。
+```
 
-請遵守 AI 客戶端、GitHub、工具供應商及目標環境的服務條款。repository 本身無法保證第三方平台不會限制帳戶，也不能替平台決定帳戶政策。若要貢獻 radare2 或其他技能，請先閱讀 `skills/CONTRIBUTING.md`，並以小型、可驗證的 Pull Request 提交。
+## 常见任务入口
 
-只有包含完整錯誤訊息、環境資訊與重現步驟的問題，才適合進一步修復。像是只有「病毒」、「gaha」或「test」的回報，請補充檔名、下載 URL、掃描產品、版本與重現方式。
+| 任务 | 入口 |
+|---|---|
+| APK / Android | `skills/apk-reverse/` |
+| 二进制 EXE/DLL/SO/ELF | `skills/ida-reverse/`、`skills/radare2/`、`skills/reverse-engineering/` |
+| 前端 JS、签名、加密参数 | `skills/js-reverse/` |
+| 协议、PCAP、Protobuf | `skills/protocol-reverse/` |
+| 复刻和行为对比 | `skills/reconstruction/`，先完成原领域分析再进入复刻阶段 |
+| 跨版本追踪 | `skills/binary-diff/`，恢复旧上游、我方成果和新上游三方材料 |
+| CTF / AWD | `skills/ctf-sandbox/` 和 `CTF-Sandbox-Orchestrator/` |
+| Evidence 审查 | `skills/case-review/` |
+| 报告和图表 | `skills/docs-generator/`、`skills/diagram-generator/` |
 
-## 外部模型與 API
+## 目录与职责
 
-本 repository 不內建、不代理、也不轉售 Grok/xAI API，不會收集或分發 Grok API key。模型與 API endpoint 由使用者在所選 AI 客戶端或供應商中自行配置；使用第三方轉發服務時，請自行核對供應商、資料處理條款與金鑰風險。
+- 本仓：规则、路由、专业技能、知识、测试和客户端中立的工作流；
+- 安装仓库：REA、Spec Kit、宿主适配、版本、回执、更新和恢复；
+- REA 官方：MCP 分析工具和官方证据能力；
+- Spec Kit 官方：成果项目中的规格、计划、任务和模板。
+
+安装成功、文件存在、退出码为 0 或路由选择成功，都不能替代真实任务验证。缺少 provider、设备、账号或隔离环境时，应保留 unknown。
+
+## 问题排查
+
+- 宿主没有加载入口：确认工作区、agent/config 根和安装计划一致，然后重启或 reload。
+- Pi 新对话没有进入流程：显式使用 `/skill:reverse-workflow`，不要只依赖自然语言自动触发。
+- REA MCP 不可用：回到安装仓库执行 `verify` 和 `accept`，不要在本仓复制 MCP 配置。
+- Android/JADX provider 缺失：按 REA 官方版本要求准备 provider；普通 JADX JAR 不能直接冒充 REA provider。
+- 路由不确定：读取 `skills/routing.md` 作为说明，最终仍以 `skills/config/routing.json` 和原生 router 为准。
+
+授权边界、案例初始化、证据链和工具供应链要求以 `RULES.md`、`skills/ops/` 和对应 PRIMARY 技能为准。社区问题分类见 [COMMUNITY-ISSUE-TRIAGE.md](COMMUNITY-ISSUE-TRIAGE.md)。
