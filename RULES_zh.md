@@ -220,7 +220,16 @@
 
 - strings、源码路径残留、命令名和安装包内容都只能先标为静态指标；必须经过定向引用或运行时观察才能确认行为。
 - provider 状态或清理状态无法确认时，work item 保持 `blocked`，即使分析已有输出也不能宣布完成。
-- provider 和 cleanup 状态属于 Evidence 链的一部分，不是可选的操作员备注。
+- provider 状态和清理状态属于 Evidence 链的一部分，不是可选的操作员备注。
+
+### 零基础操作员输出规范
+
+- 核心流程仍然只有一套：route → PRIMARY → case → bounded work item → Evidence。零基础引导只改变解释和选择界面，不创建第二个 router、case、provider 或 GOAL 引擎。
+- 每个重要阶段结束后，必须区分：本轮做了什么、目前确认了什么、目前还不知道什么、下一步建议。规范见 `skills/ops/beginner-operator-guidance.md`。
+- 下一步建议必须根据当前 Evidence 和 Unknown 动态生成。每个选项要有编号、白话动作、括号内专业术语、目的、影响、推荐标记、预期结果和对应 bounded work item。
+- 不要求零基础用户选择 provider 或填写技术参数；用户输入的编号由工作流转换成对应 work item。
+- 当 Evidence 足以评估长期结果时，提供多个可行目标候选和可复制 GOAL 文本。候选可行性、限制、前提和成功标准必须来自 Evidence；GOAL 的执行由宿主负责。
+- 选定目标后的常规确定性步骤可以自动推进。只有需要用户手里的输入、扩大范围/副作用、存在实质分叉、目标冲突、provider 失败或 cleanup 未确认时才暂停询问。
 
 ---
 

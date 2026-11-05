@@ -25,11 +25,21 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 `reverse-skill` 是唯一的路由、case 和证据总控；REA 是 PRIMARY 选定后的受限分析执行器。两者的边界与返回格式见：
 
 - `skills/ops/rea-delegation-contract.md`
+- `skills/ops/rea-delegation-contract.md`
 - `skills/ops/process-lifecycle.md`
+- `skills/ops/beginner-operator-guidance.md`
 
 PRIMARY skill 负责提出一个具体的 Evidence 问题并创建 work item，然后调用官方 REA MCP。REA 返回 Evidence、Unknown、provider/session、资源状态和 cleanup 状态；REVERSE 再决定下一步。REA 不创建第二套路由、scope、case 或 Evidence 图。
 
 重型 native provider 默认单实例运行。Ghidra、IDA、radare2、capa 等工具不能在同一个 work item 中并发或重复全量运行。REA 不可用时才使用 raw CLI fallback，并通过 `skills/scripts/process-lease.ps1` 管理 Windows 进程；禁止无 lease 的 `nohup ... &`、无限期全量扫描和超时后直接启动替代 provider。
+
+## 零基础操作员交互规范
+
+零基础引导只改变说明方式和用户交互，不创建第二个 router、PRIMARY、case 或 GOAL 引擎。每个 material stage/work item 完成后，按 `skills/ops/beginner-operator-guidance.md` 用白话报告“本轮做了什么、目前确认了什么、目前还不知道什么、下一步建议”。
+
+下一步建议必须根据当前 Evidence 动态生成 2–5 个编号选项；每个选项包含白话动作、括号中的专业术语、目的、影响、推荐标记、预期结果和对应 bounded work item。用户输入编号即可选择，不能要求用户选择 REA/Ghidra/radare2 或编写技术参数。没有真实分叉时不制造菜单。
+
+当当前 Evidence 足以评估长期结果时，输出多个动态生成的目标候选，并为每个候选提供可复制的 GOAL 文本。GOAL 引擎属于宿主；reverse-skill 只定义目标文本必须包含范围、约束、成功标准、unknown、停止条件和当前 case 复用要求。源码恢复、行为等价重实现、规格文档、UI 重建和版本适配等目标只能按本轮 Evidence 的可行性出现，不能把通用模板冒充成结论。
 
 ## 指令语义级别（RFC 2119）
 

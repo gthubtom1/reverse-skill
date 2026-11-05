@@ -11,6 +11,7 @@ Z3r0 启发、**本包形态**实现：
 | [timeline-workitem.md](timeline-workitem.md) | 时间线与覆盖 |
 | [rea-delegation-contract.md](rea-delegation-contract.md) | REA bounded work item、返回结果与 Evidence 交接 |
 | [process-lifecycle.md](process-lifecycle.md) | provider 进程 lease、预算、超时与清理 |
+| [beginner-operator-guidance.md](beginner-operator-guidance.md) | 零基础白话总结、动态选项与 GOAL 候选规范 |
 | [sandbox-profile.md](sandbox-profile.md) | 工具对照 |
 | [skill-supply-chain.md](skill-supply-chain.md) | Agent Skill/MCP 供应链安全（AST10 精简） |
 | [case-review/](../case-review/) | Evidence 图完整性审查与报告交接 |
