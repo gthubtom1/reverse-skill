@@ -220,12 +220,12 @@ git clone https://github.com/gthubtom1/reverse-skill.git
 | [skills/routing.md](skills/routing.md) | 路由矩阵（场景 → Skill） |
 | [skills/SKILL.md](skills/SKILL.md) | 总控入口 |
 | [skills/INDEX.md](skills/INDEX.md) | 自动生成的平台无关 Skill 导航索引 |
-| [skills/config/routing.json](skills/config/routing.json) | 路由单一事实源（43 条规则，R0–R44） |
+| [skills/config/routing.json](skills/config/routing.json) | 路由单一事实源（路线和基准数量由一致性检查维护） |
 | [skills/tool-index.md](skills/tool-index.md) | 本机工具索引（自动生成） |
 | [skills/scripts/master-route.ps1](skills/scripts/master-route.ps1) | 一键分诊 |
 | [skills/scripts/case-init.ps1](skills/scripts/case-init.ps1) | 作战 case 目录（scope/timeline） |
 | [skills/case-review/](skills/case-review/) | 只读 Evidence 图审查与 artifact fixity 校验 |
-| [skills/scripts/test-routing.ps1](skills/scripts/test-routing.ps1) | 175 条路由回归基准 |
+| [skills/scripts/test-routing.ps1](skills/scripts/test-routing.ps1) | 路由回归基准（数量以 benchmark 文件为准） |
 | [skills/scripts/verify-routing-coherence.ps1](skills/scripts/verify-routing-coherence.ps1) | 结构一致性与供应链版本固定门禁 |
 | [skills/ops/](skills/ops/) | Scope / 证据链 / 角色 / 时间线 / skill 供应链安全 |
 | [skills/references/community-security-skills.md](skills/references/community-security-skills.md) | 社区安全 skill 生态对照（借鉴不并库） |

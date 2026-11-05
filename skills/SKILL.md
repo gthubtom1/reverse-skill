@@ -14,7 +14,7 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 2. `NOW`：平台原生 `case-init` 落地当前分析项目的 `work/<case>/scope.md`；**auth 未 granted 禁止对目标 ACT**。本地离线样本使用 `offline-sample` preset + explicit sample；Force 不得绕过硬门。
 3. `ACT`：立即打开 PRIMARY `SKILL.md` 执行 ACTION REQUIRED。
 4. `NEXT`：工具路径只认 `tool-index.md`；缺工具 → 平台原生 bootstrap（仅 manifest）。
-5. 结论用 Evidence→Finding→Path。报告/journal 是 SHOULD，除非用户要交付物。
+5. 结论用 Evidence→Finding→Path。任务完成时按 `RULES.md` 的适用收尾清单处理报告、图表、journal 和索引；纯只读审查、范围未就绪或明确不适用的场景记录原因，不伪造完成。
 
 **身份**：见 `ops/IDENTITY.md`（轻量路由包 + 工具自举 + journal；**不是** Z3r0 式平台）。
 
@@ -24,7 +24,6 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 
 `reverse-skill` 是唯一的路由、case 和证据总控；REA 是 PRIMARY 选定后的受限分析执行器。两者的边界与返回格式见：
 
-- `skills/ops/rea-delegation-contract.md`
 - `skills/ops/rea-delegation-contract.md`
 - `skills/ops/process-lifecycle.md`
 - `skills/ops/beginner-operator-guidance.md`
@@ -156,7 +155,7 @@ PRIMARY skill 负责提出一个具体的 Evidence 问题并创建 work item，�
 
 - 本机还有 **anything-analyzer**（端口 23816）MCP 服务器，提供浏览器自动化、HTTP 捕获和 AI 分析能力
 - `tool-index.md` 记录本机逆向工具是否可用、实际路径、版本和脚本引用
-- 包根目录下的 `Readme.md` 提供面向 Claude Code、Codex CLI 与其他代码 AI 客户端的通用安装与接入说明
+- 包根目录下的 `README.md` 提供面向 Claude Code、Codex CLI 与其他代码 AI 客户端的通用安装与接入说明
 
 ## 按需自举
 

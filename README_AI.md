@@ -182,12 +182,16 @@ This allows the relative paths in `routing.md`, such as `../CTF-Sandbox-Orchestr
 ### If You Only Want to Put the Skill Pack in Place First
 
 1. Put the whole directory somewhere you like, for example: `<package root>\`
-2. Go to `skills\SKILL.md`
-3. When handling a task, read files in this order:
-   1. `SKILL.md`
-   2. `routing.md`
-   3. The `SKILL.md` in the corresponding subdirectory
-   4. Read `tool-index.md` only when you need to confirm local tools
+2. Treat the package as read-only until the user explicitly activates it and approves the first side-effect plan.
+3. Read files in this order:
+   1. `README_AI.md` and `RULES.md`
+   2. `skills/SKILL.md` and `skills/MASTER-ROUTING.md`
+   3. Run the platform-native master router after the approved plan
+   4. Run `case-init` and confirm `scope.md` has `auth.status=granted` plus a valid `network_profile` or an explicit offline sample
+   5. Open the selected PRIMARY `SKILL.md`
+   6. Read `tool-index.md` only when you need to confirm local tools
+
+Inspection and documentation requests remain read-only and stop before repository scripts or target actions.
 
 ### If You Want a Code CLI to Use This Routing in a Project
 

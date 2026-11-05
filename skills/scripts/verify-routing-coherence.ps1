@@ -60,6 +60,16 @@ if (Test-Path -LiteralPath $routingJson) {
     } else {
         Bad ("MASTER-ROUTING priority count {0} != json {1}" -f $masterIds.Count, $jsonPrio.Count)
     }
+    $masterRows = [regex]::Matches($masterText, '(?m)^\s*\|\s*\*\*(R\d+)\*\*.*?\|\s*`([^`]+)`\s*\|\s*$')
+    $pathDrift = @()
+    foreach ($row in $masterRows) {
+        $id = $row.Groups[1].Value
+        $masterSkill = ($row.Groups[2].Value.Trim() -replace '[\\/]$','')
+        $jsonSkill = [string](($rjRoutes | Where-Object { $_.Name -eq $id } | Select-Object -First 1).Value.skill)
+        $jsonSkill = $jsonSkill -replace '/SKILL\.md$',''
+        if ($jsonSkill -and (($jsonSkill -replace '[\\/]$','') -ne $masterSkill)) { $pathDrift += "${id}:$masterSkill->$jsonSkill" }
+    }
+    if ($pathDrift.Count -eq 0) { Ok 'MASTER-ROUTING.md skill paths match routing.json' } else { Bad ("MASTER-ROUTING skill path drift: " + ($pathDrift -join ', ')) }
 } else {
     Bad 'skills/config/routing.json missing (single source of truth)'
 }
