@@ -7,6 +7,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-11-05
+### Added
+- Original compatibility contract documenting the preserved upstream routing, scope, Evidence and client-neutral boundaries.
+- Provider-neutral hard-target decision framework for packed, virtualized, dynamically loaded and anti-analysis samples, including explicit failure and unknown states.
+
+### Changed
+- Kept the original routing architecture and benchmark contract while adding difficult-target guidance as an incremental reference.
+
+
 ## [1.2.0] — 2026-11-04
 ### Added
 - Knowledge confidence contract separating source support, cross-source review, method confidence, local reproduction and target validation.

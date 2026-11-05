@@ -1,6 +1,9 @@
 # 系统架构图
 
-## 完整行为链流程图
+## 原版兼容边界
+
+本仓库在原版 `reverse-skill` 上做增量扩展。原路由事实源、相对优先级、scope/auth 门、Evidence 契约和原 benchmark 继续有效；困难目标参考资料不改变 PRIMARY，也不把 REA、Spec Kit 或某个宿主变成硬依赖。维护和审查规则见 [ORIGINAL-COMPATIBILITY-CONTRACT.md](ORIGINAL-COMPATIBILITY-CONTRACT.md)。
+
 
 ```mermaid
 flowchart TD
