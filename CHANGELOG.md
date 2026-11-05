@@ -7,6 +7,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-11-05
+### Added
+- External distillation batch 1: PE host-capability gates, AOB four-state decisions, write/readback verification, anti-debug reliability and false-positive classification, VM state mapping, and output coverage rules.
+- License and provenance boundary for public Seep-Reverse-Lab (GPL-3.0) and hack-skills (MIT) sources; no external workbench code, installer, host configuration or payloads are imported.
+
+### Changed
+- Added the external distillation batch to the native knowledge-maintenance/source registry while preserving original routes and stage contracts.
+
+
 ## [1.4.0] — 2026-11-05
 ### Added
 - High-difficulty PE protection playbook covering protection-layer classification, OEP/dump/IAT separation, anti-analysis evidence, virtualization boundaries and failure transitions.
