@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Use a [private GitHub security advisory](https://github.com/zhaoxuya520/reverse-skill/security/advisories/new) for vulnerabilities in executable scripts, bootstrap/install paths, CI, MCP bridges, or credential handling. Do not include live credentials or third-party target data in a public issue.
+Use a [private GitHub security advisory](https://github.com/gthubtom1/reverse-skill/security/advisories/new) for vulnerabilities in executable scripts, bootstrap/install paths, CI, MCP bridges, or credential handling. Do not include live credentials or third-party target data in a public issue.
 
 ## Repository trust model
 

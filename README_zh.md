@@ -14,10 +14,10 @@
 逆向/渗透/安全技能路由包 — AI 自动路由 · 按需自举工具链 · 自动进化经验库</p>
 
 <p align="center">
-  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.1.0-blue" alt="release v1.1.0"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="stars"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/forks"><img src="https://img.shields.io/github/forks/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="forks"></a>
-  <a href="https://github.com/zhaoxuya520/reverse-skill/issues"><img src="https://img.shields.io/github/issues/zhaoxuya520/reverse-skill?style=flat&logo=github" alt="issues"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.6.0-blue" alt="release v1.6.0"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/gthubtom1/reverse-skill?style=flat&logo=github" alt="stars"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/forks"><img src="https://img.shields.io/github/forks/gthubtom1/reverse-skill?style=flat&logo=github" alt="forks"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/issues"><img src="https://img.shields.io/github/issues/gthubtom1/reverse-skill?style=flat&logo=github" alt="issues"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-Keep%20a%20Changelog-orange" alt="changelog"></a>
 </p>
@@ -84,8 +84,8 @@ PRIMARY 快路径：[skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md) · 全�
 <br/>
 
 <div align="center">
-  <a href="https://www.star-history.com/?repos=zhaoxuya520%2Freverse-skill&amp;type=date&amp;legend=top-left">
-    <img src="https://history.apivix.com/star-history.svg?v=hourly-v1" alt="zhaoxuya520/reverse-skill 星标历史图" width="650" />
+  <a href="https://www.star-history.com/?repos=gthubtom1%2Freverse-skill&amp;type=date&amp;legend=top-left">
+    <img src="https://history.apivix.com/star-history.svg?v=hourly-v1" alt="gthubtom1/reverse-skill 星标历史图" width="650" />
   </a>
 </div>
 
@@ -158,9 +158,15 @@ PRIMARY 快路径：[skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md) · 全�
 
 ### 安装
 
+如果要把 REA、reverse-skill 和 Spec Kit 接入 Pi 或 Codex，请使用独立的 [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer)，不要在本仓复制宿主配置或安装器逻辑。
+
+只想单独使用本仓的客户端中立路由时，可以获取增强版仓库：
+
 ```
-git clone https://github.com/zhaoxuya520/reverse-skill.git
+git clone https://github.com/gthubtom1/reverse-skill.git
 ```
+
+安装后先阅读 [README_AI.md](README_AI.md)、[RULES.md](RULES.md) 和 [skills/MASTER-ROUTING.md](skills/MASTER-ROUTING.md)。
 
 ### 初次使用
 
@@ -283,8 +289,8 @@ GitHub Actions 会在 Windows 与 Ubuntu 上执行同一套核心检查。
 
 ### 贡献者
 
-<a href="https://github.com/zhaoxuya520/reverse-skill/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=zhaoxuya520/reverse-skill" alt="contributors" />
+<a href="https://github.com/gthubtom1/reverse-skill/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=gthubtom1/reverse-skill" alt="contributors" />
 </a>
 
 <p align="right">(<a href="#贡献">返回顶部</a>)</p>
@@ -317,7 +323,7 @@ GitHub Actions 会在 Windows 与 Ubuntu 上执行同一套核心检查。
 - **邮箱**：[ww7517437@gmail.com](mailto:ww7517437@gmail.com)
 - **QQ 群**：942400892
 - **Discord**：[reverse-skill 社区](https://discord.gg/TECd3bMRR)
-- **问题反馈**：[GitHub Issues](https://github.com/zhaoxuya520/reverse-skill/issues)
+- **问题反馈**：[GitHub Issues](https://github.com/gthubtom1/reverse-skill/issues)
 
 ## 免责声明
 
@@ -331,4 +337,4 @@ GitHub Actions 会在 Windows 与 Ubuntu 上执行同一套核心检查。
 
 ## 社群問題、快速開始與分類
 
-請參閱[快速開始指南](docs/QUICKSTART_zh.md)與[社群 Issue 分類說明](docs/COMMUNITY-ISSUE-TRIAGE.md)。安裝與壓縮檔安全細節仍見[安裝與下載安全指引](docs/UV-AND-DOWNLOAD-SECURITY_zh.md)。
+請參閱[快速開始指南](docs/QUICKSTART_zh.md)，了解單獨使用 reverse-skill 與透過三件套安裝倉庫接入 Pi/Codex 的區別。安裝器負責宿主配置，本倉負責客戶端中立的路由和專業技能。社群問題分類見[社群 Issue 分類說明](docs/COMMUNITY-ISSUE-TRIAGE.md)，安裝與壓縮檔安全細節仍見[安裝與下載安全指引](docs/UV-AND-DOWNLOAD-SECURITY_zh.md)。
