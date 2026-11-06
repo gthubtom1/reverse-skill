@@ -3,7 +3,7 @@
 # 等价于 Windows 版的 frida-run.ps1
 #
 # 用法:
-#   bash frida-run.sh --package <pkg> --script <js> [--usb] [--spawn]
+#   bash frida-run.sh --package <pkg> --script <js> [--usb] [--spawn] [--allow-bootstrap]
 #   bash frida-run.sh --list-devices
 #   bash frida-run.sh --list-processes [--usb]
 
@@ -22,7 +22,7 @@ USB=false
 SPAWN=false
 PAUSE=false
 LIST_DEVICES=false
-LIST_PROCESSES=false
+ALLOW_BOOTSTRAP=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -35,6 +35,7 @@ while [[ $# -gt 0 ]]; do
         --pause) PAUSE=true; shift ;;
         --list-devices) LIST_DEVICES=true; shift ;;
         --list-processes) LIST_PROCESSES=true; shift ;;
+        --allow-bootstrap) ALLOW_BOOTSTRAP=true; shift ;;
         -*) echo "未知选项: $1"; exit 1 ;;
         *) echo "未知参数: $1"; exit 1 ;;
     esac
@@ -46,7 +47,11 @@ ensure_frida() {
     if command -v frida &>/dev/null; then
         return 0
     fi
-    echo "INFO: frida 未找到，尝试安装..."
+    if [[ "$ALLOW_BOOTSTRAP" != "true" ]]; then
+        echo "ERR: frida 不可用。请先安装，或审阅 bootstrap 命令后使用 --allow-bootstrap。"
+        exit 1
+    fi
+    echo "INFO: frida 未找到，执行已批准的 bootstrap..."
     if [[ -x "$KALI_BOOTSTRAP" ]]; then
         bash "$KALI_BOOTSTRAP" frida --skip-refresh 2>/dev/null || true
     fi

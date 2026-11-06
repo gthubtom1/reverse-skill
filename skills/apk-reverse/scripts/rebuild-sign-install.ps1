@@ -21,6 +21,8 @@ param(
 
     [switch]$Install,
 
+    [switch]$AllowBootstrap,
+
     [switch]$Reinstall,
 
     [switch]$Clean
@@ -72,11 +74,11 @@ function Get-ToolPath {
         }
     }
 
-    # Attempt auto-bootstrap for supported tools
+    # Bootstrap is an explicit side effect; default is a hard stop.
     $bootstrapScript = Join-Path $PSScriptRoot '..\..\scripts\bootstrap-reverse.ps1'
     $bootstrapSupported = @('adb', 'apktool')
-    if ($Name -in $bootstrapSupported -and (Test-Path -LiteralPath $bootstrapScript)) {
-        Write-Host "INFO: $Name not found, attempting auto-bootstrap..." -ForegroundColor Yellow
+    if ($Name -in $bootstrapSupported -and $AllowBootstrap -and (Test-Path -LiteralPath $bootstrapScript)) {
+        Write-Host "INFO: $Name not found, executing approved bootstrap..." -ForegroundColor Yellow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrapScript -Capability @($Name) -SkipRefresh
         $cmd = Get-Command $Name -ErrorAction SilentlyContinue
         if ($cmd) {

@@ -6,15 +6,20 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 
 本目录收录了一系列逆向工程相关的技能模块，每个子目录是一个独立模块，内含 `SKILL.md` 描述其适用场景、工具链和工作流程。
 
-## CRITICAL: 路由执行契约（必须立即执行）
+## CRITICAL: 路由执行契约（按任务模式执行）
 
-读完本文件后，不允许只回复“已读/已理解”。必须按顺序执行：
+先判断当前请求是**只读审查/摘要/比较/维护设计**，还是要求对目标或仓库产生副作用。
 
-1. `NOW`：跑平台原生 router（Windows `scripts/master-route.ps1`；Linux/macOS/Kali `scripts/master-route.sh`），从 `config/routing.json` 定 PRIMARY；疑难再读 `routing.md` 三轴附录。
-2. `NOW`：平台原生 `case-init` 落地当前分析项目的 `work/<case>/scope.md`；**auth 未 granted 禁止对目标 ACT**。本地离线样本使用 `offline-sample` preset + explicit sample；Force 不得绕过硬门。
-3. `ACT`：立即打开 PRIMARY `SKILL.md` 执行 ACTION REQUIRED。
-4. `NEXT`：工具路径只认 `tool-index.md`；缺工具 → 平台原生 bootstrap（仅 manifest）。
-5. 结论用 Evidence→Finding→Path。任务完成时按 `RULES.md` 的适用收尾清单处理报告、图表、journal 和索引；纯只读审查、范围未就绪或明确不适用的场景记录原因，不伪造完成。
+- 只读模式：读取规则、证据和代码即可；不得运行仓库脚本、创建 case、启动 provider、安装工具、写入 case/journal/index 或修改客户端配置。报告结论和未知项后停止在只读边界。
+- 执行模式：仅在用户明确激活本包并批准已披露的首个副作用计划后，按下列顺序执行。目标授权仍由 `scope.md` 独立控制。
+
+### 执行模式 hot path
+
+1. `NOW`：平台原生 router（Windows `scripts/master-route.ps1`；Linux/macOS/Kali `scripts/master-route.sh`），从 `config/routing.json` 定 PRIMARY；疑难再读 `routing.md` 三轴附录。
+2. `NEXT`：平台原生 `case-init` 落地当前分析项目的 `work/<case>/scope.md`；**auth 未 granted 禁止对目标 ACT**。本地离线样本使用 `offline-sample` preset + explicit sample；Force 不得绕过硬门。
+3. `ACT`：打开 PRIMARY `SKILL.md`，执行其 ACTION REQUIRED。
+4. `NEXT`：工具路径只认 `tool-index.md`；缺工具只在已批准的 bootstrap 计划内调用平台原生 bootstrap。
+5. 结论用 Evidence→Finding→Path。任务完成时按 `RULES.md` 的适用收尾清单处理；只读审查、范围未就绪或明确不适用的项目只记录原因，不伪造完成。
 
 **身份**：见 `ops/IDENTITY.md`（轻量路由包 + 工具自举 + journal；**不是** Z3r0 式平台）。
 
@@ -205,16 +210,17 @@ bash <package-root>/kali/scripts/bootstrap-reverse.sh 工具名 --start-services
 
 ## 自动进化
 
-每次完成逆向/渗透任务后，必须回写经验到 `field-journal/` 目录。详见 `RULES.md` 的"任务完成后的硬性 Checklist"。
+完成有可复用证据的实际逆向/渗透任务后，才回写经验到 `field-journal/`。只读审查、失败复盘、范围未就绪或没有新经验时标记 `not applicable`，不得为此写空记录。详见 `RULES.md` 的适用收尾清单。
 
 - 模板：`field-journal/_template.md`
 - 索引：`field-journal/_index.md`
 - 先例：`field-journal/precedent-auth.md` → `precedent-reverse.md` → `precedent-pentest.md`
 - 新任务开始前先查索引和先例，复用已有经验
 
-## 任务完成自检（声称完成前 MUST 通过）
+## 任务完成自检（执行模式适用）
 
-- [ ] 我是否完成了路由三轴匹配（目标类型 + 用户意图 + 工具链）？
-- [ ] 我是否在路由成功后读取了目标 skill 的 SKILL.md？
+- [ ] 若是执行模式，我是否完成了路由三轴匹配（目标类型 + 用户意图 + 工具链）？
+- [ ] 若进入了路由，我是否读取了目标 skill 的 SKILL.md？
 - [ ] 路由未命中时，我是否提议了新增 skill 而非强行匹配？
 - [ ] 我是否基于 `tool-index` 使用了真实工具路径？
+- [ ] 若是只读模式，我是否保持没有脚本/配置/目标副作用？

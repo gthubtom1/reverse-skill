@@ -7,7 +7,7 @@ BENCHMARK="$SCRIPT_DIR/../tests/routing-benchmark.json"
 ROUTER="$SCRIPT_DIR/master-route.sh"
 
 PYTHON=""
-for candidate in python3 python; do
+for candidate in python python3; do
   if command -v "$candidate" >/dev/null 2>&1; then
     PYTHON="$candidate"
     break

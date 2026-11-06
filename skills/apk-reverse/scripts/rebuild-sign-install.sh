@@ -5,7 +5,7 @@
 # 用法:
 #   bash rebuild-sign-install.sh <project_dir> [--out <dir>] [--name <base>]
 #                                [--keystore <path>] [--install] [--reinstall]
-#                                [--device <serial>] [--clean]
+#                                [--allow-bootstrap] [--clean]
 
 set -euo pipefail
 
@@ -25,6 +25,7 @@ KEY_PASS="android"
 DEVICE_SERIAL=""
 DO_INSTALL=false
 REINSTALL=false
+ALLOW_BOOTSTRAP=false
 CLEAN=false
 
 while [[ $# -gt 0 ]]; do
@@ -38,6 +39,7 @@ while [[ $# -gt 0 ]]; do
         --device) DEVICE_SERIAL="$2"; shift 2 ;;
         --install) DO_INSTALL=true; shift ;;
         --reinstall) REINSTALL=true; DO_INSTALL=true; shift ;;
+        --allow-bootstrap) ALLOW_BOOTSTRAP=true; shift ;;
         --clean) CLEAN=true; shift ;;
         -*) echo "未知选项: $1"; exit 1 ;;
         *) PROJECT_DIR="$1"; shift ;;
@@ -52,6 +54,7 @@ if [[ -z "$PROJECT_DIR" || ! -d "$PROJECT_DIR" ]]; then
     echo "  --install          签名后安装到设备"
     echo "  --reinstall        覆盖安装"
     echo "  --device <serial>  指定设备"
+    echo "  --allow-bootstrap  审阅并批准后，允许调用 bootstrap-reverse.sh"
     echo "  --clean            清理旧产物"
     exit 1
 fi
@@ -63,7 +66,11 @@ ensure_tool() {
     if command -v "$name" &>/dev/null; then
         return 0
     fi
-    echo "INFO: $name 未找到，尝试自动安装..."
+    if [[ "$ALLOW_BOOTSTRAP" != "true" ]]; then
+        echo "ERR: $name 不可用。请先安装，或审阅 bootstrap 命令后使用 --allow-bootstrap。"
+        exit 1
+    fi
+    echo "INFO: $name 未找到，执行已批准的 bootstrap..."
     if [[ -x "$KALI_BOOTSTRAP" ]]; then
         bash "$KALI_BOOTSTRAP" "$name" --skip-refresh 2>/dev/null || true
     fi

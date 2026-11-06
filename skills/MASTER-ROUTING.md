@@ -19,6 +19,8 @@
 
 ```powershell
 powershell -File skills\scripts\master-route.ps1 -Hint "<用户任务>"
+# 语义已明确时可显式指定 PRIMARY，避免关键词计分把跨域任务送错
+powershell -File skills\scripts\master-route.ps1 -Hint "<用户任务>" -Primary R6
 # 默认写出当前项目的 work/master-route-<ts>/route-scope.md；从其他目录调用时显式指定项目根
 powershell -File skills\scripts\master-route.ps1 -Hint "<用户任务>" -ProjectRoot "C:\path\to\analysis-project"
 powershell -File skills\scripts\case-init.ps1 -Hint "<用户任务>" -CaseName "my-case"
@@ -43,6 +45,7 @@ python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --
 
 ```bash
 bash skills/scripts/master-route.sh --hint "<用户任务>"
+bash skills/scripts/master-route.sh --hint "<用户任务>" --primary R6
 bash skills/scripts/master-route.sh --hint "<用户任务>" --project-root "/path/to/analysis-project"
 bash skills/scripts/case-init.sh --hint "<用户任务>" --case-name "my-case"
 bash skills/scripts/case-init.sh --hint "<用户任务>" --case-name "my-case" --project-root "/path/to/analysis-project"
@@ -124,7 +127,7 @@ python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --
 | **R46** | 已取证功能复刻 / 独立实现 / 行为对照验证（阶段交接） | `reconstruction/` |
 | **R0** | 通用逆向 / 反调试 / OLLVM / 未知二进制 | `reverse-engineering/` |
 
-未命中强关键词 → PRIMARY=`R0`，并提示打开 `routing.md`（歧义附录，不是第二套路由器）。
+未命中强关键词 → PRIMARY=`R0`，并提示打开 `routing.md`（歧义附录，不是第二套路由器）。关键词路由只是默认分诊，不是语义证明；混合领域、用户已明确技术路线或自动结果不符合目标时，使用 `-Primary <route-id>` / `--primary <route-id>`，输出会标记 `confidence: explicit`。显式 override 仍必须打开对应 PRIMARY、建立 case scope，并遵守 auth/Evidence 门禁。
 
 ## 边界
 

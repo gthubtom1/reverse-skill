@@ -18,7 +18,7 @@ After activation and approval, deterministic steps covered by the disclosed plan
 
 ```text
 1. NOW: Treat this file's directory as the package root.
-2. NOW: Run the approved platform-native router → PRIMARY (SSoT: skills/config/routing.json).
+2. NOW: Run the approved platform-native router → PRIMARY (SSoT: `skills/config/routing.json`). When the task semantics are already known or the default route is wrong, pass `-Primary <route-id>` / `--primary <route-id>` and record the explicit override.
    - Windows: powershell -File skills/scripts/master-route.ps1 -Hint "<task>"
    - Linux/macOS/Kali: bash skills/scripts/master-route.sh --hint "<task>"
 3. NEXT: Run the approved platform-native case-init until scope.md has auth.status=granted plus a legal network_profile, or an explicitly authorized offline-sample scope is ready. Mentioning a target is NOT granted. -Force/--force never bypasses the gate.
@@ -201,18 +201,20 @@ Hot path only:
 
 ---
 
-## Completion Checklist (MUST NOT skip)
+## Completion Checklist（按任务模式适用）
 
-After task completion (vulnerability verified / reverse complete / flag captured), AI **MUST** execute each item:
+执行模式下，针对已完成的实际逆向/安全任务，按证据和范围选择适用项：
 
 ```text
-□ 1. Generate formal report (docs-generator skill)
-□ 2. Generate diagram (diagram-generator skill) — at least 1 flowchart
-□ 3. Write back to field-journal (anonymized)
-□ 4. Persist searched knowledge to references/ (if web searched during task)
-□ 5. Ask about community contribution
-□ 6. Update system indexes (_index.md, routing.md if new scenario found)
+□ 1. 需要正式交付报告时，生成 formal report（docs-generator skill）
+□ 2. 需要表达复杂数据流/攻击路径/架构时，生成 diagram（diagram-generator skill）
+□ 3. 有可复用且已匿名化的经验时，写回 field-journal
+□ 4. 本轮确实联网研究且结果应长期复用时，写入 references
+□ 5. 用户要求公开发布或社区协作时，询问 community contribution
+□ 6. 本轮新增/改变路由场景时，更新 system indexes
 ```
+
+纯只读审查、配置/代码比较、失败复盘和未达到交付条件的工作，不得为了勾选清单创建副作用。逐项标记 `not applicable` 或 `unverified` 即可；不生成空报告、空图表、空 journal 或无关社区提问。无论采用哪种任务模式，最终报告都必须保留 Evidence、Unknown 和停止条件。
 
 ---
 
@@ -253,7 +255,7 @@ After task completion (vulnerability verified / reverse complete / flag captured
 | "I already know how to do this, don't need to read X" | **Read X first, then act.** Even if you're sure, X may contain task-specific constraints. Reading takes seconds. |
 | "To save time, I can skip..." | **The correct way to save time is parallel execution of independent steps, NOT skipping steps.** |
 | "I've used this tool before, I know the path" | **FORBIDDEN to guess paths.** MUST get actual path from tool-index. Different machines have different install locations. |
-| "Task is basically done, don't need checklist" | **Task completion = ALL Checklist items checked.** Unchecked checklist = task NOT complete. |
+| "Task is basically done, don't need checklist" | **Task completion requires every applicable checklist item to be marked passed, not applicable, or unverified.** An unchecked applicable item means task is not complete. |
 | "After approval, I will pause before every deterministic step" | **Do not repeatedly re-confirm disclosed actions.** Continue while informing the user; pause only for a new side-effect category or genuine decision point. |
 | "I sent a progress report, so I should wait for approval" | **A progress report is not an approval request.** Continue routine bounded work inside the current goal/scope/effects/budget; pause only for a genuine user decision or blocker. |
 | "An activated task exists, but I will only acknowledge the rules" | **Continue the approved task.** Match the existing user intent to the routing table and begin the disclosed workflow. Inspection-only requests remain read-only. |
@@ -273,8 +275,8 @@ Before saying "task complete" or "done", MUST self-check:
 □ 1. After activation and approval, did I execute every applicable step in the disclosed behavior chain (not just read docs)?
 □ 2. Did I guess any tool paths? If yes, what's the actual tool-index path?
 □ 3. Did I produce the approved task artifacts/evidence without any undisclosed side-effect category?
-□ 4. Is the Completion Checklist fully checked?
-□ 5. If ANY answer is "no" → task is NOT complete. Go back and fix.
+□ 4. Is every applicable Completion Checklist item marked passed, not applicable, or unverified with a reason?
+□ 5. If an applicable item is neither completed nor honestly marked unverified → task is NOT complete. Read-only and out-of-scope items may be marked not applicable.
 ```
 
 ---
@@ -284,7 +286,7 @@ Before saying "task complete" or "done", MUST self-check:
 - ❌ Do NOT start reverse/pentest without explicit package activation, first-side-effect approval, and the platform-native router (routing.json)
 - ❌ Do NOT guess tool paths — MUST get from tool-index
 - ❌ Do NOT skip field-journal lookup before starting task
-- ❌ Do NOT skip Checklist after task completion
+- ❌ Do NOT skip applicable Checklist items after task completion; mark read-only or irrelevant items `not applicable`/`unverified` with a reason
 - ❌ Do NOT retain un-anonymized real target info in reports
 - ❌ Do NOT expand pentest scope without user authorization
 - ❌ Do NOT retry auto-install after 2 failures
@@ -448,6 +450,6 @@ bash <SKILL_ROOT>/kali/scripts/refresh-tool-index.sh
 | "Can skip this step" | FORBIDDEN. Output reason, wait for user |
 | "User probably doesn't need this" | NEVER decide for user |
 | "Already know how, don't need to read X" | Read X first, may have task-specific constraints |
-| "Task basically done, no checklist needed" | Completion = ALL checklist items checked |
+| "Task basically done, no checklist needed" | Completion = every applicable checklist item is marked passed, not applicable, or unverified with a reason. |
 | "I'll stop after every approved step" | After activation and approval, disclosed deterministic steps continue without repeated confirmation |
 | "After activation, I will only acknowledge the rules" | Continue the approved task instead of stopping at acknowledgment |
