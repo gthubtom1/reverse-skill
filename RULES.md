@@ -135,7 +135,7 @@ Hot path only:
   - Can I clearly explain the last error message? No → understand first, then act
 - Same method fails 2-3 times → MUST switch approach
 - Single command repeated ≥ 3 times → MUST stop and evaluate
-- Approaching tool call budget (>30 calls per subtask) → report to user, ask whether to continue
+- Approaching tool call budget (>30 calls per subtask) → report progress; pause only if no feasible path remains inside the current budget and a budget or scope extension is required
 
 ### Security Boundaries
 - All operations MUST be within user's authorized scope
@@ -170,10 +170,13 @@ Hot path only:
 
 - The core workflow remains single: route → PRIMARY → case → bounded work item → Evidence. Beginner guidance changes the explanation and selection surface only; it does not create a second router, case system, provider or GOAL engine.
 - After each material stage, the operator-facing response MUST distinguish what was done, confirmed facts, unknowns and the next recommendation. Use `skills/ops/beginner-operator-guidance.md`.
-- Next recommendations MUST be generated from current Evidence and Unknowns. Each option has a stable id, plain-language action, parenthesized technical label, purpose, effect, recommendation marker, expected output and mapped bounded work item.
+- A progress report is not an approval request. Routine evidence-driven bounded actions that stay inside the existing goal, scope, effects and budget proceed automatically from task start; they do not wait for a selected GOAL candidate or a fresh approval per work item.
+- Next recommendations MUST be generated from current Evidence and Unknowns. When a genuine user decision exists, present 2–5 numbered options; each has a stable id, plain-language action, parenthesized technical label, purpose, effect, recommendation marker, expected output and mapped bounded work item. A menu MUST NOT contain a sole continue/approval option.
+- Menus are only for genuine user decisions: a real outcome/value tradeoff, new authority/effect/scope, missing user-only input, unresolved owned cleanup, or no feasible within-budget path. Multiple technical paths alone are not a decision.
+- Provider, tool, method, subagent/delegation, fact-check and reporting choices are internal and MUST NOT be surfaced as menus. A recoverable provider failure is handled internally once owned cleanup is verified.
+- Reuse settled goals, scope and user answers from the current case/conversation; ask a missing user-only fact once, continue independent work, and reopen a decision only when new Evidence invalidates it.
 - Do not ask a beginner to choose a provider or write technical parameters. A user-selected option id is translated into the corresponding work item by the workflow.
-- When Evidence is sufficient to evaluate longer-term outcomes, provide multiple feasible goal candidates with copyable GOAL text. Candidate feasibility, limits, prerequisites and success criteria MUST be evidence-based; the host owns GOAL execution.
-- Routine deterministic work can proceed within the selected goal. Pause only for user-held inputs, new scope/effects, material Evidence branches, goal conflicts, provider failure or unverified cleanup.
+- Only when the goal is unresolved or new Evidence invalidates it, offer 2–5 feasible goal candidates with copyable GOAL text. Candidate feasibility, limits, prerequisites and success criteria MUST be evidence-based; the host owns GOAL execution. Offering candidates does not gate routine work.
 
 
 ---
@@ -252,6 +255,7 @@ After task completion (vulnerability verified / reverse complete / flag captured
 | "I've used this tool before, I know the path" | **FORBIDDEN to guess paths.** MUST get actual path from tool-index. Different machines have different install locations. |
 | "Task is basically done, don't need checklist" | **Task completion = ALL Checklist items checked.** Unchecked checklist = task NOT complete. |
 | "After approval, I will pause before every deterministic step" | **Do not repeatedly re-confirm disclosed actions.** Continue while informing the user; pause only for a new side-effect category or genuine decision point. |
+| "I sent a progress report, so I should wait for approval" | **A progress report is not an approval request.** Continue routine bounded work inside the current goal/scope/effects/budget; pause only for a genuine user decision or blocker. |
 | "An activated task exists, but I will only acknowledge the rules" | **Continue the approved task.** Match the existing user intent to the routing table and begin the disclosed workflow. Inspection-only requests remain read-only. |
 | "User asked to redo import-table / step X, but I did something else more useful" | **Redo = redo the named step** (or the user-confirmed prerequisite path). MUST refresh Evidence for X. FORBIDDEN to substitute an unrelated step or silently skip X. Unpacking is a **prerequisite** for readable IAT, not a substitute for import Evidence. |
 | "User said skip unpack and read IAT on a packed sample; I'll just dump the garbage table as done" | **Feasibility gate:** if X is blocked (packed/unreadable IAT), MUST state the blocker, recommend order (unpack/repair IAT or go dynamic), and **ask confirm**. If user forces X, do it and mark `quality=unreadable/packed`; FORBIDDEN to draw capability-negative conclusions from garbage IAT. |

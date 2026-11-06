@@ -27,11 +27,11 @@ flowchart TD
     Primary --> WorkItem[创建一个 bounded work item]
     WorkItem --> Execute[调用 REA 或受控 fallback<br/>保留 Evidence、Unknown 和 cleanup]
     Execute --> Finding[Evidence → Finding → Path]
-    Finding --> Decision{有真实方案分叉?}
-    Decision -->|否| Next[按唯一 Evidence 路径继续]
-    Decision -->|是| Grill[方案前读取 grilling<br/>逐轮审查 design tree]
-    Grill --> Consensus{用户确认达成共识?}
-    Consensus -->|否| Grill
+    Finding --> Decision{需要用户决定目标、结果或新授权?}
+    Decision -->|否| Next[按证据自行选择范围内路径并继续]
+    Decision -->|是| Choice[说明真实取舍与推荐<br/>需要深入访谈时由适配层调用 grilling]
+    Choice --> Consensus{该项决策已明确?}
+    Consensus -->|否| Choice
     Consensus -->|是| Implement[按确认范围实施/复刻/验证]
     Next --> Implement
     Implement --> TaskDone{任务完成?}
