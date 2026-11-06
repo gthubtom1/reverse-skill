@@ -145,7 +145,7 @@ $apktool = Get-ToolPath -Name 'apktool'
 $zipalign = Get-ToolPath -Name 'zipalign'
 $apksigner = Get-ToolPath -Name 'apksigner'
 $keytool = Get-ToolPath -Name 'keytool'
-$adb = Get-ToolPath -Name 'adb'
+$adb = if ($Install) { Get-ToolPath -Name 'adb' } else { $null }
 
 Ensure-DebugKeystore -Path $KeystorePath -Keytool $keytool -Alias $KeyAlias -StorePassword $StorePass -KeyPassword $KeyPass
 
