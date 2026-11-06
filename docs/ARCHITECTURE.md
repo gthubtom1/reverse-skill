@@ -7,35 +7,41 @@
 
 ```mermaid
 flowchart TD
-    Start([用户提出安全/逆向任务]) --> Detect{触发关键词匹配?}
-    Detect -->|是| ReadRouting[读取 SKILL.md + routing.md]
-    Detect -->|否| Normal([正常对话])
-    
-    ReadRouting --> RouteMatch{路由矩阵匹配?}
-    RouteMatch -->|未命中| ProposeNew[提议新增 skill<br/>按 CONTRIBUTING.md]
-    RouteMatch -->|命中| CheckJournal[检查 field-journal<br/>是否有同类经验]
-    
-    CheckJournal --> CheckTools[读取 tool-index.md<br/>确认工具状态]
-    CheckTools --> ToolOK{工具可用?}
-    
-    ToolOK -->|缺失| Bootstrap[调用 bootstrap-reverse.ps1<br/>自动安装]
-    ToolOK -->|可用| Execute[进入 skill 工作流]
-    
-    Bootstrap --> BootOK{安装成功?}
-    BootOK -->|成功| Execute
-    BootOK -->|失败| Guide[输出结构化引导<br/>等用户手动处理]
-    Guide --> UserConfirm([用户确认已安装])
-    UserConfirm --> Execute
-    
-    Execute --> TaskDone{任务完成?}
-    TaskDone -->|否| Execute
+    Start([用户提出安全/逆向任务]) --> Activation{任务已明确激活本包?}
+    Activation -->|否| ReadOnly([只读说明/审查，不执行仓库脚本])
+    Activation -->|是| Preflight[读取 RULES、MASTER-ROUTING 与平台入口]
+    Preflight --> Consent{首次副作用计划已披露并获批?}
+    Consent -->|否| ConsentPlan[列出命令、写入、下载、服务和配置影响]
+    ConsentPlan --> WaitApproval([等待用户批准])
+    WaitApproval --> Preflight
+    Consent -->|是| Route[运行原生 master-route<br/>从 routing.json 选择 PRIMARY]
+    Route --> Scope[case-init / scope.md<br/>设置 auth、in_scope、network_profile]
+    Scope --> Guard{scope ready_for_act?}
+    Guard -->|否| Stop([停止并补齐授权/范围])
+    Guard -->|是| Journal[按需检查 field-journal]
+    Journal --> Tools[读取 tool-index.md<br/>确认真实工具路径]
+    Tools --> ToolOK{工具可用?}
+    ToolOK -->|缺失| Bootstrap[披露并批准后调用受控 bootstrap<br/>或记录缺口]
+    ToolOK -->|可用| Primary[打开 PRIMARY SKILL.md]
+    Bootstrap --> Primary
+    Primary --> WorkItem[创建一个 bounded work item]
+    WorkItem --> Execute[调用 REA 或受控 fallback<br/>保留 Evidence、Unknown 和 cleanup]
+    Execute --> Finding[Evidence → Finding → Path]
+    Finding --> Decision{需要用户决定目标、结果或新授权?}
+    Decision -->|否| Next[按证据自行选择范围内路径并继续]
+    Decision -->|是| Choice[说明真实取舍与推荐<br/>需要深入访谈时由适配层调用 grilling]
+    Choice --> Consensus{该项决策已明确?}
+    Consensus -->|否| Choice
+    Consensus -->|是| Implement[按确认范围实施/复刻/验证]
+    Next --> Implement
+    Implement --> TaskDone{任务完成?}
+    TaskDone -->|否| WorkItem
     TaskDone -->|是| ReviewCase[调用 case-review<br/>校验证据图]
-    ReviewCase --> GenReport[调用 docs-generator<br/>生成报告 + 图表]
-    
-    GenReport --> WriteJournal[回写 field-journal<br/>经验沉淀]
-    WriteJournal --> UpdateIndex[更新索引/路由/manifest]
-    UpdateIndex --> Output([输出最终结果])
+    ReviewCase --> Completion[按 RULES 适用的收尾清单<br/>报告、图、journal、索引]
+    Completion --> Output([输出最终结果和 Unknown])
 ```
+
+图中的 `routing.json` 是唯一路由事实源；`routing.md` 只用于歧义解释，不直接修改。`grilling` 是 Pi 适配层的可选伴随技能，不属于本仓库的客户端中立核心。
 
 ## Skills 模块关系图
 

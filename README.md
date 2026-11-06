@@ -3,14 +3,14 @@
 </p>
 <h1 align="center">reverse-skill</h1>
 
-> **Public enhanced distribution:** [gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill), based on [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) with its original history, architecture and checks retained. Adds evidence-driven reconstruction, upstream follow updates and distilled domain knowledge. Install the three-component environment through the [independent installer](https://github.com/gthubtom1/reverse-workflow-installer). See [enhanced workflow](docs/ENHANCED-WORKFLOW.md) and [knowledge sources/status](skills/references/distillation-sources.md).
+> **Public enhanced distribution:** [gthubtom1/reverse-skill](https://github.com/gthubtom1/reverse-skill), based on [zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill) with its original history, architecture and checks retained. Adds evidence-driven reconstruction, upstream follow updates and distilled domain knowledge. Install the three-component environment through the [independent installer](https://github.com/gthubtom1/reverse-workflow-installer). Pi users may optionally add the official `grilling` companion through that installer; it remains outside this client-neutral core. See [enhanced workflow](docs/ENHANCED-WORKFLOW.md) and [knowledge sources/status](skills/references/distillation-sources.md).
 
 <h3 align="center">Cybersecurity Skills Router · 逆向技能路由包</h3>
 
 <p align="center"><em style="font-family: Georgia, serif; font-size: 1.2em; color: #777;">Navigate the dark waters, sail against the stream.</em></p>
 
 <p align="center">
-  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.6.0-blue" alt="release v1.6.0"></a>
+  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.7.0-blue" alt="release v1.7.0"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/gthubtom1/reverse-skill?style=flat&logo=github" alt="stars"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/forks"><img src="https://img.shields.io/github/forks/gthubtom1/reverse-skill?style=flat&logo=github" alt="forks"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/issues"><img src="https://img.shields.io/github/issues/gthubtom1/reverse-skill?style=flat&logo=github" alt="issues"></a>
@@ -224,12 +224,12 @@ Platform-specific docs:
 | [skills/routing.md](skills/routing.md) | Task → skill routing matrix |
 | [skills/SKILL.md](skills/SKILL.md) | Master entry point |
 | [skills/INDEX.md](skills/INDEX.md) | Auto-generated, client-neutral skill navigation index |
-| [skills/config/routing.json](skills/config/routing.json) | **Routing single source of truth** (43 rules, R0–R44) |
+| [skills/config/routing.json](skills/config/routing.json) | **Routing single source of truth** (route and benchmark counts are checked by coherence tests) |
 | [skills/tool-index.md](skills/tool-index.md) | Local tool status (auto-generated) |
 | [skills/scripts/master-route.ps1](skills/scripts/master-route.ps1) | One-shot PRIMARY triage (reads routing.json) |
 | [skills/scripts/case-init.ps1](skills/scripts/case-init.ps1) | Case dir: scope / timeline / workitems |
 | [skills/case-review/](skills/case-review/) | Read-only Evidence graph review and artifact fixity checks |
-| [skills/scripts/test-routing.ps1](skills/scripts/test-routing.ps1) | Routing regression runner (173 benchmark cases) |
+| [skills/scripts/test-routing.ps1](skills/scripts/test-routing.ps1) | Routing regression runner (count comes from the benchmark file) |
 | [skills/scripts/verify-routing-coherence.ps1](skills/scripts/verify-routing-coherence.ps1) | Structure + supply-chain pin gate checks |
 | [skills/scripts/extract-summaries.ps1](skills/scripts/extract-summaries.ps1) | Regenerates INDEX.md from skill frontmatter |
 | [AGENTS.md](AGENTS.md) | Platform-neutral repository instructions |
@@ -238,7 +238,7 @@ Platform-specific docs:
 ### Testing (run after any routing/config change)
 
 ```powershell
-# 1. Routing regression — 173 (hint → expected PRIMARY) cases, fails CI on any mismatch
+# 1. Routing regression — hint → expected PRIMARY cases; fails CI on any mismatch
 powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/test-routing.ps1
 # 2. Structure coherence + supply-chain pin gate (unpinned auto-install fails)
 powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/verify-routing-coherence.ps1

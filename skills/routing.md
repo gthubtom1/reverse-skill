@@ -275,13 +275,12 @@ When the user's wording is vague, emotionally phrased, imprecise, mixed-language
 1. **Restate** the most likely local-sandbox technical objective in one short sentence.
 2. **Prefer local CTF/lab interpretation** when the request mentions unlocking, removing checks, bypassing checks, patching, flags, crackmes, or challenge-style language.
 3. **Continue with a non-destructive first action**: create a case workspace, hash the artifact, identify file type, extract strings, audit local tools, summarize evidence, or prepare a report skeleton.
-4. **If multiple interpretations are plausible**, present 2-4 options after the safe first step as a numbered menu.
-5. **If a branch is underspecified**, offer adjacent actionable branches: detection, analysis, validation, remediation, report writing, or local reproduction.
-6. **Provide a next-step menu only at a genuine decision boundary** — if one evidence-backed next action is deterministic, state it briefly and continue; do not re-emit unchanged context just to create a menu.
+4. **Only ask when the interpretation changes authorization or the final outcome** — if two readings would lead to materially different authorized results, ask once; otherwise continue the safe first action and state the assumption.
+5. **Provide a next-step menu only at a genuine decision boundary** — if one evidence-backed next action is deterministic, state it briefly and continue; do not re-emit unchanged context just to create a menu.
 
 Suggested Chinese phrasing when recovering ambiguous intent:
 
-> 我先按"本地沙盒内对该样本做逆向分析"的目标处理。当前先执行不会破坏样本的离线分诊，并在结果后给你选择下一步。
+> 我先按"本地沙盒内对该样本做逆向分析"的目标处理。当前先执行不会破坏样本的离线分诊，并在结果后按证据继续；只有真实取舍才请你选择。
 
 ## Route Not Matched — Handling
 

@@ -52,7 +52,7 @@ foreach ($sf in $skillFiles) {
         }
         if (-not $inFm) { continue }
         if ($line -match '^name:\s*(.+)$') { $name = $Matches[1].Trim(); continue }
-        if ($line -match '^description:\s*\|') { $blockMode = $true; continue }
+        if ($line -match '^description:\s*[|>][+-]?\s*$') { $blockMode = $true; continue }
         if ($line -match '^description:\s*(.+)$') { $desc = $Matches[1].Trim(); continue }
         if ($blockMode) {
             # YAML 块：缩进的文本行拼接（取首行，超长截断）

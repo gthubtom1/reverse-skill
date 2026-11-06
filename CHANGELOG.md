@@ -6,13 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [1.7.0] — 2026-11-06
 ### Added
 - REA delegation contract with bounded work items, provider/resource reporting, Evidence handoff and explicit unknown states.
 - Process lifecycle contract and Windows process lease helper for owned provider startup, timeout cancellation, descendant cleanup and cleanup verification.
 
 ### Changed
+- Separate progress reports from approval requests: routine evidence-supported work continues within existing authorization and budgets; user menus are reserved for outcome/scope decisions and genuine blockers. Reuse settled decisions and ask missing user-only facts once.
+- Remove unconditional stage menus from active specialist skills and contributor guidance; keep decision records internal and show short user questions instead of YAML forms.
+- Correct workflow documentation, route-path checks and folded YAML descriptions in the generated skill index. Pi grilling remains an optional installer companion, not a new core router.
 - R0 now treats REA as the post-PRIMARY execution backend, limits heavy native providers to one bounded work item by default, and routes raw CLI use through a cleanup-aware fallback.
 - Preserved `routing.json` as the sole route table and kept the client adapter, global configuration, and official REA package outside the core changes.
+- Clarified that Pi's optional `grilling` companion is maintained by the independent installer and does not enter the client-neutral routing core.
 
 ## [1.6.0] — 2026-11-05
 ### Added
