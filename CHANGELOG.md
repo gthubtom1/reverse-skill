@@ -5,7 +5,16 @@ All notable changes to **reverse-skill** are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.1] — 2026-11-06
+### Added
+- Explicit `-Primary` / `--primary` route override for cases where keyword scoring cannot represent the user's already-known technical intent.
+
+### Changed
+- Read-only review and maintenance mode no longer triggers router/case/tool side effects; execution mode remains gated by activation, approval, scope and auth.
+- Completion artifacts are conditional on applicability and must be marked passed, not applicable or unverified.
+- APK decode, rebuild/sign/install and Frida entrypoints stop when tools are missing unless the caller explicitly passes the bootstrap switch.
+- REA's role as a bounded post-PRIMARY backend is stated at the adapter and core boundaries.
+
 
 ## [1.7.0] — 2026-11-06
 ### Added

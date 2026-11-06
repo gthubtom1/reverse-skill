@@ -18,8 +18,9 @@ param(
 
     [switch]$ListDevices,
 
-    [switch]$ListProcesses
-)
+    [switch]$ListProcesses,
+
+    [switch]$AllowBootstrap)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -67,10 +68,10 @@ function Get-ToolPath {
         }
     }
 
-    # Attempt auto-bootstrap for frida tools
+    # Bootstrap is an explicit side effect; default is a hard stop.
     $bootstrapScript = Join-Path $PSScriptRoot '..\..\scripts\bootstrap-reverse.ps1'
-    if (($Name -in @('frida', 'frida-ps', 'frida-ls-devices')) -and (Test-Path -LiteralPath $bootstrapScript)) {
-        Write-Host "INFO: $Name not found, attempting auto-bootstrap (pip install frida-tools)..." -ForegroundColor Yellow
+    if (($Name -in @('frida', 'frida-ps', 'frida-ls-devices')) -and $AllowBootstrap -and (Test-Path -LiteralPath $bootstrapScript)) {
+        Write-Host "INFO: $Name not found, executing approved bootstrap..." -ForegroundColor Yellow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrapScript -Capability @('frida') -SkipRefresh
         $cmd = Get-Command $Name -ErrorAction SilentlyContinue
         if ($cmd) {

@@ -6,8 +6,9 @@
 param(
     [string] $Hint = '',
     [string] $OutDir = '',
-    [string] $ProjectRoot = ''
-)
+    [string] $ProjectRoot = '',
+    [Alias('Primary')]
+    [string] $RouteOverride = '')
 $ErrorActionPreference = 'Stop'
 
 # Lowercase for Latin tokens; CJK unchanged by ToLowerInvariant.
@@ -71,29 +72,40 @@ if ($missingInPriority.Count -gt 0 -or $extraInPriority.Count -gt 0) {
     if ($extraInPriority.Count -gt 0) { Write-Host ("  priority not in routes: {0}" -f ($extraInPriority -join ', ')) -ForegroundColor Yellow }
 }
 
-# --- 按 priority 顺序取分数最高者为 PRIMARY（并列时 priority 靠前者胜出） ---
+# --- 按 priority 顺序取分数最高者为 PRIMARY；显式 -Primary 优先 ---
+$notes = New-Object System.Collections.Generic.List[string]
 $priority = @($cfg.priority)
 $fallbackId = $cfg.meta.fallbackId
 $primary = $null
 $maxScore = -1
-foreach ($p in $priority) {
-    if ($scores.Contains($p)) {
-        $score = $scores[$p]
-        if ($score -gt $maxScore) {
-            $maxScore = $score
-            $primary = $p
+$explicitPrimary = -not [string]::IsNullOrWhiteSpace($RouteOverride)
+if ($explicitPrimary) {
+    if ($routeIds -notcontains $RouteOverride) {
+        Write-Host ("ERROR: explicit primary id '{0}' not in routes" -f $RouteOverride) -ForegroundColor Red
+        exit 2
+    }
+    $primary = $RouteOverride
+    $confidence = 'explicit'
+    [void]$notes.Add('Explicit primary override; automatic keyword scoring was not used for PRIMARY.')
+} else {
+    foreach ($p in $priority) {
+        if ($scores.Contains($p)) {
+            $score = $scores[$p]
+            if ($score -gt $maxScore) {
+                $maxScore = $score
+                $primary = $p
+            }
         }
     }
-}
 
-$notes = New-Object System.Collections.Generic.List[string]
-$confidence = 'low'
-if ($null -eq $primary) {
-    $primary = $fallbackId
-    if ($t) { [void]$notes.Add('No strong keyword hit; open routing.md full matrix') }
-    else { [void]$notes.Add('Empty hint; provide task text') }
-} else {
-    $confidence = if ($uniq.Count -eq 1) { 'high' } else { 'medium' }
+    $confidence = 'low'
+    if ($null -eq $primary) {
+        $primary = $fallbackId
+        if ($t) { [void]$notes.Add('No strong keyword hit; open routing.md full matrix') }
+        else { [void]$notes.Add('Empty hint; provide task text') }
+    } else {
+        $confidence = if ($uniq.Count -eq 1) { 'high' } else { 'medium' }
+    }
 }
 
 # 防御：priority 若含 routes 之外的幽灵 id（配置错误），回退到 fallback 而非崩溃

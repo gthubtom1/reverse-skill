@@ -4,7 +4,7 @@
 #
 # 用法:
 #   bash decode.sh <apk_path> [--name <task_name>] [--out <output_dir>]
-#                              [--skip-jadx] [--skip-apktool] [--clean]
+#                              [--allow-bootstrap] [--clean]
 
 set -euo pipefail
 
@@ -18,6 +18,7 @@ TASK_NAME=""
 OUT_ROOT=""
 SKIP_JADX=false
 SKIP_APKTOOL=false
+ALLOW_BOOTSTRAP=false
 CLEAN=false
 
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,7 @@ while [[ $# -gt 0 ]]; do
         --out) OUT_ROOT="$2"; shift 2 ;;
         --skip-jadx) SKIP_JADX=true; shift ;;
         --skip-apktool) SKIP_APKTOOL=true; shift ;;
+        --allow-bootstrap) ALLOW_BOOTSTRAP=true; shift ;;
         --clean) CLEAN=true; shift ;;
         -*) echo "未知选项: $1"; exit 1 ;;
         *) APK_PATH="$1"; shift ;;
@@ -33,7 +35,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$APK_PATH" ]]; then
-    echo "用法: $0 <apk_path> [--name <name>] [--out <dir>] [--skip-jadx] [--skip-apktool] [--clean]"
+    echo "用法: $0 <apk_path> [--name <name>] [--out <dir>] [--skip-jadx] [--skip-apktool] [--allow-bootstrap] [--clean]"
     exit 1
 fi
 
@@ -42,22 +44,26 @@ if [[ ! -f "$APK_PATH" ]]; then
     exit 1
 fi
 
-# ─── 工具检测与自动安装 ─────────────────────────────────────────────────────────────
+# ─── 工具检测（缺失时默认停止；--allow-bootstrap 才会产生安装副作用） ───────────────
 
 ensure_tool() {
     local name="$1"
     if command -v "$name" &>/dev/null; then
         return 0
     fi
-    echo "INFO: $name 未找到，尝试自动安装..."
+    if [[ "$ALLOW_BOOTSTRAP" != "true" ]]; then
+        echo "ERR: $name 未找到。请先审阅 bootstrap 命令并使用 --allow-bootstrap，或手动安装。"
+        return 1
+    fi
+    echo "INFO: $name 未找到，执行已批准的 bootstrap..."
     if [[ -x "$KALI_BOOTSTRAP" ]]; then
         bash "$KALI_BOOTSTRAP" "$name" --skip-refresh 2>/dev/null || true
     fi
     if ! command -v "$name" &>/dev/null; then
-        echo "ERR: $name 安装失败，请手动安装"
+        echo "ERR: $name bootstrap 后仍不可用，请手动安装"
         return 1
     fi
-    echo "INFO: $name 安装成功"
+    echo "INFO: $name bootstrap 成功"
 }
 
 [[ "$SKIP_JADX" != "true" ]] && ensure_tool "jadx"

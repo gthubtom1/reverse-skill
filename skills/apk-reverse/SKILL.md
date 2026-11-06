@@ -380,7 +380,7 @@ frida -U -f com.example.app -l hook.js
 
 ## 按需自举（On-Demand Bootstrap）
 
-本 skill 的入口脚本已接入统一自举系统。缺少工具时不会直接报错，而是自动尝试安装。
+本 skill 的脚本只在**显式批准并传入 bootstrap 开关**时调用统一自举系统。缺少工具时默认停止并报告准确命令、下载/安装/服务影响；不能因为读取了本 skill 就自动联网、安装或启动服务。
 
 ### 自动化能力边界
 
@@ -396,22 +396,20 @@ frida -U -f com.example.app -l hook.js
 
 ### 自举触发点
 
-- `scripts/decode.ps1`：缺 jadx 或 apktool 时自动调用 `bootstrap-reverse.ps1`
-- `scripts/rebuild-sign-install.ps1`：缺 adb 或 apktool 时自动调用 bootstrap
-- `scripts/frida-run.ps1`：当前仍为手动检查（frida 通常已通过 pip 安装）
+- `scripts/decode.ps1` / `scripts/decode.sh`：缺 jadx 或 apktool 时默认停止；审阅并批准后传入 `-AllowBootstrap` / `--allow-bootstrap` 才调用 bootstrap
+- `scripts/rebuild-sign-install.ps1` / `.sh`：缺 adb 或 apktool 时默认停止；审阅并批准后传入 `-AllowBootstrap` / `--allow-bootstrap`
+- `scripts/frida-run.ps1` / `.sh`：缺 frida 工具时默认停止；审阅并批准后传入 `-AllowBootstrap` / `--allow-bootstrap`
 
-### 自举失败时
+### 自举失败或未批准时
 
-如果自动安装失败，脚本会抛出明确错误并附带手动安装链接。常见原因：
-- 网络不通（GitHub API / PyPI 不可达）
-- winget 不可用（Windows 版本过低）
-- Java 未安装（apktool 依赖 JDK）
+如果没有显式 bootstrap 开关，脚本会先停止并给出手动安装或待审阅的 bootstrap 提示；不会在后台下载、安装或启动服务。批准后执行仍受 `tool-index.md`、scope 和 cleanup 规则约束。
+常见失败原因包括网络不可用、winget 不可用或 Java 未安装（apktool 依赖 JDK）。
 
 
-## 任务完成自检（声称完成前 MUST 通过）
+## 任务完成自检（执行模式适用）
 
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
+- [ ] 若是执行模式，我是否完成了工作流中的每一个适用步骤，而不是只阅读？
 - [ ] 我是否基于 `tool-index` 使用了真实工具路径？
-- [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
-- [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] 我是否产出了范围内可复现证据（命令/脚本/截图/报告）？
+- [ ] 我是否按 `RULES.md` 标记了适用收尾项（通过、not applicable 或 unverified）？
 - [ ] 若命中隐藏图标/格机/持久化线索：是否按 U–AV cookbook 记录 E-android-* Evidence（授权范围内）？

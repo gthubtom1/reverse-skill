@@ -6,14 +6,16 @@ set -euo pipefail
 HINT=""
 OUT_DIR=""
 PROJECT_ROOT=""
+PRIMARY=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -Hint|-hint|--hint) HINT="${2:-}"; shift 2 ;;
     -OutDir|-out-dir|--out-dir) OUT_DIR="${2:-}"; shift 2 ;;
     -ProjectRoot|-project-root|--project-root) PROJECT_ROOT="${2:-}"; shift 2 ;;
+    -Primary|-primary|--primary) PRIMARY="${2:-}"; shift 2 ;;
     -h|--help)
-      echo 'Usage: master-route.sh --hint TEXT [--out-dir DIR] [--project-root DIR]'
+      echo 'Usage: master-route.sh --hint TEXT [--primary ROUTE_ID] [--out-dir DIR] [--project-root DIR]'
       exit 0
       ;;
     *)
@@ -29,7 +31,7 @@ PACKAGE_ROOT="$(cd "$SKILLS_ROOT/.." && pwd)"
 CONFIG_PATH="$SKILLS_ROOT/config/routing.json"
 
 PYTHON=""
-for candidate in python3 python; do
+for candidate in python python3; do
   if command -v "$candidate" >/dev/null 2>&1; then
     PYTHON="$candidate"
     break
@@ -51,14 +53,14 @@ if [[ -z "$OUT_DIR" ]]; then
   OUT_DIR="$PROJECT_ROOT/work/master-route-$(date +%Y%m%d-%H%M%S)"
 fi
 
-"$PYTHON" - "$CONFIG_PATH" "$SKILLS_ROOT" "$PROJECT_ROOT" "$OUT_DIR" "$HINT" <<'PY'
+"$PYTHON" - "$CONFIG_PATH" "$SKILLS_ROOT" "$PROJECT_ROOT" "$OUT_DIR" "$HINT" "$PRIMARY" <<'PY'
 import datetime
 import json
 import pathlib
 import re
 import sys
 
-config_path, skills_root_raw, project_root_raw, out_dir_raw, hint = sys.argv[1:]
+config_path, skills_root_raw, project_root_raw, out_dir_raw, hint, explicit_primary = sys.argv[1:]
 skills_root = pathlib.Path(skills_root_raw)
 project_root = pathlib.Path(project_root_raw).resolve()
 out_dir = pathlib.Path(out_dir_raw)
@@ -108,19 +110,27 @@ except re.error as exc:
 
 primary = None
 max_score = -1
-for route_id in priority:
-    score = scores.get(route_id)
-    if score is not None and score > max_score:
-        primary = route_id
-        max_score = score
-
 notes = []
-if primary is None:
-    primary = fallback
-    confidence = "low"
-    notes.append("No strong keyword hit; open routing.md full matrix" if text else "Empty hint; provide task text")
+if explicit_primary.strip():
+    if explicit_primary not in routes:
+        print(f"ERROR: explicit primary id is missing: {explicit_primary}", file=sys.stderr)
+        raise SystemExit(2)
+    primary = explicit_primary
+    confidence = "explicit"
+    notes.append("Explicit primary override; automatic keyword scoring was not used for PRIMARY.")
 else:
-    confidence = "high" if len(selected_order) == 1 else "medium"
+    for route_id in priority:
+        score = scores.get(route_id)
+        if score is not None and score > max_score:
+            primary = route_id
+            max_score = score
+
+    if primary is None:
+        primary = fallback
+        confidence = "low"
+        notes.append("No strong keyword hit; open routing.md full matrix" if text else "Empty hint; provide task text")
+    else:
+        confidence = "high" if len(selected_order) == 1 else "medium"
 
 if primary not in routes:
     print(f"ERROR: fallback/primary route is missing: {primary}", file=sys.stderr)
