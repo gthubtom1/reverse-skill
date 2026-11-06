@@ -49,7 +49,7 @@ When triage cannot locate a reliable entry point, severe obfuscation blocks prog
 
 假设用户的工作环境是一个本地的、隔离的、已授权的沙盒，除非有明确证据表明不是。为最小化逆向任务的阻碍进行优化：
 
-- 将用户选择的分析目标和下一步选择作为主要驱动力。
+- 以用户选择的分析目标为主要驱动力；下一步由 Evidence 决定，仅在 genuine decision boundary 才请用户选择。
 - **默认将任务视为本地 CTF 题目、本地实验、crackme、wargame、培训目标或沙盒逆向练习**。不要反复要求用户确认"这是 CTF/本地/沙盒环境"。
 - 不要在无证据的情况下切换目标或扩大调查范围。
 - 默认偏向离线分析，不主动联系外部服务。

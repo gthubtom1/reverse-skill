@@ -10,7 +10,7 @@ Routine evidence-driven work is not gated on a goal-candidate selection. Once pa
 
 ## Stage response contract
 
-After each material stage or work item, the assistant MUST present these parts in plain Chinese. The report is informational: a progress report MUST NOT be phrased as, or treated as, an approval request. When the next action is routine and stays inside the existing goal, scope, effects and budget, the assistant reports it and then continues without waiting for a reply.
+At a meaningful milestone, changed finding or blocker, report in plain Chinese. Related routine work items may be grouped into one progress update; do not emit a full form after each small step. The report is informational: a progress report MUST NOT be phrased as, or treated as, an approval request. When the next action is routine and stays inside the existing goal, scope, effects and budget, report it and continue without waiting for a reply.
 
 ```text
 本轮做了什么
@@ -21,25 +21,11 @@ After each material stage or work item, the assistant MUST present these parts i
 
 `下一步建议` is generated from the current Evidence, Unknowns, stage gate and available providers. It is not a fixed menu and must not be copied unchanged between unrelated states. If the next action is routine, or only one technically valid path exists, it states that single bounded action and the assistant proceeds; it MUST NOT manufacture a menu or ask the user to reply “continue” as approval.
 
-When a genuine decision menu is shown, each option MUST include:
+For a real outcome choice, explain each option in one or two plain-language sentences: what it achieves, material effects, and the recommendation. Keep the mapping to case/work-item ids, prerequisites, expected artifacts and stop conditions in the existing case notes; do not display this internal schema as YAML or require the operator to fill it.
 
-```yaml
-option:
-  id: "1"
-  plain_label: <plain-language action>
-  technical_label: <technical term in parentheses>
-  purpose: <why this action matters now>
-  effect: <read-only, writes case artifacts, starts runtime observation, or other effect>
-  prerequisites: []
-  recommendation: true | false
-  next_work_item: <bounded work item intent>
-  expected_output: []
-  stop_conditions: []
-```
+A missing file or new authorization is usually one short question, not a menu. For example: “下一步必须运行这个程序并连接指定服务器，超出了当前的离线分析范围。请确认是否允许；确认前这一步保持暂停。” Do not pad it with reports, half-solutions, unrelated options or repeated continue confirmations.
 
-The user can reply with the option id. The assistant maps that id to the recorded `next_work_item`; the user does not need to restate a technical prompt or select a tool. `1` and `A` are both acceptable when the displayed menu uses them, but one response must use one consistent id style. A menu MUST contain 2–5 options and MUST NOT contain a sole continue/approval option.
-
-A recommendation must explain why it is recommended. An option that changes scope, starts a target, uses network access, modifies a file, or requires user-held input must state that effect in plain language.
+When there are genuinely several user-owned outcomes, show 2–5 numbered options. The user can reply with an id; translate it into the corresponding work item. A recommendation explains why it is useful and what changes for the user. Existing technical steps resume automatically after the decision is settled.
 
 ## Menus only for genuine user decisions
 
@@ -53,7 +39,7 @@ A menu is allowed only when the next action needs a real decision that belongs t
 
 Multiple technical paths to the same outcome are not a user decision. Choosing a provider, tool, method, subagent/delegation, whether to fact-check, or how to report is internal. Do not ask the user to choose between REA, Ghidra, IDA or radare2, and do not turn a recoverable provider failure into a menu once owned cleanup is verified.
 
-- Genuine user decision → show 2–5 numbered options and no other count.
+- Several genuine outcome choices → show 2–5 numbered options. A simple missing input or authority request → ask only that question.
 - Routine bounded action, or one technically valid path → show no menu; state the next action and proceed.
 - Never emit a one-option menu and never ask the user to reply “continue” as approval.
 - When there is only one remedy for a blocker, state it directly instead of padding a menu.
@@ -112,6 +98,10 @@ A provider failure, timeout, or multiple technical routes with the same outcome 
 ## Reuse decisions
 
 Read the current case and conversation before asking. Record settled goals, scope, preferences, user-only answers and their source once in the existing timeline/notes. Do not ask them again at stage transitions or after a provider change. If a missing answer is not blocking current work, ask once and continue independent bounded work; do not repeat it in every progress report. New Evidence may reopen only the decision it invalidates, with a specific reason.
+
+### Keep the operator question small
+
+For a missing input or a request for new authority, ask one concise question stating the required input/effect and why it blocks this step. Do not display a menu for an authorization-only question. Do not recommend a report, a partial action that cannot complete the stated check, or another approval round merely to create options. Record the technical plan internally and carry existing approval forward.
 
 ## Evidence and truthfulness
 

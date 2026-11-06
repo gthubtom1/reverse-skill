@@ -28,6 +28,8 @@ It MUST NOT perform reconnaissance, exploitation, dynamic instrumentation, or ta
 4. `NEXT`: run `python3 scripts/review_case.py <case-root> --format markdown`.
 5. `ACT`: resolve every error, then rerun the review before claiming a handoff is complete.
 
+审查保持只读。按 review 结果继续只读核验或交接；仅当出现 genuine decision boundary（授权、范围或最终结果取舍）时，才提供 2–5 项编号选项。
+
 ## Tool dependencies
 
 | Tool | Required | Purpose | Auto-bootstrap |
@@ -48,14 +50,6 @@ python3 skills/case-review/scripts/review_case.py work/<case> --format markdown
 
 Confirm that `scope.md`, `timeline.md`, `workitems.md`, and `evidence/` are present. A non-strict review reports scope warnings while a strict review treats warnings as handoff blockers.
 
-## 建议下一步（选一个编号）
-
-1. 修复 scope.md 中的授权、范围或 network_profile 字段
-2. 继续检查 Evidence 记录的可复现命令和来源
-3. 导出当前 review 结果并附到阶段性报告
-4. 换 JSON 输出接入 CI 或其他审查工具
-5. 暂停，先确认审查范围
-
 ### Phase 2: Traceability
 
 Review the checks for:
@@ -75,14 +69,6 @@ Use JSON when another tool needs stable fields:
 python3 skills/case-review/scripts/review_case.py work/<case> --format json
 ```
 
-## 建议下一步（选一个编号）
-
-1. 补写缺失的 Evidence，并保留原始命令
-2. 将候选 Finding 绑定到 Evidence 后重新审查
-3. 为调用链或攻击链补充 P-id 和 Path 步骤
-4. 生成 Markdown handoff summary
-5. 换回 PRIMARY skill 继续分析
-
 ### Phase 3: Fixity verification
 
 When an Evidence record contains both `content_hash` and `artifact_path`, verify the case-local artifact:
@@ -99,14 +85,6 @@ The PowerShell Evidence helper can record a hash while appending a record:
 powershell -File skills/scripts/append-evidence.ps1 -CaseRoot work\<case> -Id E-001 -Title "Sample hash" -ReproCommand "sha256sum evidence/sample.bin" -ArtifactPath "evidence\sample.bin"
 ```
 
-## 建议下一步（选一个编号）
-
-1. 修复 hash mismatch 或替换已污染的工作副本
-2. 为未固定的原始文件补充 SHA-256 和 artifact_path
-3. 继续进入报告生成阶段
-4. 导出 JSON 结果供 CI 保存
-5. 暂停并请求人工复核
-
 ### Phase 4: Handoff
 
 Use strict mode before a final report or specialist handoff:
@@ -116,13 +94,6 @@ python3 skills/case-review/scripts/review_case.py work/<case> --strict --format 
 ```
 
 The command is read-only with respect to the case unless shell redirection is explicitly used to save its output. The review is not legal advice and does not replace organizational evidence handling procedures.
-
-## 建议下一步（选一个编号）
-
-1. 将通过的 review 结果交给 `docs-generator/` 生成正式报告
-2. 回到 PRIMARY skill 补齐新的分析证据
-3. 归档 Markdown 和 JSON review 结果
-4. 暂停并请求人工复核
 
 ## Language behavior contract
 

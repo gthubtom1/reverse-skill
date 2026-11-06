@@ -149,27 +149,24 @@ description: <一句话描述适用场景和触发条件>
 
 ### 3.4 下一步菜单模式（Next-Step Menu Pattern）
 
-每个新建 skill 只在 **genuine decision boundary**（两个或以上 materially different、evidence-supported 分支，且用户选择会改变下一动作）提供 3-6 个编号选项。若 transition 是确定性的，`MUST` 直接继续，并按 `ops/timeline-workitem.md` 记录 `decision_delta` + `carry_forward_refs`，不要重新展开 unchanged context。
+每个新建 skill 只在 **genuine decision boundary**（两个或以上 materially different、evidence-supported 分支，且用户选择会改变下一动作）提供 2–5 个编号选项。若 transition 是确定性的，`MUST` 直接继续，并按 `ops/timeline-workitem.md` 记录 `decision_delta` + `carry_forward_refs`，不要重新展开 unchanged context。
 
 格式要求：
 
-- 每个选项以数字编号（1-6 范围），描述一项具体可执行动作
-- 至少包含一个"导出报告/写文档"选项
-- 至少包含一个"继续深入"或"换方法"选项
-- 必要时包含一个"暂停/提问"出口
+- 每个选项以数字编号（1-5 范围），描述一项具体可执行动作
+- 选项必须是真实的用户结果/授权/范围取舍，不得为凑数加入导出、换工具或暂停等内部/报告选择
+- 不得只有"继续/批准"一个选项；只有一个有效动作时直接执行并汇报
 - 选项描述是面向用户的中文短语（不是内部指令）
 
 ```markdown
-## 建议下一步（选一个编号）
+## 建议下一步（真实用户决策，选一个编号）
 
-1. 对 [关键函数] 做深度反编译，还原核心算法
-2. 用 Frida 动态 Hook 验证 [参数猜想]
-3. 导出当前分析结果，生成阶段性报告
-4. 换 [备选工具] 做交叉验证
-5. 暂停，我先确认前面的证据
+1. 继续深挖 [关键函数]，目标是行为等价独立实现（只读分析）
+2. 转向协议/API 重建，只交付规格与测试包（只读分析）
+3. 暂停当前目标，先确认新增网络范围的授权（需要新授权）
 ```
 
-在 SKILL.md 中把此模式放到真正有分岔的 decision boundary；不要机械地放到每个阶段末尾。
+在 SKILL.md 中把此模式放到真正有分岔的 decision boundary；不要机械地放到每个阶段末尾。格式与触发条件以 `ops/beginner-operator-guidance.md` 为准。
 
 ---
 

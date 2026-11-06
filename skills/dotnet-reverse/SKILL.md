@@ -16,7 +16,7 @@ metadata:
 2. `NOW`: 若疑似混淆 → 先 `de4dot` 脱壳，产出 `*-clean.exe`，保留原始样本
 3. `NEXT`: dnSpyEx（或 dnSpy MCP / `ilspycmd`）静态：C# 浏览 + **IL 视图**看关键判断
 4. `ACT`: 需要明文/C2 时动态调试；需要改逻辑时 **IL patch** 优先于 C# 重编译
-5. 阶段结束给用户 3–6 项下一步菜单（含导出报告）
+5. 阶段结束按 Evidence 直接继续并汇报；仅在 genuine decision boundary（结果/授权/范围取舍）时给 2–5 项编号选项
 
 ## 适用范围
 
@@ -189,4 +189,4 @@ File → Save Module → 替换原文件
 - [ ] 混淆样本是否先 de4dot / 等价脱壳再深分析？
 - [ ] 关键逻辑是否用 IL 视图验证（而非只看 C# 伪代码）？
 - [ ] 产物（clean 样本 / 配置 / patch diff）是否落盘且可复现？
-- [ ] 是否提供了下一步菜单或报告出口？
+- [ ] 是否只在 genuine decision boundary 给出 2–5 项，并在确定性阶段直接继续汇报（而非每阶段菜单）？

@@ -13,7 +13,7 @@
 - reverse-skill 工作副本的身份记录；
 - receipt、更新、恢复和本机验收。
 
-安装后阅读安装仓库的 [安装后快速开始](https://github.com/gthubtom1/reverse-workflow-installer/blob/main/docs/quick-start.md)，依次完成 `verify`、`accept`、宿主重启或 reload，再做一次显式 `/skill:reverse-workflow` 对话测试。Pi 用户如果要在方案或补丁实施前审查隐含假设，按安装仓库教程另外安装官方 `grilling` 伴随技能；它属于 Pi 适配层，不进入本仓库核心路由。
+安装后阅读安装仓库的 [安装后快速开始](https://github.com/gthubtom1/reverse-workflow-installer/blob/main/docs/quick-start.md)，依次完成 `verify`、`accept`、宿主重启或 reload，再做一次显式 `/skill:reverse-workflow` 对话测试。Pi 用户如果明确要求质询方案/隐含假设，或存在重要目标取舍，按安装仓库教程另外安装官方 `grilling` 伴随技能；它属于 Pi 适配层，不进入本仓库核心路由。
 
 不要在本仓复制安装器脚本，也不要把 REA MCP 或 Spec Kit CLI 写成本仓的硬依赖。
 
