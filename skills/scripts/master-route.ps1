@@ -8,7 +8,8 @@ param(
     [string] $OutDir = '',
     [string] $ProjectRoot = '',
     [Alias('Primary')]
-    [string] $RouteOverride = '')
+    [string] $RouteOverride = '',
+    [switch] $DryRun)
 $ErrorActionPreference = 'Stop'
 
 # Lowercase for Latin tokens; CJK unchanged by ToLowerInvariant.
@@ -112,6 +113,21 @@ if ($explicitPrimary) {
 if ($routeIds -notcontains $primary) {
     Write-Host ("WARN: primary id '{0}' not in routes; falling back to {1}" -f $primary, $fallbackId) -ForegroundColor Yellow
     $primary = $fallbackId
+}
+
+# Dry-run returns before WorkRoot (which may create a missing project directory).
+if ($DryRun) {
+    $route = $cfg.routes.$primary
+    $skillAbs = Join-Path $skillsRoot $route.skill
+    if (-not (Test-Path -LiteralPath $skillAbs -PathType Leaf)) {
+        Write-Host ("ERROR: PRIMARY skill missing: {0}" -f $skillAbs)
+        exit 2
+    }
+    Write-Host ("PRIMARY -> skills/{0}" -f $route.skill)
+    Write-Host ("Label: {0} | confidence: {1}" -f $route.label, $confidence)
+    foreach ($n in $notes) { Write-Host ("NOTE: {0}" -f $n) }
+    Write-Host 'READ-ONLY: no route artifacts written; review PRIMARY within the requested scope.'
+    exit 0
 }
 
 # 复用当前主线的项目工作根解析，避免把路由产物写进 skill 包。

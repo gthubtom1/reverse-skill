@@ -32,6 +32,14 @@ jobs:
         shell: pwsh
         run: ./skills/scripts/verify-routing-coherence.ps1
 
+      - name: Read-only router and authorization coverage regression
+        shell: pwsh
+        run: |
+          python -B skills/scripts/test-router-readonly.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -B skills/scripts/test-authorization-coverage.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
       - name: Difficult-target eval contract
         shell: pwsh
         run: python -B skills/reverse-engineering/evals/check_hard_target_evals.py

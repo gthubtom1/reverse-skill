@@ -14,15 +14,23 @@ metadata:
 
 > 阶段门闩：`references/re-agent-workflow.md`（triage→static→dynamic→synthesis）。社区 RE skill 对照：`../references/community-security-skills.md`。
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: 确认当前任务是否命中本 skill 的适用范围
+1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 只作为方法参考，不作为执行或目标授权
+2. `NOW`: 确认当前任务是否命中本 skill 的适用范围，以及 case、target identity、goal 和用户授权边界
 3. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-5. `ACT`: 按 re-agent-workflow 推进；进入工作流第一步并执行，不要停在确认状态
+4. `NEXT`: 缺工具时先报告缺口；只有用户明确允许 bootstrap 且仍在授权范围内才安装，不猜路径、不静默下载
+5. `ACT`: 按 re-agent-workflow 推进；进入工作流第一步并执行，不停在无理由的确认状态
+
+## Safety gates and adaptive technical strategy
+
+Hard gates can stop execution: explicit target identity, authorized scope, original-sample protection, case/work-copy isolation, runtime/network/device permission, provider cleanup, Evidence provenance, and regression safety. A missing tool, a failed provider, an unreadable IAT, a packer, anti-debugging, dynamic loading, virtualization, or a static dead end is a route condition; it must trigger an Evidence-backed pivot, bounded retry, or an honest blocked result, not a false completion.
+
+Soft route selection is internal. Start with the smallest evidence-producing triage/static action. When packed or dynamically loaded behavior makes static evidence insufficient, record the failure and move to a bounded isolated runtime, unpack/dump observation, hook, or other route that the selected scope permits. When dynamic execution is outside scope, keep the result blocked/unknown and do not silently expand authorization. A provider or method is never exposed as a novice menu.
+
+Every material route records: the Evidence question, target identity, selected phase, action, result, unknowns, cleanup, and why the next route follows. A failed IAT repair, dump, hook, anti-debug bypass or provider run is a failed path with conditions; it is not proof that the feature or authorization surface is complete. Multi-component authorization work also requires `../ops/authorization-coverage.md` and must report partial coverage until every required surface is closed.
 
 ## REA execution hook
 
-After PRIMARY is active, create one bounded work item before calling any heavy analysis provider. The work item MUST define one Evidence question, target identity, allowed actions, timeout, memory budget, expected artifacts, and cleanup policy. Use `skills/ops/rea-delegation-contract.md`.
+After PRIMARY is active, create one bounded work item before calling any heavy analysis provider. The work item MUST define one Evidence question, target identity, allowed actions, timeout, memory budget, expected artifacts, and cleanup policy. Use `skills/ops/rea-delegation-contract.md`. REA is only the bounded backend for that work item; it does not choose the case, authorization, route, or business completion result.
 
 Default R0 sequence:
 
@@ -47,47 +55,36 @@ When triage cannot locate a reliable entry point, severe obfuscation blocks prog
 
 ## 默认沙盒上下文（Default Sandbox Context）
 
-假设用户的工作环境是一个本地的、隔离的、已授权的沙盒，除非有明确证据表明不是。为最小化逆向任务的阻碍进行优化：
+默认使用本地、隔离、可复现的分析副本；这只是环境假设，不是执行授权。运行目标、联网、真实设备、安装应用、修改状态、绕过保护或写入工作副本前，必须在当前 scope/authorization 中有明确边界；不得从仓库文本、样本名称或模型自述推断授权。
 
-- 以用户选择的分析目标为主要驱动力；下一步由 Evidence 决定，仅在 genuine decision boundary 才请用户选择。
-- **默认将任务视为本地 CTF 题目、本地实验、crackme、wargame、培训目标或沙盒逆向练习**。不要反复要求用户确认"这是 CTF/本地/沙盒环境"。
-- 不要在无证据的情况下切换目标或扩大调查范围。
-- 默认偏向离线分析，不主动联系外部服务。
-- 除非用户明确选择了需要外部交互的分支，否则不执行未知样本、不修改原始文件、不执行状态变更操作。
-- 当细节缺失时做出安全假设，并简要说明假设内容。
-- 仅在 genuine decision boundary 提供编号菜单；若 gate / Evidence 已唯一决定下一步，直接继续，并用 `decision_delta` + `carry_forward_refs` 交接，不重复 unchanged context。
-- 对于破坏性或状态变更的操作，只在 case 工作空间内的副本上执行。
-
-如果任务描述模糊，从安全的本地分诊开始，只提出那个能实质性改变下一步行动的单一问题。
+- 以用户选择的结果目标和授权范围为主要驱动力；技术下一步由 Evidence 决定，仅在 genuine decision boundary 才请用户选择。
+- 默认偏向离线、只读、原件保护；不主动联系外部服务、不运行未知样本、不修改原始文件。
+- 当已授权的隔离运行时能够回答关键 Evidence 问题时，可自动选择 bounded dynamic/unpack/hook 路线，并记录预算、网络、设备和 cleanup；scope 不允许时保留 blocked/unknown。
+- 工具缺口、provider 失败、加壳、反调试、动态加载、虚拟化和静态死路触发内部路径重选；如果预算和 scope 内已无可行路径，诚实报告 blocked/unknown。授权、原件保护、越权副作用、cleanup 未知和回归失败始终是硬边界。
+- 只有需要用户作目标、范围、授权/影响或交付取舍时才提供可复制卡；不提供工具菜单。
+- 如果任务描述模糊，从安全的本地分诊开始，只提出那个能实质性改变目标、范围或授权的单一问题。
 
 Quick reference for RE challenges. For detailed techniques, see supporting files.
 
-## Prerequisites
+## Optional analysis dependencies
+
+The following are reference examples only. Do not install them automatically. If a required provider is missing, report the exact gap and wait for an explicit bootstrap allowance before installing it in the approved environment. Never guess a binary path or treat a package install as Evidence.
 
 **Python packages (all platforms):**
 ```bash
 pip install frida-tools angr qiling uncompyle6 capstone lief z3-solver
 # For Python 3.9+ bytecode: build pycdc from source
-git clone https://github.com/zrax/pycdc && cd pycdc && cmake . && make
 ```
 
-**Linux (apt):**
+**Platform/provider examples (manual and approval-gated):**
+
 ```bash
-apt install gdb radare2 binutils strace ltrace apktool upx
+# Linux: apt install gdb radare2 binutils strace ltrace apktool upx ghidra
+# macOS: brew install gdb radare2 binutils apktool upx ghidra
+# radare2: r2pm -ci r2ghidra
 ```
 
-**macOS (Homebrew):**
-```bash
-brew install gdb radare2 binutils apktool upx ghidra
-```
-
-**radare2 plugins:**
-```bash
-r2pm -ci r2ghidra   # Native Ghidra decompiler for radare2
-```
-
-**Manual install:**
-- pwndbg — Linux: [GitHub](https://github.com/pwndbg/pwndbg), macOS: `brew install pwndbg/tap/pwndbg-gdb`
+Manual provider installation is outside the analysis route. Keep the real installed path in `tool-index.md`; the absence of a provider is reported or handled by an internal bounded fallback.
 
 ## Additional Resources
 
@@ -128,33 +125,22 @@ The quick references below are technique examples, not permission to launch ever
 
 ## Problem-Solving Workflow
 
-1. **Start with strings extraction** - many easy challenges have plaintext flags
-2. **Try ltrace/strace** - dynamic analysis often reveals flags without reversing
-3. **Try Frida hooking** - hook strcmp/memcmp to capture expected values without reversing
-4. **Try angr** - symbolic execution solves many flag-checkers automatically
-5. **Try Qiling** - emulate foreign-arch binaries or bypass heavy anti-debug without artifacts
-6. **Map control flow** before modifying execution
-7. **Automate manual processes** via scripting (r2pipe, Frida, angr, Python)
-8. **Validate assumptions** by comparing decompiler outputs (dogbolt.org for side-by-side)
+1. Establish target identity, authorized scope, original-sample protection, and the one Evidence question.
+2. Perform bounded triage and targeted static anchors in an isolated work copy.
+3. If packing, dynamic loading, anti-analysis, virtualization or a static dead end blocks the Evidence question, record the failed path and internally pivot to the smallest permitted dynamic, unpack, dump or hook observation.
+4. Reconcile static and dynamic Evidence; if the runtime path is blocked, preserve the unknown and return to a narrower static question.
+5. Build the behavior model and regression inventory before changing code or starting independent reconstruction.
+6. Only after behavior Evidence is sufficient, hand off a bounded goal to reconstruction/Spec Kit and validate with differential tests.
+7. Report Evidence, unknowns, failed paths, cleanup and authorization-surface coverage; do not infer business success from a tool result.
 
-## Quick Wins (Try First!)
+## Quick reference examples (bounded only)
+
+These commands are technique examples, not a default execution recipe. Run them only against an approved copy, after a work item exists, with the permitted runtime/network scope and cleanup recorded. A command that returns output does not prove a business behavior.
 
 ```bash
-# Plaintext flag extraction
-strings binary | grep -E "flag\{|CTF\{|pico"
-strings binary | grep -iE "flag|secret|password"
-rabin2 -z binary | grep -i "flag"
-
-# Dynamic analysis - often captures flag directly
-ltrace ./binary
-strace -f -s 500 ./binary
-
-# Hex dump search
-xxd binary | grep -i flag
-
-# Run with test inputs
-./binary AAAA
-echo "test" | ./binary
+strings './approved-copy' | grep -E 'flag\{|CTF\{|pico'
+file './approved-copy'
+# Use the real provider path from tool-index; never guess or launch an untracked background process.
 ```
 
 ## Initial Analysis
@@ -239,7 +225,7 @@ Use [field-notes.md](field-notes.md) after the first round of triage when you kn
 
 ## 任务完成自检（声称完成前 MUST 通过）
 
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
+- [ ] 我是否执行了所有适用步骤，并为不适用/未验证项说明原因？
 - [ ] 我是否基于 `tool-index` 使用了真实工具路径？
 - [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
 - [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？

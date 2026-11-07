@@ -5,6 +5,21 @@ All notable changes to **reverse-skill** are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.8.0] — 2026-11-07
+### Added
+- Stable goal/scope/delivery cards with scoped A/B/C and numeric aliases; technical paths remain internal decisions.
+- Native `-DryRun` / `--dry-run` routing with no project or route artifact writes.
+- Case-local authorization-surface inventory and read-only closure checks with regression reopening and partial coverage reporting.
+
+### Changed
+- Separate hard scope/identity/cleanup/Evidence gates from adaptive static, runtime, unpack/dump and provider strategies.
+- Reconstruction uses consistent L0–L6 evidence levels, behavior-model handoff and differential validation before completion.
+- Align beginner guidance and Chinese rules with evidence-backed partial delivery and existing authorization.
+
+## [1.7.2] — 2026-11-06
+### Fixed
+- APK rebuild/sign requires adb only when device installation is explicitly requested.
+
 ## [1.7.1] — 2026-11-06
 ### Added
 - Explicit `-Primary` / `--primary` route override for cases where keyword scoring cannot represent the user's already-known technical intent.

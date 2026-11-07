@@ -10,7 +10,7 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 
 先判断当前请求是**只读审查/摘要/比较/维护设计**，还是要求对目标或仓库产生副作用。
 
-- 只读模式：读取规则、证据和代码即可；不得运行仓库脚本、创建 case、启动 provider、安装工具、写入 case/journal/index 或修改客户端配置。报告结论和未知项后停止在只读边界。
+- 只读模式：读取规则、证据和代码；需要路由时仅调用原生 `-DryRun` / `--dry-run`，只输出 PRIMARY、零文件写入。不得创建 case、启动 provider、安装工具、写入 case/journal/index 或修改客户端配置。报告结论和未知项后停止在只读边界。
 - 执行模式：仅在用户明确激活本包并批准已披露的首个副作用计划后，按下列顺序执行。目标授权仍由 `scope.md` 独立控制。
 
 ### 执行模式 hot path
@@ -27,7 +27,7 @@ description: Routes reverse engineering, exploitation, penetration testing, malw
 
 ## REA 委派与进程生命周期
 
-`reverse-skill` 是唯一的路由、case 和证据总控；REA 是 PRIMARY 选定后的受限分析执行器。两者的边界与返回格式见：
+`reverse-skill` is the only router, case and Evidence authority. REA is a bounded post-PRIMARY execution backend. For authorization, licensing, entitlement, feature-gate or bypass work, use `skills/ops/authorization-coverage.md`: one patch or one working feature never closes an aggregate authorization goal; every required component needs its own Evidence and regression status.
 
 - `skills/ops/rea-delegation-contract.md`
 - `skills/ops/process-lifecycle.md`
@@ -39,15 +39,15 @@ PRIMARY skill 负责提出一个具体的 Evidence 问题并创建 work item，�
 
 ## 零基础操作员交互规范
 
-零基础引导只改变说明方式和用户交互，不创建第二个 router、PRIMARY、case 或 GOAL 引擎。每个 material stage/work item 完成后，按 `skills/ops/beginner-operator-guidance.md` 用白话报告“本轮做了什么、目前确认了什么、目前还不知道什么、下一步建议”。
+零基础引导只改变说明方式和用户交互，不创建第二个 router、PRIMARY、case 或 GOAL 引擎。每个 material stage/work item 完成后，按 `skills/ops/beginner-operator-guidance.md` 和 `skills/ops/guided-operator-contract.md` 用白话报告“本轮做了什么、目前确认了什么、目前还不知道什么、当前阻碍、内部下一步和是否需要用户决定”。
 
 进度报告不是批准请求。只要仍在既有目标/范围/影响/预算内，证据驱动的常规 bounded 动作从任务开始即自动推进，不依赖先选定 GOAL 候选；报告后继续执行，不得停下来等批准。
 
-仅当存在真实用户决策时，下一步建议才给出 2–5 个编号选项：结果/价值存在实质取舍、新增授权/影响/网络或运行时范围、缺少只有用户能提供的输入、自有进程 cleanup 未解决，或现有预算内已无可行路径。每个选项包含白话动作、括号中的专业术语、目的、影响、推荐标记、预期结果和对应 bounded work item；用户输入编号即可选择。
+仅当存在真实用户决策时，下一步建议才给出可复制的稳定卡：`GOAL-*` 处理目标结果，`SCOPE-*` 处理影响/授权范围，`DELIVERY-*` 处理交付取舍；卡片包含白话动作、影响、推荐标记、预期结果和当前 Evidence。技术路线、provider、工具、方法、子代理/委派、是否 fact-check、报告/汇报等内部选择不得做成菜单。用户输入完整卡或稳定 ID 即可选择；没有真正分叉时直接执行并汇报，不得用单选项菜单或“是否继续”请求批准。
 
 provider、工具、方法、子代理/委派、是否 fact-check、报告/汇报等内部选择不得做成菜单；同一结果的多条技术路径不是暂停理由；可恢复的 provider 失败在自有进程 cleanup 已验证后自行处理。已满足授权门且只有一个有效动作时直接执行并汇报，不得用单选项菜单或“是否继续”请求批准。
 
-仅当目标尚未确定或新证据使原目标不可行、且当前 Evidence 足以评估多个实质不同的长期结果时，输出 2–5 个动态生成的目标候选，并为每个候选提供可复制的 GOAL 文本。GOAL 引擎属于宿主；reverse-skill 只定义目标文本必须包含范围、约束、成功标准、unknown、停止条件和当前 case 复用要求。源码恢复、行为等价重实现、规格文档、UI 重建和版本适配等目标只能按本轮 Evidence 的可行性出现，不能把通用模板冒充成结论。
+仅当目标尚未确定或新证据使原目标不可行、且当前 Evidence 足以评估多个实质不同的长期结果时，输出 2–5 个动态生成的目标候选，并为每个候选提供可复制的 GOAL 文本。卡片不依赖宿主 GOAL 引擎；reverse-skill 只定义目标文本必须包含范围、约束、成功标准、unknown、停止条件和当前 case 复用要求。源码恢复、行为等价重实现、规格文档、UI 重建和版本适配等目标只能按本轮 Evidence 的可行性出现，不能把通用模板冒充成结论。
 
 ## 指令语义级别（RFC 2119）
 

@@ -2,6 +2,10 @@
 
 > `scripts/master-route.ps1` 与 `scripts/master-route.sh` 必须保持相同路由契约；平台只改变执行入口，不改变 routing semantics。
 
+## 只读路由
+
+审查/比较只需选 PRIMARY 时使用 `master-route.ps1 -DryRun` 或 `master-route.sh --dry-run`。它们使用同一 routing.json，只向 stdout 输出，不创建 ProjectRoot、OutDir、route-scope.md 或 case，也不要求执行 ACTION REQUIRED。正常执行模式仍按下述授权与 case 契约。
+
 ## 执行契约
 
 ```text

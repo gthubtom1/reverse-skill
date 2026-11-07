@@ -12,13 +12,27 @@ description: >-
 
 1. `NOW`: MUST 读取 [先例索引](../field-journal/_index.md) 与 [逆向先例](../field-journal/precedent-reverse.md)，确认任务属于独立复刻、验证或追版。先例 MUST NOT 替代授权；授权以原 case 的 `scope.md` 为准，检查 auth、资产、活动、网络与 readiness。超出原 scope 的新版本/新活动 MUST 先补范围决定。
 2. `NOW`: MUST 从用户成果项目恢复唯一 case 与 Spec Kit feature，读取原 `scope.md`、`timeline.md`、`workitems.md`、Evidence 及原生 tasks。追版 MUST 按 [追版步骤](references/upstream-follow-update.md) 固定 O/C/N；多候选时只暂停依赖身份的工作。
-3. `NEXT`: MUST 读取 `../tool-index.md` 确认真实路径、版本与工具资格；委派 REA 前核安装版 `binary_session`、`tools/list` 及实际 schema，读取官方随包方法。缺工具唯一恢复入口是已授权的平台 bootstrap；未登记能力则报告缺口，交独立 installer 处理，MUST NOT 猜路径或自行安装。
+3. `NEXT`: MUST 读取 `../tool-index.md` 确认真实路径、版本与工具资格；委派 REA 前核安装版 `binary_session`、`tools/list` 及实际 schema，读取官方随包方法。缺工具先报告缺口；只有当前用户已明确允许 bootstrap 且仍在原 scope 内，才调用已登记能力；未登记能力则交独立 installer 处理，MUST NOT 猜路径或自行安装。
 4. `NEXT`: MUST 按 [证据交接](references/evidence-to-spec.md) 复用原 case-review，再执行只读 `check_handoff.py` 检查指针。`PASS` 仅为 `machine_check_only`；关键 unknown、证据资格与语义支持 MUST 独立审查后才可放行受影响需求。
 5. `ACT`: MUST 接续下述确定性工作流，写原 timeline 的 `decision_delta` 与 `carry_forward_refs`，更新原 workitems 与 Spec Kit tasks。MUST NOT 重做 case-init、重置 scope、创建第二状态账本，或停在仅打印命令的状态。
 
-## 适用范围
+## Reconstruction handoff and equivalence levels
 
-本 skill 负责证据→规格→实现→收敛→原版对照的一个原生工作流，支持 `initial`、`validate`、`update` 三种工作方式（写在 timeline/notes，非新状态机）。默认交付范围是用户选定的功能与可观察行为。独立实现、原件补丁与重打包 MUST 明确区分；补丁复用不构成独立实现。
+`GOAL-RECONSTRUCT` enters this skill only after the original case has a target identity, selected behavior scope, Evidence-backed behavior model, unknown list, success criteria and a bounded handoff. The handoff points to the original `scope.md`, `timeline.md`, `workitems.md`, Evidence and any authorization-coverage manifest; it does not copy them into a second authority. The workflow supports `initial`, `validate` and `update` modes as timeline/notes labels, not a new state machine. Independent implementation, original patching and repackaging remain separate deliveries.
+
+Report the highest level actually supported:
+
+| Level | Claim | Minimum evidence |
+|---|---|---|
+| 0 | target/protection triage | exact identity, format/protection observations and unknowns |
+| 1 | readable decompilation/pseudocode | reproducible analysis output with addresses and limitations |
+| 2 | key calls/data flow | Evidence-linked calls, data transformations and hypotheses |
+| 3 | selected behavior model | observed inputs/outputs, states, error and boundary requirements |
+| 4 | independent implementation passes core differential tests | frozen core scenarios executed against original and independent implementation |
+| 5 | selected boundary/error/side-effect differential tests pass | required edge/state/regression surfaces pass with fresh proof |
+| 6 | near-original source recovery | source/symbol/build inputs and provenance support the claim |
+
+Levels 0–3 describe analysis progress, not a tested independent implementation. Level 4 or 5 is the usual reconstruction delivery. Level 6 requires source/build evidence and must never be inferred from decompiler output. Report the tested scope and unknowns at each level. A failed or uncovered required surface prevents the corresponding L4/L5 completion claim. The coverage mechanics are defined in `../ops/authorization-coverage.md`; one patch or one passing feature never closes a multi-component authorization goal.
 
 “先分析 APK/JS/PE 再复刻” MUST 先走原专业 PRIMARY，并将后续复刻记在同一 case 待办。纯反编译、源码恢复、符号迁移和普通 case 证据审查仍归各自模块。路由未命中 MUST 提议新增 skill 或向原路由维护者提交关键词/基准，MUST NOT 硬塞模块或实现第二路由器。
 
@@ -107,14 +121,7 @@ MUST 在同 case 的 timeline/workitems/notes 保存 feature、原 bundle、真�
 
 ### 真正分岔时的菜单
 
-仅当存在至少两条证据支持、选择会改变下一动作的分支（genuine decision boundary）时，MUST 提供 2–5 个可执行中文选项，例如：
-
-1. 继续调查阻断新功能的原版状态迁移
-2. 先实现已有充分证据的独立功能
-3. 导出当前范围、缺件与证据报告
-4. 仅当新版本目标身份确实未定时，暂停确认目标身份
-
-确定性转移 MUST 直接继续，MUST NOT 每阶段机械询问。
+仅当结果、范围或交付存在真实取舍时，按 [guided-operator-contract](../ops/guided-operator-contract.md) 提供可复制选项；内部方法分歧自动处理。例如 `DELIVERY-CORE` 先交付证据充分的指定功能，或 `DELIVERY-COVERAGE` 继续完成约定覆盖。不能把“调查哪个函数”或“选择哪种工具”交给用户。目标身份不明时只澄清身份；确定性转移直接继续。
 
 ## 任务完成自检（声称完成前 MUST 通过）
 
