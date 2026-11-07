@@ -26,7 +26,7 @@ Goal, scope and delivery are separate dimensions. A reconstruction goal does not
 
 ## Copyable options
 
-For a genuine result, target, authorization/effect or delivery choice, offer 2–5 short options in plain language with a recommendation and the material effect. Use A/B/C or 1/2/3 as local aliases to the displayed stable ID and complete text. The user may copy a whole option, its ID, or its displayed alias. Resolve aliases only against the latest unambiguous offered set for the same case/target; on stale or ambiguous input ask only the missing clarification. A bare ID with no prior scoped option is a category, not permission.
+For a genuine result, target, authorization/effect or delivery choice, offer 2–5 short options in plain language with a recommendation and the material effect. Use A/B/C or 1/2/3 as local aliases to the displayed stable ID and complete text. The user may copy a whole option, its ID, or its displayed alias. Resolve aliases only against the latest unambiguous offered set for the same case/target; on stale or ambiguous input ask only the missing clarification. In that clarification, do not invent a new option set, repeat old scope/delivery menus or select a recommendation on the user's behalf; ask which existing decision the input refers to, then wait only on dependent work. A bare ID with no prior scoped option is a category, not permission.
 
 Example when the requested output is undecided:
 
