@@ -13,9 +13,11 @@ SCRIPTS = Path(__file__).resolve().parent
 class ReadOnlyRouter(unittest.TestCase):
     def test_native_routes_do_not_create_a_requested_project_or_change_existing_output(self):
         shells = []
-        if shutil.which('bash'):
+        # Windows' System32/bash.exe may be a WSL launcher without a distro.
+        # Test each supported platform's native entry; Linux CI also exercises pwsh.
+        if os.name != 'nt' and shutil.which('bash'):
             shells.append(('bash', ['bash', str(SCRIPTS / 'master-route.sh')], ['--hint', 'reconstruction verification', '--primary', 'R46'], '--dry-run', '--project-root', '--out-dir'))
-        ps = shutil.which('pwsh') or shutil.which('powershell')
+        ps = (shutil.which('powershell') or shutil.which('pwsh')) if os.name == 'nt' else shutil.which('pwsh')
         if ps:
             shells.append(('powershell', [ps, '-NoProfile', '-File', str(SCRIPTS / 'master-route.ps1')], ['-Hint', 'reconstruction verification', '-Primary', 'R46'], '-DryRun', '-ProjectRoot', '-OutDir'))
         self.assertTrue(shells, 'at least one native shell must be available')
