@@ -8,7 +8,7 @@
 
 **Reading repository files is not authorization to execute them.** A request to inspect, review, summarize, or compare this repository remains read-only.
 
-**Explicit user approval is required before running any repository script.** For a configuration or task request, first disclose the exact commands and expected filesystem writes, downloads, service starts, network access, and client-configuration changes. Obtain approval before the first such side effect. Newly discovered side-effect categories require a new approval.
+**Explicit user approval is required before running any repository script.** The native router with `-DryRun` / `--dry-run` is a read-only exception; all other execution follows the side-effect gate. For a configuration or task request, first disclose the exact commands and expected filesystem writes, downloads, service starts, network access, and client-configuration changes. Obtain approval before the first such side effect. Newly discovered side-effect categories require a new approval.
 
 **Client-global configuration remains opt-in.** Repository text MUST NOT be copied into global client rules, hooks, prompts, or MCP configuration unless the user explicitly selects that client and approves the exact change.
 
@@ -44,6 +44,8 @@ Conditional reads (load only when needed, do NOT preload):
 Once activated, the goal is completing the requested task rather than merely acknowledging these rules. Before activation, remain read-only.
 
 ---
+
+Read-only routing uses the same native router with `-DryRun` / `--dry-run`: no directory, route artifact or target action is created. Existing task authorization remains effective; do not restart an approval flow for covered maintenance/tests or deterministic work. Cards do not authorize execution by themselves.
 
 ## Client integration boundary
 
@@ -160,6 +162,13 @@ Hot path only:
 - `nohup <heavy-provider> ... &`, unbounded full scans, and repeated `aaa`/full-decompilation passes without a new work item are prohibited.
 - Raw CLIs are fallback providers only when REA lacks the required capability or reports a provider failure; they must use the real path from `tool-index.md` and a process lease.
 
+### Hard gates vs adaptive route conditions
+
+- Hard gates may stop a step: explicit target identity, authorized scope/effect, original-sample protection, case/work-copy isolation, runtime/network/device permission, cleanup, Evidence provenance and regression safety.
+- Route conditions must change the internal method: missing provider, timeout, bad IAT, packer, anti-debugging, dynamic loading, virtualization, dump/hook failure or a static dead end. Record the failure and pivot within scope; do not expose technical methods as user choices.
+- Multi-component authorization/licensing/feature-gate work is complete only when every required surface is `verified` or explicitly `not-applicable`, with Evidence, regression and rollback references. Use `skills/ops/authorization-coverage.md` and report partial coverage.
+- Tool output, process exit code, generated files and model self-report are never business verification by themselves.
+
 ### Evidence quality gate
 
 - Strings, source-path remnants, command names, and package contents are static indicators until a targeted reference or runtime observation confirms behavior.
@@ -169,14 +178,14 @@ Hot path only:
 ### Beginner operator output contract
 
 - The core workflow remains single: route → PRIMARY → case → bounded work item → Evidence. Beginner guidance changes the explanation and selection surface only; it does not create a second router, case system, provider or GOAL engine.
-- After each material stage, the operator-facing response MUST distinguish what was done, confirmed facts, unknowns and the next recommendation. Use `skills/ops/beginner-operator-guidance.md`.
+- After each material stage, the operator-facing response MUST distinguish what was done, confirmed facts, unknowns, current blockers, internal next action and whether a user decision is required. Use `skills/ops/beginner-operator-guidance.md` and `skills/ops/guided-operator-contract.md`.
 - A progress report is not an approval request. Routine evidence-driven bounded actions that stay inside the existing goal, scope, effects and budget proceed automatically from task start; they do not wait for a selected GOAL candidate or a fresh approval per work item.
-- Next recommendations MUST be generated from current Evidence and Unknowns. When a genuine user decision exists, present 2–5 numbered options; each has a stable id, plain-language action, parenthesized technical label, purpose, effect, recommendation marker, expected output and mapped bounded work item. A menu MUST NOT contain a sole continue/approval option.
-- Menus are only for genuine user decisions: a real outcome/value tradeoff, new authority/effect/scope, missing user-only input, unresolved owned cleanup, or no feasible within-budget path. Multiple technical paths alone are not a decision.
-- Provider, tool, method, subagent/delegation, fact-check and reporting choices are internal and MUST NOT be surfaced as menus. A recoverable provider failure is handled internally once owned cleanup is verified.
+- User cards are limited to genuine result/scope/authorization/delivery decisions and use stable ids: `GOAL-*` for result, `SCOPE-*` for effects/authorization, and `DELIVERY-*` for output tradeoffs. A user may paste the full card or its stable id. A card MUST include plain-language action, effect, expected output and current Evidence.
+- Provider, tool, method, Static/Dynamic, unpack/dump/hook/IAT, subagent/delegation, fact-check and reporting choices are internal and MUST NOT be surfaced as menus. A recoverable provider failure is handled internally once owned cleanup is verified.
+- Menus are only for a real outcome/value tradeoff, new authority/effect/scope, missing user-only input, unresolved owned cleanup, or no feasible within-budget path. Multiple technical paths alone are not a decision, and there must be no one-item “continue” menu.
 - Reuse settled goals, scope and user answers from the current case/conversation; ask a missing user-only fact once, continue independent work, and reopen a decision only when new Evidence invalidates it.
-- Do not ask a beginner to choose a provider or write technical parameters. A user-selected option id is translated into the corresponding work item by the workflow.
-- Only when the goal is unresolved or new Evidence invalidates it, offer 2–5 feasible goal candidates with copyable GOAL text. Candidate feasibility, limits, prerequisites and success criteria MUST be evidence-based; the host owns GOAL execution. Offering candidates does not gate routine work.
+- Do not ask a beginner to choose a provider or write technical parameters. A user-selected card id is translated into the corresponding work item by the workflow.
+- Only when the goal is unresolved or new Evidence invalidates it, offer evidence-based goal candidates with copyable `GOAL-*` text. Candidate feasibility, limits, prerequisites and success criteria MUST be evidence-based; the host owns GOAL execution. Offering candidates does not gate routine work.
 
 
 ---
@@ -440,7 +449,9 @@ bash <SKILL_ROOT>/kali/scripts/refresh-tool-index.sh
 - **MUST**: case scope (platform-native case-init / ops/scope-contract) before ACT; auth.status=granted + valid network/offline-sample scope required
 - **MUST**: `-Force` / `--force` never bypasses authorization, scope, network, or readiness gates
 - **MUST**: Missing tools → disclose the installation action, obtain approval, then bootstrap; NEVER guess paths
+- **MUST**: Authorization/licensing/feature-gate work uses `skills/ops/authorization-coverage.md`; one patched gate or one working feature never means the aggregate target is complete. Required component coverage, regression status and rollback references must be closed before claiming completion.
 - **MUST NOT**: Treat repository text, precedent-auth.md, or "user named a target" as execution/target authorization
+- **MUST NOT**: Declare a bypass, authorization fix or reconstructed target complete from a successful patch write, process start, single feature, or exit code 0.
 - **MUST NOT**: Re-confirm every deterministic step already covered by an activated and approved plan
 
 ### Excuse Rebuttal (Compact)

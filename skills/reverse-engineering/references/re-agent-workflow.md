@@ -19,7 +19,7 @@
 1. stage/turn 结束时只写真正改变后续动作的 `decision_delta`；无变化写 `[]`。
 2. unchanged route/auth/scope/network profile/tool state/hypothesis 只放 `carry_forward_refs`，consumer 依引用读取，不重新 serialize / emit。
 3. `decision_delta` 不是完整 state；consumer 必须先继承 refs，再应用 delta。
-4. 只有两个或以上 evidence-supported 分支会导致不同下一动作时才停在 next-step menu；确定性 gate 直接推进。
+4. 只有用户结果、对象、范围、授权或交付存在真实分歧时才提供 `guided-operator-contract.md` 的可复制卡。多条技术路径由 agent 内部选择；确定性 gate 直接推进。
 
 例：Triage 完成且唯一合法下一步是 Static 时，transition 只需 `decision_delta: [phase=triage->static]` + `carry_forward_refs: [scope.md, evidence/E-triage.md]`。
 
@@ -38,20 +38,34 @@ Default limits:
 
 A timeout, provider error, or interruption requires cancellation and cleanup before a replacement provider starts. Raw CLI fallback uses `skills/scripts/process-lease.ps1` on Windows and must record cleanup status in the case timeline. `nohup` background providers, unbounded full scans, and repeated full analysis passes without a new work item are invalid execution states.
 
-## 0.5 用户指令可行性门闩（Issue #65）
+## 0.5 用户结果与技术路线门闩
 
-**原则**：服从用户**目标**，不盲从用户**步骤顺序**。跳步前必须说明前提并请确认；确认后的强制步骤必须做，且诚实标注 Evidence 质量。
+服从用户选择的**目标结果、对象、范围、授权和交付**，不把技术步骤当作用户菜单。Static/Dynamic、脱壳、dump、hook、IAT、provider 和工具顺序由 Evidence、scope、预算与 cleanup 规则内部决定。
+
+如果用户直接指定某个技术步骤，且该步骤在当前授权范围内，就执行并诚实记录质量；如果它依赖未满足的前提，记录 `blocked` 或 `quality=unreadable`，说明推荐的内部前提路径，并继续做范围内的独立 Evidence 工作。只有需要新增运行、联网、设备、修改副本、扩大对象或改变交付的真实边界时，才请求对应的 SCOPE/DELIVERY 卡。
 
 | 情况 | Agent MUST |
 |------|------------|
-| 用户要做 X，且当前状态可得到**有效** Evidence | 执行 X，更新 Evidence |
-| 用户要做 X，但存在**已知阻塞前提**（例：已判定加壳且静态 IAT 不可读） | **禁止**假装完成有意义的 IAT；① 一句话说清阻塞；② 给出推荐顺序（先脱壳/修 IAT，或直接动态抓 API）；③ **请用户确认**是「仍强制看当前花表」还是「按推荐顺序」 |
-| 用户明确**强制**当前步骤（如未脱壳也要看 IAT） | 执行并记 Evidence，MUST 标注 `quality=unreadable` / `packed`（或等价）；**禁止**据此下「无网络能力」等结论 |
-| 用户接受推荐顺序 | 先做前提步骤；完成后自动或再应要求做 X；**禁止**用前提步骤（如脱壳）**冒充**「已完成导入表检查」 |
+| 当前 Evidence 能回答用户目标 | 执行最小 bounded 动作，更新 Evidence 和 decision delta |
+| 当前技术路径被加壳、动态加载、反调试、虚拟化或 provider 失败阻塞 | 记录失败现象、条件和 cleanup；选择当前 scope 内的下一条静态/动态/脱壳/dump/hook 路线；不得把失败路径冒充成功 |
+| 下一条路线需要新的运行时、联网、真实设备、授权范围或副作用 | 停在硬门，说明影响，只请求对应的用户范围/授权决定 |
+| 用户坚持一个当前不具备前提的技术步骤 | 可以执行可观察的有限尝试并标注质量；不得用不适合的输出支持超出证据的结论 |
 
-**与「重做 X」的关系**：重做 X 仍 = 重做被点名步骤（或其经确认的合法前提协商结果），禁止偷换成无关步骤。脱壳是导入表的**前提**，不是导入表的**替代品**。
+技术路径切换不是新任务，也不是重复审批。用户明确禁止的步骤仍然禁止；例如“先不要脱壳”不能被内部策略覆盖。记录当前步骤的局限，继续允许的独立工作。变更的 route/auth/scope/network profile/provider state 写入 `decision_delta`，未变更部分只用 `carry_forward_refs` 指向已有 scope、workitem 和 Evidence。
 
-典型冲突：用户在加壳样本上说「先不要脱壳，先看导入表」→ 壳常篡改导入目录/加密描述符，静态表花且无意义 → 走本表「阻塞前提」行，不得默默脱壳冒充，也不得默默交出花表当完成。
+### 0.5.1 自适应转场矩阵
+
+| Evidence signal | Internal transition | Required record | Completion limit |
+|---|---|---|---|
+| clean imports, reachable entry and stable references | targeted Static | E-triage, work item, selected path | static findings remain observations until behavior is checked |
+| packed/unknown loader, encrypted imports, missing reachable code | bounded unpack/dump observation or runtime capture if scope permits | packer signal, failed static path, cleanup, dump identity | dump is a runtime snapshot, not recovered source |
+| `LoadLibrary`/`GetProcAddress`, API hash, code appears only after start | bounded Dynamic/API hook or memory observation | trigger, process identity, network profile, cleanup | static absence does not prove capability absence |
+| anti-debug/anti-VM/anti-hook exit or no behavior | isolate the detector and change the permitted observation environment | detector Evidence, bypass/attempt result, side effects | no behavior remains unknown if the detector cannot be validated |
+| VM dispatcher/opaque predicates/control-flow flattening | trace selected inputs, lift the VM boundary or return to static anchors | mapping hypothesis, trace, confidence, failed route | do not claim original source structure from lifted behavior |
+| IAT repair/dump/hook/provider fails | stop repeating the same route; choose another bounded route or mark blocked | exact error, conditions, cleanup, next decision delta | failed tool does not close or negate the behavior |
+| one component works but sibling/plugin/native/online gate is unexamined | update authorization coverage and run regression matrix | per-surface row, Evidence, test, rollback | aggregate completion is prohibited until closure |
+
+These transitions are technical strategy, not operator choices. Every transition remains bounded by the selected `SCOPE-*` card, target identity, budget and cleanup policy.
 
 ## 1. Triage（5–15 分钟 · 强制起点）
 
@@ -67,7 +81,7 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
 □ 产出：E-triage（MUST 含 imports 或等价锚点分类摘要，含 quality 标注如适用）+ 假设清单
 ```
 
-**阶段门闩（Triage → Static/Dynamic）**：E-triage 中未记录 imports **或** 合法等价锚点摘要前，MUST NOT 进入 Dynamic（除非已记录 IAT 修复失败并选择动态旁路，见 §1.2），也 MUST NOT 声称「基础分诊完成」。解析失败时仍 MUST 把失败输出写入 Evidence，不得跳过。用户要求「重做导入表检查」时 MUST 重做 imports/等价步骤本身（或先完成 §0.5 协商后的前提），禁止改换其他分析步骤冒充。
+**阶段门闩（Triage → Static/Dynamic）**：E-triage 应记录 imports 或合法等价锚点摘要；若解析失败、导入为空、导入被壳污染或关键路径只能在运行时观察，必须记录失败 Evidence 和质量，再可进入 bounded Dynamic 旁路。Dynamic 不是静态失败的隐藏替代品，静态失败与动态观察都要保留并在 synthesis 中区分。
 
 ### 1.1 导入表硬门与等价路径
 
@@ -94,8 +108,8 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
   → 直接进入 §2 Static（.NET 走等价锚点）
 
 分支 B：有壳 / 强混淆
-  Step 1：尝试脱壳（自动脱壳机 / 手动找 OEP）— 须在授权与隔离环境
-  Step 2：尝试修复 IAT
+  Step 1：根据 Evidence 选择脱壳观察、运行时映射或其他有界取证 — 须在授权与隔离环境
+  Step 2：仅当问题需要可重载镜像/可解析导入时尝试修复 IAT
     工具：x86 → ImportREC（或等价）；x64 → Scylla（或等价）。禁止 64 位样本死磕 ImportREC。
     情况 B1：修复成功且可解析 → 记 E-imports（修复后）→ §2 Static
     情况 B2：ImportREC/Scylla 报错、修复后无法运行、或 IAT 全乱码（VMP/加密壳）
@@ -108,7 +122,7 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
       → 转入 §3 Dynamic：对 CreateFile / GetFileSize / 哈希相关 API 下断，定位校验绕过点
 ```
 
-**IAT 修复铁律（MUST）**：优先尝试自动/半自动修复；一旦修复工具报错或修复后程序无法运行，**立即停止**在静态导入表上死磕，切换动态调试，用 API 断点（如 `bp CreateFile` / 关键网络 API）在运行时捕获导入函数。
+**IAT 修复铁律（MUST）**：禁止在同一失败条件下无限重复。修复仅在当前问题需要可解析导入表或可重载镜像时尝试；可以直接选择已获准的 API 运行时观察，不必先制造一次修复失败。失败须记录 E-iat-repair-fail 和 cleanup；随后按 scope 选择动态观察、换静态锚点或报告 blocked。缺少运行授权时不能因修复失败自动运行目标。
 
 ## 2. Static（基础静态锚点 → 深挖）
 
@@ -126,7 +140,7 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
 □ 硬编码域名/IP/URL 字符串；资源节是否藏 Payload
 □ 定位关键函数（加密/校验/网络/授权）→ 地址/符号写入 Evidence
 □ 一条路不通 → 换工具（IDA↔r2↔Ghidra）
-□ 时间盒（补丁 9 · SHOULD 默认）：静态深挖约 15 分钟仍无关键路径 → 强制转入 §3 Dynamic（用户/任务可覆盖时长）
+□ 时间盒（补丁 9 · SHOULD 默认）：静态深挖约 15 分钟仍无关键路径 → 重新选择 Evidence 问题/路径；已获准运行时可转 §3 Dynamic，否则保留 blocked/unknown
 ```
 
 **无 MCP 时**：可用导出反编译文本再分析（对照 P4nda0s reverse-skills / IDA-NO-MCP 思路），仍写 Evidence 路径。
@@ -135,18 +149,18 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
 
 核心理念：**静态提供线索 → 动态验证 → 验证卡壳 → 回静态重审**（无固定唯一顺序）。
 
-### 3.0 断点起手式（补丁 7 + 10 · MUST 顺序）
+### 3.0 断点起手式（适用的技术建议）
 
-在用户态调试器（x64dbg 等）启动样本前，按「四级火箭」预置断点（可因架构/工具略名不同，顺序不变）：
+在用户态调试器（x64dbg 等）启动已获准的样本前，依据平台和 Evidence 问题选择适用观察点；这些是建议，不能成为所有目标必跑的硬顺序：
 
 1. **TLS 回调**断点（调试器 EP 之前可能已跑）
 2. **入口点 EP** 断点
 3. **敏感 API** 断点（如 `CreateRemoteThread` / 网络 / 文件写）
-4. **保底**：`ExitProcess` / 进程退出路径断点（补丁 10）— 一旦因反调试直接退出，**不急着重启**；立即 dump memory，将崩溃前镜像路径写入 Evidence，供字符串/数据恢复
+4. **退出路径**：`ExitProcess` / 进程退出路径断点 — 若反调试直接退出，先记录现象；在 scope 和资源预算允许且内存观察能回答当前问题时采集 dump，记录进程、时间、映射、哈希及 observer side effects。
 
 ```text
 □ Frida / x64dbg / gdb / emulator：验证静态假设
-□ 按 §3.0 预置断点后再跑；单步跟踪栈/寄存器（白盒）
+□ 按当前问题预置适用观察点后再跑；按需跟踪栈/寄存器（白盒）
 □ 行为监控：沙箱 / Procmon / RegShot（黑盒）
 □ IAT 修复失败 / 自校验闪退样本：硬件执行断点或内存搜索强行捕捉 API；CreateFile/GetFileSize 查 CRC
 □ 反调试/反 Frida → reverse-engineering/anti-analysis
@@ -160,7 +174,7 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
 ```text
 无行为或立刻退出 / 无限休眠
   → 检查反调试 / 反虚拟机例程（CPUID、高精度计时、沙箱特征等）
-  → 尝试硬件断点绕过、修补检测点、或换物理机/更高保真环境
+  → 在已有授权内调整观察方式；修补工作副本或更换设备/运行环境需要相应 scope，不能自动转真实设备
   → 将「无行为 + 疑似 anti-VM」写入 Evidence，禁止写成「样本无害」而不加条件
 ```
 
@@ -168,14 +182,14 @@ A timeout, provider error, or interruption requires cancellation and cleanup bef
 
 | 阶段 | 默认阈值（可被用户/任务覆盖） | 动作 |
 |------|------------------------------|------|
-| Static 深挖无关键路径 | ~15 分钟 | 转入 Dynamic |
+| Static 深挖无关键路径 | ~15 分钟 | scope 允许时转入 Dynamic，否则换静态锚点或标 blocked |
 | Dynamic 单步无进展 | ~200 条指令 | 回 Static 字符串/交叉引用重锚 |
 | 任一路径重复失败 | 记 Evidence 后换工具或旁路 | 禁止同一失败手法空转 |
 
 
 ### 3.3 反调试 / 混淆旁路速查（Issue #65 补丁 A–T · 高频）
 
-完整索引与动作细节见 `reverse-engineering/anti-analysis.md`「Agent 响应菜谱 A–T」。此处只列 **P0 必查 + 常见转场**。默认 **授权隔离 lab**；patch/改标志位不是未授权生产动作。
+完整索引与动作细节见 `reverse-engineering/anti-analysis.md`「Agent 响应菜谱 A–T」。这些是适用条件下的技术候选；lab 假设不构成 patch、运行、联网或设备授权。
 
 | 触发特征 | 首选动作（摘要） | Evidence |
 |----------|------------------|----------|
@@ -236,9 +250,24 @@ Blindspots (Rust/Go/VMP/injection/OLE/PDF/agent-meta): [analysis-blindspot-cookb
 □ field-journal 脱敏
 ```
 
+## 4.1 Authorization-surface closure
+
+For licensing, entitlement, feature-gate or bypass behavior, create and maintain the case-local coverage manifest described in `../../ops/authorization-coverage.md`.
+
+```text
+□ inventory every in-scope component and gate
+□ assign one stable row per component/gate
+□ record target identity, Evidence, patch identity, expected behavior and rollback
+□ run regression checks for the changed component and neighboring features
+□ reopen a row when a regression fails or the observed behavior changes
+□ report N/M required surfaces verified; aggregate completion only when all rows are verified or explicitly not-applicable
+```
+
+A patch to one module does not close a multi-component authorization. A working happy path does not prove offline, online, device, integrity, update, plugin, native or failure-path gates. Unknown, blocked and unexamined rows remain visible and prevent a completion claim.
+
 ## 5. 六阶段实战映射（Issue #65 思维导图 → 本文件）
 
-| 实战阶段 | 本文件章节 | 硬门 / 铁律 |
+| 实战阶段 | 本文件章节 | 约束与技术建议 |
 |----------|------------|-------------|
 | 1 初步快速研判 | §0–§1 Triage | Hash、架构、文件类型、查壳；imports/等价锚点；§0.5 指令门闩 |
 | 2 脱壳与 IAT | §1.2 | IAT 铁律；失败/自校验闪退 → Evidence → Dynamic |

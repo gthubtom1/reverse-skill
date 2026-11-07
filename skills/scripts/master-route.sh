@@ -7,6 +7,7 @@ HINT=""
 OUT_DIR=""
 PROJECT_ROOT=""
 PRIMARY=""
+DRY_RUN=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -14,8 +15,9 @@ while [[ $# -gt 0 ]]; do
     -OutDir|-out-dir|--out-dir) OUT_DIR="${2:-}"; shift 2 ;;
     -ProjectRoot|-project-root|--project-root) PROJECT_ROOT="${2:-}"; shift 2 ;;
     -Primary|-primary|--primary) PRIMARY="${2:-}"; shift 2 ;;
+    --dry-run|-DryRun) DRY_RUN=1; shift ;;
     -h|--help)
-      echo 'Usage: master-route.sh --hint TEXT [--primary ROUTE_ID] [--out-dir DIR] [--project-root DIR]'
+      echo 'Usage: master-route.sh --hint TEXT [--primary ROUTE_ID] [--out-dir DIR] [--project-root DIR] [--dry-run]'
       exit 0
       ;;
     *)
@@ -53,14 +55,14 @@ if [[ -z "$OUT_DIR" ]]; then
   OUT_DIR="$PROJECT_ROOT/work/master-route-$(date +%Y%m%d-%H%M%S)"
 fi
 
-"$PYTHON" - "$CONFIG_PATH" "$SKILLS_ROOT" "$PROJECT_ROOT" "$OUT_DIR" "$HINT" "$PRIMARY" <<'PY'
+"$PYTHON" - "$CONFIG_PATH" "$SKILLS_ROOT" "$PROJECT_ROOT" "$OUT_DIR" "$HINT" "$PRIMARY" "$DRY_RUN" <<'PY'
 import datetime
 import json
 import pathlib
 import re
 import sys
 
-config_path, skills_root_raw, project_root_raw, out_dir_raw, hint, explicit_primary = sys.argv[1:]
+config_path, skills_root_raw, project_root_raw, out_dir_raw, hint, explicit_primary, dry_run = sys.argv[1:]
 skills_root = pathlib.Path(skills_root_raw)
 project_root = pathlib.Path(project_root_raw).resolve()
 out_dir = pathlib.Path(out_dir_raw)
@@ -142,6 +144,14 @@ skill_path = skills_root / pathlib.PurePosixPath(primary_path)
 if not skill_path.is_file():
     print(f"ERROR: PRIMARY skill missing: {skill_path}", file=sys.stderr)
     raise SystemExit(2)
+
+if dry_run == "1":
+    print(f"PRIMARY -> skills/{primary_path}")
+    print(f"Label: {route['label']} | confidence: {confidence}")
+    for note in notes:
+        print(f"NOTE: {note}")
+    print("READ-ONLY: no route artifacts written; review PRIMARY within the requested scope.")
+    raise SystemExit(0)
 
 out_dir.mkdir(parents=True, exist_ok=True)
 secondary = [f"skills/{routes[item]['skill']}" for item in selected_order if item != primary]

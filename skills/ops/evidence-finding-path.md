@@ -61,6 +61,10 @@ The review is read-only and checks scope fields, Evidence records, work item and
 
 **MUST**：`evidence_ids` 非空；`status=validated` 时 confidence 不得为 low（除非标注 residual risk）。
 
+## 2.1 授权面与回归覆盖
+
+当任务涉及授权、许可证、entitlement、feature gate、完整性或旁路时，Evidence 只能关闭对应的单个观察或组件。按 [`authorization-coverage.md`](authorization-coverage.md) 为每个 in-scope component/gate 建立独立 row，绑定 target identity、Evidence、patch、regression result 和 rollback。一个组件通过不能推出其他组件通过；任一回归失败都要把受影响 row 重新标为 `patched` / `unknown`，并阻止 aggregate completion。报告使用 `N/M required surfaces verified`，不把模型自述或工具退出码当业务证明。
+
 ## 3. Path（攻击路径 / 调用路径 / 解题路径）
 
 统一叫 **Path**，按任务类型解释：
@@ -128,4 +132,4 @@ Promotion to status=validated is stricter (decision cookbook):
 | **validated** | **SHOULD >=2 independent** Evidence (best: 1 static + 1 dynamic). A single Evidence item alone MUST NOT silently promote to validated — keep candidate/preliminary, or record residual_risk + human confirm. |
 | blocked promotion | record Evidence E-insufficient-evidence |
 
-Full recipes: [nalysis-decision-framework.md](analysis-decision-framework.md) (R4*, R1, R41, R44).
+Full recipes: [analysis-decision-framework.md](analysis-decision-framework.md) (R4*, R1, R41, R44).
