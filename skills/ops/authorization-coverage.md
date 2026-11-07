@@ -11,6 +11,8 @@ python -B skills/scripts/check-authorization-coverage.py work/<case>/notes/autho
 python -B skills/scripts/check-authorization-coverage.py work/<case>/notes/authorization-coverage.json --case-root work/<case> --require-complete --format json
 ```
 
+Before any aggregate completion claim, run the second command with `--require-complete`, require `summary.complete: true`, then independently review the supporting behavior/regression Evidence and cleanup. The ordinary progress command's exit `0` is never a completion signal.
+
 The checker uses only the Python standard library. The caller supplies the existing case root explicitly; the manifest cannot redirect it. It reads and hashes files, parses records and computes coverage. It never patches files, runs manifest/Evidence commands, executes tests, applies rollback, changes scope, writes case state, starts providers or contacts the network.
 
 | Exit | Meaning |
