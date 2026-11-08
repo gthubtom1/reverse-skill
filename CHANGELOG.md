@@ -5,6 +5,10 @@ All notable changes to **reverse-skill** are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.8.1] — 2026-11-08
+### Changed
+- Remove the obsolete optional recovery integration language from the maintained operator contract; case files, Evidence and native routing remain the sole workflow sources.
+
 ## [1.8.0] — 2026-11-07
 ### Added
 - Stable goal/scope/delivery cards with scoped A/B/C and numeric aliases; technical paths remain internal decisions.

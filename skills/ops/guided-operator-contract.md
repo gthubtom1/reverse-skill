@@ -62,7 +62,7 @@ Do not print the entire form after every command. Reports do not pause authorize
 
 ## Recovery and completion
 
-Store selected goal text, target identity, scope source, success criteria, stop conditions, phase and Evidence/unknown/blocker pointers in the existing case. Record a changed decision as `decision_delta` and carry unchanged sources via `carry_forward_refs`. Continuity can index these pointers; it is never a parallel task, permission or Evidence authority. Restore original sources and their current applicability before relying on memory.
+Store selected goal text, target identity, scope source, success criteria, stop conditions, phase and Evidence/unknown/blocker pointers in the existing case. Record a changed decision as `decision_delta` and carry unchanged sources via `carry_forward_refs`. The case is never a parallel task, permission or Evidence authority. Restore original sources and their current applicability before relying on prior notes.
 
 For packed, dynamically loaded, anti-analysis or virtualized targets, use the adaptive transitions in `../reverse-engineering/references/re-agent-workflow.md`. A dump or decompilation does not establish source recovery. Use the L0–L6 definitions in `../reconstruction/SKILL.md` and differential evidence for the chosen scope.
 
