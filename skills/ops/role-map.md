@@ -9,7 +9,7 @@
 - **reverse-reviewer 是 read-only**：只审查现有 scope、handoff、产物和 Evidence 引用；不得对目标执行动作、修改源文件、case 权威文件或 Evidence ledger。审查结果返回主代理，由主代理决定是否接收。
 - **planner / scout 只有 advisory 权限**：可以提出拆分、线索和风险提示，但不能执行目标动作、分配新的 Worker、改变范围或创建账本。
 - **实现型 Worker 只能在行为 Evidence handoff 被主代理接收后进入 `reconstruction/`**。没有目标身份、已观察行为、成功标准和未决 unknowns 的 Evidence handoff，不得开始独立实现或复刻。
-- 任何 handoff 都必须携带：`case_id`、目标 identity 与 hash、current phase、一个 Evidence question、allowed actions、write scope、budget、cleanup 和 acceptance。字段缺失时退回主代理补齐，不由 Worker 猜测。
+- 任何 handoff 都必须携带：现有 `case_id`（仅 pre-case 只读规划/维护可写 `n/a` 并说明原因）、目标 identity 与 hash（或明确说明缺失原因）、`carry_forward_refs`、current phase、一个 Evidence question、allowed actions、write scope、budget、cleanup 和 acceptance。涉及目标动作时必须引用并读取现有 scope/授权；字段或引用缺失时阻断并退回主代理补齐，不创建假 case，也不由 Worker 猜测。
 - 子代理不得递归委派、创建第二 router、case、timeline、workitem 或 Evidence ledger；未改变的权威状态通过原文件/条目引用传递。
 - 同一目标的重型 provider 必须串行。timeout 或 provider failure 后，先取消并验证 cleanup，再记录失败并切换 provider；cleanup 未确认时不得启动替代 provider。
 

@@ -4,7 +4,7 @@
 
 `reverse-skill` remains the only router and case authority. In a Pi session, the **Pi main agent / lead is the sole final authority** for route, scope, case, timeline, work item, Evidence, Finding, Path, budgets and replanning. Official REA is a bounded execution backend used after PRIMARY has selected a specialist workflow. REA does not create a second route, scope, case, or evidence graph.
 
-Every role handoff, including advisory and review handoffs, uses the same bounded envelope below. A Worker result is a proposal until the main agent accepts it into the existing case. Missing fields are a handoff failure, not permission to infer defaults.
+Every role handoff, including advisory and review handoffs, uses the same bounded envelope below. A Worker result is a proposal until the main agent accepts it into the existing case. For pre-case read-only planning/maintenance only, `case_id` may be `n/a` with a reason; this never authorizes target action or creating a synthetic case. Missing fields are a handoff failure, not permission to infer defaults.
 
 ## Shared handoff envelope
 
@@ -12,10 +12,11 @@ Every handoff MUST carry all of these fields:
 
 ```yaml
 handoff:
-  case_id: <existing case id>
+  case_id: <existing case id, or n/a + reason for pre-case read-only planning/maintenance>
   target:
-    identity: <stable target identity>
+    identity: <stable target or repository identity>
     sha256: <target/artifact digest; record an explicit unavailable reason if no digest exists>
+  carry_forward_refs: [<authoritative scope, workitems, timeline, Evidence, or source identity refs>]
   current_phase: triage | static | dynamic | synthesis | reconstruction | review
   evidence_question: <one evidence question>
   allowed_actions: []
@@ -32,7 +33,7 @@ handoff:
   acceptance: []
 ```
 
-`write_scope` may cover bounded raw artifacts or an explicitly assigned reconstruction workspace; it MUST NOT silently include route, scope, case, timeline, workitems, or the Evidence ledger. `reverse-reviewer`, `planner`, and `scout` use `mode: none`. The `acceptance` list must state the observable Evidence or result the main agent will use to accept or reject the handoff. `evidence_question` is singular even when the result has several observations.
+`carry_forward_refs` MUST identify the authoritative inputs the Worker needs; the consumer MUST resolve them before acting and apply only the handoff's decision delta. If a required scope/authorization reference is missing or unreadable, the Worker reports blocked rather than inferring permission or state. For pre-case read-only work, references may point to the user request and repository identity instead. `write_scope` may cover bounded raw artifacts or an explicitly assigned reconstruction workspace; it MUST NOT silently include route, scope, case, timeline, workitems, or the Evidence ledger. `reverse-reviewer`, `planner`, and `scout` use `mode: none`. The `acceptance` list must state the observable Evidence or result the main agent will use to accept or reject the handoff. `evidence_question` is singular even when the result has several observations.
 
 
 ## Work item contract
@@ -48,6 +49,7 @@ work_item:
     identity: <stable target identity>
     path: <artifact path>
     sha256: <digest; explicit unavailable reason if no digest exists>
+  carry_forward_refs: [<scope.md, workitems.md, timeline.md, relevant Evidence refs>]
   current_phase: triage | static | dynamic | synthesis | reconstruction | review
   question: <one evidence question>
   mode: triage | static | dynamic | synthesis
