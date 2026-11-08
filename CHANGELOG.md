@@ -5,6 +5,13 @@ All notable changes to **reverse-skill** are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.8.2] — 2026-11-08
+### Added
+- Define bounded multi-agent roles and handoffs: the Pi lead retains authoritative workflow state, Workers receive explicit scope and carry-forward references, and reconstruction begins only after accepted behavior Evidence.
+
+### Changed
+- Require verified provider cleanup before replacement and allow explicitly identified pre-case read-only planning without synthetic cases.
+
 ## [1.8.1] — 2026-11-08
 ### Changed
 - Remove the obsolete optional recovery integration language from the maintained operator contract; case files, Evidence and native routing remain the sole workflow sources.
