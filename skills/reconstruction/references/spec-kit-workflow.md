@@ -18,6 +18,14 @@ Spec Kit MUST 使用官方包，本 skill 只指导用户成果项目的 constit
 
 斜杠名称是官方工作内容的标识；宿主具体表现 MUST 以项目实际生成内容为准。代理 MUST 读取并执行其完整指令、产出文档/代码与真实回执，单纯输出 `/speckit.*` 文本不算执行。
 
+## implement 的完整责任与选定后端
+
+`implement runner` 是执行成果项目所生成官方完整 implement 指令的原宿主/owner，不是新增控制代理。MUST 读取 prerequisites、检查 feature/tasks 和 checklist 状态，按官方规则处理未完成 checklist；执行适用 hooks、依赖阶段、测试任务、同文件串行与阶段验证。不能因为已挑任务而跳过这些前置，before_implement hook 也不是替换整段 implement 的开关。
+
+runner 从原 tasks 选择依赖已满足的任务，每批只选现有 implementation-worker 或 [execution-backend version 1](execution-backend.md) 一个代码后端。后端须通过 [安装/准备与预算能力门](execution-backend.md)，prepare 与 typed return_summary 以实际 bundle entry-protocol 和已验 schema 为准；不支持则回现有 Worker，不以夹具代替准备。后端只写所选任务授权的成果代码，返回实际 diff、检查输出、失败/unknown 与清理证据；needs-spec 回 runner/lead，needs-scope 回 lead，required unknown 不取得 candidate 资格。runner 保留原 tasks 的唯一更新权。MUST 对照源码基准、task IDs 与 check plan 接收结果，失败、未执行或未验证的任务不得勾 `[X]`。批次返回 candidate、Craft Ready 或进程 exit 0 都不表示 implement 完成；runner 继续剩余任务，最后执行官方要求的全部 required tasks、规格、测试、计划与完成验证。
+
+converge MUST 单独读取当前 spec/plan/tasks 与代码，沿官方机制只追加带 source-ref 的缺项任务；该阶段不编码、不重写意图，没有缺项则 tasks 字节不变。新增任务再回 implement 选择后端。独立验证失败按原因回实现或补证，Converged 和后端局部 checks 不替代原版行为 proof。研究、task、scope、源码/基线/check plan 或模型身份在运行中改变时，MUST 停稳当前 writer，重新接收交接并使相关旧 proof 按适用性失效。
+
 ## 追版与恢复
 
 已冻结旧版 feature MUST 保留。追版用原 Spec Kit 机制生成后继 feature（例如 `specs/001-literal-v1/` → `specs/002-literal-v2/`），在新 spec/plan/tasks 与原 case notes/timeline 用项目相对路径互链。编号由项目机制选择，不建立独立版本注册表。FR 若跨 feature 同名 MUST 连同 feature 路径解释，不能只靠 FR-001 全局匹配。

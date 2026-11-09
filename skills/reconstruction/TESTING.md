@@ -2,7 +2,27 @@
 
 本记录仅覆盖 `skills/reconstruction/` 自身。源码文件限 Markdown/Python/JSON；样例完全合成脱敏，无真实目标、二进制、真实 REA 导出或伪造 semantic ID。未执行 git add/commit/push；共享路由、工具发现、原 tests/CI 和 installer 均由主流程集成。
 
-## 已执行
+## 2026-11-09：执行后端合同回归
+
+本节是当前隔离维护 worktree 的实测；后文 31 项记录为原有历史基线。新增 [execution-backend version 1](references/execution-backend.md) 仅规定选定 implement task 的领域边界，配套 Craft/Pi 工件标为 not-yet-installed。本轮不扩 `handoff-manifest` 或 checker schema，维持对未知状态字段的拒绝；没有能独立认证完整后端输入的新增 reader。
+
+在隔离 worktree 内执行（日志及系统临时根均限制在 `work/craft-verification/`）：
+
+```text
+python -B -m unittest discover -s skills/reconstruction/tests -p "test_*.py" -v
+python -B skills/scripts/test-router-readonly.py -v
+powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/test-routing.ps1 -LogDir <worktree>/work/craft-verification/routing
+powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/verify-routing-coherence.ps1 -ScratchDir <worktree>/work/craft-verification/coherence
+powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/smoke.ps1 -LogDir <worktree>/work/craft-verification/smoke
+```
+
+实际结果：reconstruction **36/36**（0 skipped）、原只读路由测试 **1/1**、原完整 routing **192/192**、coherence 退出 0、smoke 的 12 个脚本解析与 9 个路由样例全通过，FAIL_COUNT=0。新增 6 条路由夹具实际调用 Windows native router 的 DryRun，核 Craft 后端措辞保留 reconstruction/APK/JS/R15/case-review 的原 PRIMARY，缺失项目未创建、原 route-scope 哨兵字节不变。新增 handoff 负例实际读取/哈希临时文件，拒绝 scope/obligation 被 backend receipt 替代、critical unknown 的本地 resolved/Ready、ledger/accepted 状态注入与 tasks 摘要漂移；这些只验证原 reader 边界，不是后端 runtime 或权限沙箱测试。
+
+Windows/Python 3.12 实测；Linux/macOS 路由分支本轮未运行。smoke 只解析 bootstrap 脚本，并提取函数操作临时 TOML，不运行安装/下载。本轮没有真实 target、provider、模型、REA/Spec 命令、Craft/Pi runtime 或活动配置操作。未验证 no-Study 的运行拦截、总预算强制、writer lease/取消清理、模型资格、完整 implement/converge 或真实业务切片；后端能力须在其所属仓库独立验收。
+
+## 原有历史验证记录
+
+### 已执行
 
 运行环境：Windows，Python 3.12.0。命令相对技能包根：
 
@@ -33,7 +53,7 @@ python -B skills/reconstruction/scripts/check_handoff.py skills/reconstruction/e
 
 静态检查实际通过：所有本地 Markdown 链接可解析、JSON 可解析、Python 3.9 grammar 可解析、无外部工作区路径依赖、源文件只有 `.md/.py/.json`、样例源文件不被原 `work/` 忽略规则遮蔽。Python 3.9 runtime 未实测，语法检查不等于该运行时通过。
 
-## 明确未验证
+### 明确未验证
 
 - REA 正式安装版 `binary_session` / `tools/list` / schema、官方 provider 与生产接口实际调用；这里只核对了官方 README 及其契约文档。
 - 真实 REA bundle 认证、语义支持、authority、proof applicability、obligation/coverage closure；薄脚本有意不实现这些判据。
@@ -43,7 +63,7 @@ python -B skills/reconstruction/scripts/check_handoff.py skills/reconstruction/e
 
 原 case-review 已只读核对实现；本脚本不调用或复制其图审查。合成 scope 为 document-only 且 readiness=false，机械样例 PASS 不改变此授权边界。
 
-## 主流程集成点
+### 主流程集成点
 
 1. 以原 `routing.json` 接入单一 reconstruction PRIMARY，保持旧路由顺序/期望；混合意图先原领域，再同 case 明确阶段 Hint。不要在此脚本加路由器。
 2. 同步原 MASTER/导航/生成 INDEX；按官方能力登记实际 REA/Spec Kit 工具资格，不把宿主适配塞入技能目录。

@@ -1,0 +1,8 @@
+[
+  {"hint": "reconstruction implementation from reviewed requirements Craft backend", "primary": "reconstruction"},
+  {"hint": "reconstruction verification Craft Ready candidate", "primary": "reconstruction"},
+  {"hint": "APK 分析后复刻 Craft backend", "primary": "apk-reverse"},
+  {"hint": "js reverse then reconstruction Craft backend", "primary": "js-reverse"},
+  {"hint": "upstream follow update Craft backend", "primary": "binary-diff"},
+  {"hint": "case review for reconstruction evidence Craft backend", "primary": "case-review"}
+]
