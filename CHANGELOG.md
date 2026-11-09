@@ -5,6 +5,19 @@ All notable changes to **reverse-skill** are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] - 2026-11-09
+
+Release candidate prepared for publication. This uncommitted worktree is release-ready metadata only; it does not assert a published 1.9.0 tag, release or active installation.
+
+### Added
+- Add the fixed `reverse.r46.execution-backend` version 1 capability descriptor, requiring reverse >=1.9.0 and SHA-256 binding of the four workflow contract files; metadata grants no scope or runtime qualification.
+- Define version 1 of the R46 selected-task execution-backend workflow contract, with accepted research references, one Builder writer lease, frozen checks, budget/cleanup gates and candidate-only results. Companion Craft/Pi installation and runtime qualification are checked from the actual receipt, compatible resource hashes, bundle entry protocol and role-specific tests; this is not backend availability certification.
+- Add native read-only backend-routing fixtures and handoff negative controls for scope/ledger substitution, unknown closure, task drift and Ready/accepted claims.
+
+### Changed
+- Make execution qualification conditional on the installed bundle, correct the craft-pi resource paths, distinguish strict aggregate budget enforcement from explicit budget audit, and preserve evidence/rollback and independent acceptance gates.
+- Keep full official Spec implement/converge ownership when a lead explicitly selects a deterministic backend for implementation tasks; preserve ordinary Worker no-recursion and existing routing semantics.
+
 ## [1.8.2] — 2026-11-08
 ### Added
 - Define bounded multi-agent roles and handoffs: the Pi lead retains authoritative workflow state, Workers receive explicit scope and carry-forward references, and reconstruction begins only after accepted behavior Evidence.

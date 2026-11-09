@@ -10,7 +10,7 @@
 <p align="center"><em style="font-family: Georgia, serif; font-size: 1.2em; color: #777;">Navigate the dark waters, sail against the stream.</em></p>
 
 <p align="center">
-  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.8.2-blue" alt="release v1.8.2"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/candidate-v1.9.0-orange" alt="unpublished candidate v1.9.0"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/gthubtom1/reverse-skill?style=flat&logo=github" alt="stars"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/forks"><img src="https://img.shields.io/github/forks/gthubtom1/reverse-skill?style=flat&logo=github" alt="forks"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/issues"><img src="https://img.shields.io/github/issues/gthubtom1/reverse-skill?style=flat&logo=github" alt="issues"></a>
@@ -70,6 +70,8 @@ User task
 - The same mistakes get repeated because experience isn't reused
 
 ### Current status
+
+1.9 新增[受控执行后端合同](skills/reconstruction/references/execution-backend.md)及其[能力声明](skills/reconstruction/references/execution-backend-contract.json)，实际安装/发布以 receipt/tag 为准。当前工作树为待发布的 1.9.0 release candidate；源码版本、公开发布与活动安装分别核验，不据候选源码宣称 Craft/Pi 后端已安装或可用。
 
 | Routing rules | Regression benchmark | Core skill modules | CI platforms | Client model |
 |---:|---:|---:|---|---|

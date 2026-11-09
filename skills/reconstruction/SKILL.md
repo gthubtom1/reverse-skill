@@ -77,6 +77,10 @@ MUST 按 [spec-kit-workflow](references/spec-kit-workflow.md) 执行实际生成
 
 实现缺项回 tasks；规格偏差回原专业 PRIMARY/REA；MUST NOT 修改预期让错误规格测试变绿。追版 MUST 使用版本化 feature，保留冻结旧版，我方 UI/特色默认保留，只有 scope 内新增/变化进入实现。
 
+每批 implement 只能选择现有 implementation-worker 或 [外部执行后端 version 1](references/execution-backend.md) 一个代码后端；静态能力与必需文件摘要见 [机读合同声明](references/execution-backend-contract.json)，它不授予 scope、不替代真实 Evidence/运行策略，也不参与路由。Craft 只承接依赖已满足的 selected task 的 build/check/有限 refine。MUST 绑定 lead 已接收的 research 引用、原 case/scope、feature/tasks、源码与外部基线、check plan、实际 provider/model/thinking、经能力门核准的预算模式/边界和单写租约。请求总 token/费用硬上限而后端不支持时 MUST 返回 unsupported；只有 lead 明确本批 budget-audit 模式才可按已验 wall/refine/per-response 硬界与 usage audit 选择。Spec runner 仍执行官方完整 prerequisites/checklists/hooks、依赖与阶段验证、任务进度和最终完成检查，并在本批结束后继续其余任务与 converge；不能把 before_implement hook 当替换开关或再派一个编码者。
+
+后端缺事实 MUST 返回 needs-evidence 给原链，不 Study、不猜测关闭 unknown、不写原账本或 spec/plan/tasks。Ready/Finished/TurnDone 只保留为原状态；候选 diff/checks/unknown/cleanup 经原 runner 与 lead 接收，并独立验证后才支持对应声明。运行中 task、scope、基线、检查或模型身份改变 MUST 停接新动作、经 owner 确认退出后重核新版交接，使相关旧 proof 按适用性失效。按实际 receipt、兼容摘要、bundle entry-protocol/capability inspect 与各角色实测核安装和运行资格；缺 receipt/兼容安装记 not-yet-installed，缺必需能力（含 prepare）返回 unsupported，沿现有 Worker，不凭文档事先判定已可用或永久未安装。
+
 ### 4. 真实验证与失效回流
 
 MUST 按 [differential-validation](references/differential-validation.md) 冻结比较器、环境、规则、容差和留出摘要，由独立验证会话分别采集原版与我方输出。覆盖正常/错误/边界/状态/副作用，并用故意错误变体证明比较器能失败。
@@ -132,4 +136,5 @@ MUST 在同 case 的 timeline/workitems/notes 保存 feature、原 bundle、真�
 - [ ] 实际 analyze/converge、错误变体、原版对照与适用 REA 有限声明均有真实回执；缺失项逐项列出。
 - [ ] 追版保留我方 UI/特色、冻结旧版与回滚，新 scope 内功能无遗漏，失效 proof 已重做。
 - [ ] 规格符合/范围行为对照/隔离独立运行分别报告，未执行与 unsupported 未冒称通过。
+- [ ] 若选择外部执行后端，已核实际安装/能力、version 1 交接、单写租约与总预算；Spec 完整 implement/converge、独立接收和退出门未被候选状态替代。
 - [ ] 已完成授权范围内 RULES 的报告、图、脱敏经验、来源及索引 Checklist；范围外集成项已移交。

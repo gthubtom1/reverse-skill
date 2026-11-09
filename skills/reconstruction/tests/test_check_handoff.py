@@ -301,6 +301,55 @@ class HandoffTests(unittest.TestCase):
         result = self.cli(self.root, "missing.json")
         self.assertEqual(result.returncode, 1)
 
+    def test_backend_receipt_cannot_replace_scope_or_obligation_with_ready(self):
+        # A syntactically valid, hash-pinned synthetic backend receipt is still
+        # neither the original scope nor an obligation production-chain result.
+        # This imitation is deliberately not an actual AcceptedResearch schema.
+        receipt = "case-fixture/demo/notes/backend-result.json"
+        self.write_text(receipt, json.dumps({"contract_version": 1, "status": "Ready",
+                                             "candidate": True, "accepted": True}))
+        ref = {"path": receipt}
+        self.update_ref(ref)
+        original = copy.deepcopy(self.manifest["context_refs"]["scope"])
+        self.manifest["context_refs"]["scope"] = ref
+        self.assert_failure(self.check(), "case.reference")
+        self.manifest["context_refs"]["scope"] = original
+        self.req["obligation_ref"] = {"document_ref": ref, "pointer": "/status"}
+        self.assert_failure(self.check(), "obligation.identity")
+
+    def test_backend_resolved_or_ready_cannot_close_referenced_critical_unknown(self):
+        # Even when bytes and commitments agree, a backend state string must
+        # not override the explicit critical dependency in the original handoff.
+        self.req["unknown_refs"][0]["critical"] = True
+        body = json.loads((self.root / BUNDLE).read_text(encoding="utf-8"))
+        body["unknowns"][0].update({"status": "resolved", "backend_status": "Ready"})
+        self.write_text(BUNDLE, json.dumps(body))
+        self.update_ref(self.manifest["bundle_refs"][0])
+        self.update_ref(self.req["unknown_refs"][0]["document_ref"])
+        self.assert_failure(self.check(), "unknown.critical_open")
+
+    def test_candidate_extensions_cannot_smuggle_scope_or_ledger_authority(self):
+        # No backend manifest extension is supported. Keep the existing reader
+        # fail-closed instead of silently discarding unfamiliar authority claims.
+        for key, value in (("external_backend", {"contract_version": 1, "scope_override": True}),
+                           ("ledger", {"ready": True, "required_open": 0}),
+                           ("accepted", True), ("status", "Ready")):
+            with self.subTest(key=key):
+                self.manifest[key] = value
+                self.assert_failure(self.check(), "input.fields")
+                del self.manifest[key]
+        report = self.check()
+        self.assertEqual(report["status"], "PASS", report)
+        self.assertEqual(report["authorization"], "not_assessed")
+        self.assertEqual(report["semantic_verification"], "not_performed")
+        self.assertNotIn("accepted", report)
+
+    def test_changed_task_baseline_invalidates_handoff_commitment(self):
+        tasks = self.root / self.manifest["feature_refs"]["tasks"]["path"]
+        tasks.write_text(tasks.read_text(encoding="utf-8") + "\n- [ ] T999 Unaccepted new task\n",
+                         encoding="utf-8")
+        self.assert_failure(self.check(), "sha256.mismatch")
+
     def test_cli_argument_errors_and_help(self):
         for args in ((), (self.root,), (self.root, MANIFEST, "--format", "yaml"),
                      (self.root, MANIFEST, "--execute")):

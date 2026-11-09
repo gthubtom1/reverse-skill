@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "contract_id": "reverse.r46.execution-backend",
+  "contract_version": 1,
+  "min_reverse_version": "1.9.0",
+  "capabilities": [
+    "r46.accepted-research-v1",
+    "r46.single-implementation-owner-v1",
+    "r46.bounded-pi-builder-v1",
+    "r46.candidate-independent-acceptance-v1"
+  ],
+  "required_files": [
+    {
+      "path": "skills/reconstruction/references/execution-backend.md",
+      "sha256": "56275a13f58d1501d340d3be9e6564a7c13e84cbc91e5eae237f181819f56de6"
+    },
+    {
+      "path": "skills/reconstruction/SKILL.md",
+      "sha256": "f625b9068821a88ac95a976ac25e03a25255cf29ebdc73c07f48da38dac3f0b2"
+    },
+    {
+      "path": "skills/ops/role-map.md",
+      "sha256": "dec909391b439cb7cdffba0759e5a1b962e4b62f0c7f693b95e163ba2238c45a"
+    },
+    {
+      "path": "skills/reconstruction/references/spec-kit-workflow.md",
+      "sha256": "9f681a12d8aac869ca59cfa5fdf026617914fbab7a6155724770380f4e7e603b"
+    }
+  ]
+}
