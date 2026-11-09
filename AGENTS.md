@@ -53,6 +53,12 @@ Linux / macOS routing parity:
   bash skills/scripts/test-bootstrap-manifest.sh
 ```
 
+## Pi 宿主 profile 映射
+
+本轮 Pi 安装提供的 profile 为 `subagent`、`reverse-operator`、`reverse-reviewer`。通用执行、调查、规划、侦察、UI 和后端任务可由 `subagent` 在明确任务范围内按动态技能承担；`reverse-operator` 负责有边界的逆向执行，`reverse-reviewer` 负责独立只读逆向审查。普通独立审查可由主代理只读检查或另一个明确只读的全新 `subagent` 承担。派发前仍须检查宿主实际暴露的 profile、工具与技能。
+
+原生合同中的 PRIMARY、planner/scout、implementation-worker 等表示专业路由或工作职责，不要求注册额外同名 Pi profile。宿主映射不改变原 router、scope、Evidence authority、Spec implement/converge、默认实现后端选择或独立验收合同。
+
 ## 客户端边界
 
 - 路由核心、测试和工具清单必须与具体 AI 客户端解耦。
