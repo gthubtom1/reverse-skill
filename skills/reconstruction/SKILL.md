@@ -11,14 +11,18 @@ description: >-
 ## ACTION REQUIRED（读完后立刻执行）
 
 1. `NOW`: MUST 读取 [先例索引](../field-journal/_index.md) 与 [逆向先例](../field-journal/precedent-reverse.md)，确认任务属于独立复刻、验证或追版。先例 MUST NOT 替代授权；授权以原 case 的 `scope.md` 为准，检查 auth、资产、活动、网络与 readiness。超出原 scope 的新版本/新活动 MUST 先补范围决定。
-2. `NOW`: MUST 从用户成果项目恢复唯一 case 与 Spec Kit feature，读取原 `scope.md`、`timeline.md`、`workitems.md`、Evidence 及原生 tasks。追版 MUST 按 [追版步骤](references/upstream-follow-update.md) 固定 O/C/N；多候选时只暂停依赖身份的工作。
+2. `NOW`: 恢复唯一 case 与已有成果项目状态，并先判断本轮交付模式：
+   - **existing-verification**：只验证已有实现、原版对照、回归、追版审查或重打包；沿用已有 case/Evidence/acceptance，不为验证任务新建 Spec/constitution/plan/tasks。
+   - **independent-implementation**：需要新增或修改独立成果实现；恢复或生成成果项目的 Spec Kit feature，并进入后续规格与实现流程。
+   - **evidence-assessment**：材料不足时只读评估 Evidence/unknown/最小补证，不进入实现或 Craft。
+   只有 `independent-implementation` 才要求下列 Spec Kit 实现链；其他模式保留各自专业验收边界。追版仍按 [追版步骤](references/upstream-follow-update.md) 固定 O/C/N；多候选时只暂停依赖身份的工作。
 3. `NEXT`: MUST 读取 `../tool-index.md` 确认真实路径、版本与工具资格；委派 REA 前核安装版 `binary_session`、`tools/list` 及实际 schema，读取官方随包方法。缺工具先报告缺口；只有当前用户已明确允许 bootstrap 且仍在原 scope 内，才调用已登记能力；未登记能力则交独立 installer 处理，MUST NOT 猜路径或自行安装。
 4. `NEXT`: MUST 按 [证据交接](references/evidence-to-spec.md) 复用原 case-review，再执行只读 `check_handoff.py` 检查指针。`PASS` 仅为 `machine_check_only`；关键 unknown、证据资格与语义支持 MUST 独立审查后才可放行受影响需求。
 5. `ACT`: MUST 接续下述确定性工作流，写原 timeline 的 `decision_delta` 与 `carry_forward_refs`，更新原 workitems 与 Spec Kit tasks。MUST NOT 重做 case-init、重置 scope、创建第二状态账本，或停在仅打印命令的状态。
 
 ## Reconstruction handoff and equivalence levels
 
-`GOAL-RECONSTRUCT` enters this skill only after the original case has a target identity, selected behavior scope, Evidence-backed behavior model, unknown list, success criteria and a bounded handoff. The handoff points to the original `scope.md`, `timeline.md`, `workitems.md`, Evidence and any authorization-coverage manifest; it does not copy them into a second authority. The workflow supports `initial`, `validate` and `update` modes as timeline/notes labels, not a new state machine. Independent implementation, original patching and repackaging remain separate deliveries.
+`GOAL-RECONSTRUCT` enters this skill only after the original case has a target identity, selected behavior scope, Evidence-backed behavior model, unknown list, success criteria and a bounded handoff. Choose `existing-verification`, `independent-implementation` or `evidence-assessment` before selecting downstream work. The handoff points to the original `scope.md`, `timeline.md`, `workitems.md`, Evidence and any authorization-coverage manifest; it does not copy them into a second authority. The workflow supports `initial`, `validate` and `update` modes as timeline/notes labels, not a new state machine. Independent implementation, original patching and repackaging remain separate deliveries.
 
 Report the highest level actually supported:
 
@@ -73,7 +77,7 @@ python -B skills/reconstruction/scripts/check_handoff.py <project> work/<case>/n
 
 ### 3. 原生规格与实现
 
-MUST 按 [spec-kit-workflow](references/spec-kit-workflow.md) 执行实际生成的官方项目命令：constitution→specify→clarify→plan→tasks→analyze→implement→converge。MUST 保留原模板主体、FR/SC/US/任务 ID 和 source-ref。项目 constitution 限定复刻事实必须有证据；用户新设计单列 designed。只打印斜杠命令不算执行；默认 workflow 未必含 analyze/converge，MUST 显式执行。
+仅当本轮模式为 `independent-implementation` 时，MUST 按 [spec-kit-workflow](references/spec-kit-workflow.md) 执行实际生成的官方项目命令：constitution→specify→clarify→plan→tasks→analyze→implement→converge。`existing-verification` 沿用已有规格和验收依据，直接执行适用的原版对照、回归、重打包或独立运行检查；`evidence-assessment` 只读记录 Evidence/unknown 和最小补证。MUST 保留原模板主体、FR/SC/US/任务 ID 和 source-ref。项目 constitution 限定复刻事实必须有证据；用户新设计单列 designed。只打印斜杠命令不算执行；默认 workflow 未必含 analyze/converge，MUST 显式执行。
 
 实现缺项回 tasks；规格偏差回原专业 PRIMARY/REA；MUST NOT 修改预期让错误规格测试变绿。追版 MUST 使用版本化 feature，保留冻结旧版，我方 UI/特色默认保留，只有 scope 内新增/变化进入实现。
 

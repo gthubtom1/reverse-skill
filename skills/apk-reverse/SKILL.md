@@ -7,11 +7,11 @@ description: 在 CLI 环境下做 Android APK 逆向时使用。适用于 APK �
 
 > 端点提取/Frida 自适应等社区对照：../references/community-security-skills.md；动态分析须 scope 授权设备。
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: 确认当前任务是否命中本 skill 的适用范围
+1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 仅了解先例和方法，不把先例当授权
+2. `NOW`: 确认当前任务命中本 skill，并恢复当前 case/scope；首次副作用前遵循原 RULES 的激活、授权和网络/设备边界
 3. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-5. `ACT`: 进入"工作流"第一步并执行，不要停在确认状态
+4. `NEXT`: 缺工具时先报告具体缺口；只有已登记且得到本次授权的 bootstrap 才能补工具，否则保留 unknown/unsupported，使用适用的现有工具或 fallback，不猜路径、不自动安装
+5. `ACT`: 进入本 skill 的工作流并执行；只读任务保持只读，任何修改、运行、联网或设备动作按当前 scope 和已批准计划进行
 
 # APK 逆向 CLI 作业规范
 
