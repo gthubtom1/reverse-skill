@@ -55,9 +55,9 @@ Linux / macOS routing parity:
 
 ## Pi 宿主 profile 映射
 
-本轮 Pi 安装提供的 profile 为 `subagent`、`reverse-operator`、`reverse-reviewer`。通用执行、调查、规划、侦察、UI 和后端任务可由 `subagent` 在明确任务范围内按动态技能承担；`reverse-operator` 负责有边界的逆向执行，`reverse-reviewer` 负责独立只读逆向审查。普通独立审查可由主代理只读检查或另一个明确只读的全新 `subagent` 承担。派发前仍须检查宿主实际暴露的 profile、工具与技能。
+Pi 的用户级工作原则和可选 profiles 由安装仓库提供，主对话根据任务及实际可用能力选择直接处理、工具、技能或协作；本仓不规定团队组成。专业路由与工作职责按宿主能力承担，无需注册同名 profile。
 
-原生合同中的 PRIMARY、planner/scout、implementation-worker 等表示专业路由或工作职责，不要求注册额外同名 Pi profile。宿主映射不改变原 router、scope、Evidence authority、Spec implement/converge、默认实现后端选择或独立验收合同。
+宿主映射保留原 router、scope、Evidence authority 和独立验收合同。原件修改、接入、重新打包及独立复刻按实际交付接续，适用的独立实现仍使用原 Spec implement/converge 与选定执行后端。
 
 ## 客户端边界
 
