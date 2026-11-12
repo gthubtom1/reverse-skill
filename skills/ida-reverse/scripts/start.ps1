@@ -113,24 +113,39 @@ function Test-IdaGuiProcess {
 }
 
 function Test-ManagedSupervisorProcess {
-    param([int]$ProcessId)
+    param(
+        [int]$ProcessId,
+        [string]$IdaDirPath,
+        [int]$Port
+    )
     $proc = Get-IdaMcpProcessInfo -ProcessId $ProcessId
     if (-not $proc) { return $false }
     $name = [string]$proc.Name
     $cmd = [string]$proc.CommandLine
     if ($name -match '(?i)^(ida|ida64|idaq|idaq64)\.exe$') { return $false }
-    if ($name -match '(?i)^(python|pythonw|cmd)\.exe$') {
-        return $cmd -match '(?i)(run-supervisor\.py|idalib_supervisor|idalib-mcp|ida-pro-mcp)'
+    $managed = if ($name -match '(?i)^(python|pythonw|cmd)\.exe$') {
+        $cmd -match '(?i)(run-supervisor\.py|idalib_supervisor|idalib-mcp|ida-pro-mcp)'
+    } else {
+        $name -match '(?i)^(idalib-mcp|ida-pro-mcp|idalib_supervisor)'
     }
-    return $name -match '(?i)^(idalib-mcp|ida-pro-mcp|idalib_supervisor)'
+    if (-not $managed) { return $false }
+    # A process name is not ownership. Only stop a process whose command line
+    # carries this invocation's port and IDA installation identity.
+    $portToken = '(?i)(^|\s)--port(?:\s|=)["'']?' + [regex]::Escape([string]$Port) + '["'']?(\s|$)'
+    $idaToken = [regex]::Escape(([string]$IdaDirPath).TrimEnd('\','/'))
+    return ($cmd -match $portToken) -and ($cmd -match $idaToken)
 }
 
 function Get-ManagedSupervisorProcessIds {
+    param(
+        [string]$IdaDirPath,
+        [int]$Port
+    )
     $ids = New-Object System.Collections.Generic.List[int]
     foreach ($proc in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)) {
         if (-not $proc.ProcessId) { continue }
         $candidateId = [int]$proc.ProcessId
-        if (Test-ManagedSupervisorProcess -ProcessId $candidateId) {
+        if (Test-ManagedSupervisorProcess -ProcessId $candidateId -IdaDirPath $IdaDirPath -Port $Port) {
             [void]$ids.Add($candidateId)
         }
     }
@@ -138,11 +153,19 @@ function Get-ManagedSupervisorProcessIds {
 }
 
 function Stop-IdaMcpManagedProcess {
-    param([int]$ProcessId)
-    if ($ProcessId -le 0) { return }
-    if (Test-IdaGuiProcess -ProcessId $ProcessId) { return }
+    param(
+        [int]$ProcessId,
+        [string]$IdaDirPath,
+        [int]$Port
+    )
+    if ($ProcessId -le 0) { return $false }
+    if (-not (Test-ManagedSupervisorProcess -ProcessId $ProcessId -IdaDirPath $IdaDirPath -Port $Port)) {
+        Write-Output "WARN: refusing to stop unowned IDA MCP process PID=$ProcessId; port/IDA identity did not match"
+        return $false
+    }
     # No /T: force_gui may have spawned ida.exe as a child of the supervisor.
     & taskkill.exe /F /PID $ProcessId 2>$null | Out-Null
+    return $true
 }
 
 function Get-PortableIdaCandidates {
@@ -407,12 +430,12 @@ foreach ($procName in @('ida-pro-mcp', 'idalib-mcp', 'idalib_supervisor')) {
     $old = Get-Process -Name $procName -ErrorAction SilentlyContinue
     if ($old) {
         foreach ($process in @($old)) {
-            Stop-IdaMcpManagedProcess -ProcessId $process.Id
+            Stop-IdaMcpManagedProcess -ProcessId $process.Id -IdaDirPath $IdaDir -Port $Port
         }
     }
 }
-foreach ($managedPid in @(Get-ManagedSupervisorProcessIds)) {
-    Stop-IdaMcpManagedProcess -ProcessId $managedPid
+foreach ($managedPid in @(Get-ManagedSupervisorProcessIds -IdaDirPath $IdaDir -Port $Port)) {
+    Stop-IdaMcpManagedProcess -ProcessId $managedPid -IdaDirPath $IdaDir -Port $Port
 }
 Start-Sleep -Seconds 1
 
