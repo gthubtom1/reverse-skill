@@ -6,6 +6,10 @@ on:
     paths:
       - 'skills/field-journal/**'
 
+concurrency:
+  group: field-journal-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   validate-and-merge:
     runs-on: ubuntu-latest
@@ -14,6 +18,8 @@ jobs:
       pull-requests: write
     env:
       PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
       PR_TITLE: ${{ github.event.pull_request.title }}
       PR_SUBJECT: ${{ format('[field-journal] {0}', github.event.pull_request.title) }}
     
@@ -21,6 +27,7 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Validate PR safety
@@ -29,7 +36,8 @@ jobs:
           set -e
           
           # 1. 只允许修改 field-journal 目录下的 .md 文件
-          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only)
+          # Scan the immutable event head that will be supplied to merge.
+          CHANGED_FILES=$(git diff --name-only "$PR_BASE_SHA...$PR_HEAD_SHA")
           echo "Changed files:"
           echo "$CHANGED_FILES"
           
@@ -60,7 +68,12 @@ jobs:
           fi
           
           # 3. 逐文件安全扫描
-          for file in $CHANGED_FILES; do
+          while IFS= read -r file; do
+            if [ -L "$file" ]; then
+              echo "BLOCKED: journal entries must be regular Markdown files"
+              echo "valid=false" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
             if [ ! -f "$file" ]; then
               continue
             fi
@@ -138,7 +151,7 @@ jobs:
             fi
             
             echo "✅ $file 通过安全检查"
-          done
+          done <<< "$CHANGED_FILES"
           
           echo ""
           echo "✅ 所有文件通过安全审核"
@@ -146,11 +159,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-merge if valid
+      - name: Merge validated head when branch checks allow
         if: steps.validate.outputs.valid == 'true'
         run: |
+          # Do not leave deferred auto-merge enabled for a later, unscanned head.
           gh pr merge "$PR_NUMBER" \
-            --auto --squash \
+            --squash \
+            --match-head-commit "$PR_HEAD_SHA" \
             --subject "$PR_SUBJECT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

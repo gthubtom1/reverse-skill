@@ -1095,7 +1095,7 @@ function Expand-CapabilityDependencies {
 function Test-BootstrapResultsSucceeded {
     param([Parameter(Mandatory = $true)][object[]]$Results)
 
-    return (@($Results | Where-Object { $_.status -eq 'failed' }).Count -eq 0)
+    return (@($Results | Where-Object { $_.status -in @('failed', 'missing-definition') }).Count -eq 0)
 }
 
 $expandedCapabilities = Expand-CapabilityDependencies -Names $Capability

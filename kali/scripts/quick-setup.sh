@@ -25,7 +25,7 @@ for arg in "$@"; do
     case "$arg" in
         --skip-update) SKIP_UPDATE=true ;;
         --minimal) MINIMAL=true ;;
-        --register-mcp) REGISTER_MCP=true ;;
+        --register-mcp|--register-claude-mcp) REGISTER_MCP=true ;;
     esac
 done
 
@@ -158,7 +158,7 @@ fi
 # frida-tools
 if ! command -v frida &>/dev/null; then
     info "安装 frida-tools ..."
-    pip3 install --break-system-packages frida-tools 2>/dev/null && ok "frida-tools 安装成功" || warn "frida-tools 安装失败"
+    pip3 install --break-system-packages 'frida-tools==14.10.4' 2>/dev/null && ok "frida-tools 14.10.4 安装成功" || warn "frida-tools 安装失败"
 else
     ok "frida 已可用"
 fi
@@ -185,21 +185,45 @@ if [[ "$REGISTER_MCP" == "true" ]]; then
 if command -v jq &>/dev/null; then
     mkdir -p "$MCP_CONFIG_DIR"
 
+    if [[ -L "$MCP_CONFIG" ]]; then
+        warn "Claude MCP 配置是符号链接，拒绝替换: $MCP_CONFIG"
+        exit 2
+    fi
     if [[ ! -f "$MCP_CONFIG" ]]; then
-        echo '{"mcpServers":{}}' > "$MCP_CONFIG"
+        (umask 077; printf '%s\n' '{"mcpServers":{}}' > "$MCP_CONFIG")
     fi
 
-    # 注册 kali-server
-    jq '.mcpServers["kali-server"] = {"command": "kali-server-mcp", "args": ["--port", "5000"]}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
+# 注册 MCP 客户端配置时在配置目录内创建随机临时文件，避免共享 /tmp
+write_mcp_update() {
+    local filter="$1"
+    local tmp_file
+    tmp_file=$(mktemp "$MCP_CONFIG_DIR/.mcp-config.XXXXXX")
+    chmod 600 "$tmp_file"
+    if ! jq "$filter" "$MCP_CONFIG" > "$tmp_file"; then
+        rm -f -- "$tmp_file"
+        return 1
+    fi
+    if ! jq -e --slurpfile desired "$tmp_file" \
+        '(.mcpServers // {}) | to_entries | all(.[]; . as $entry | $desired[0].mcpServers[$entry.key] == $entry.value)' "$MCP_CONFIG" >/dev/null; then
+        rm -f -- "$tmp_file"
+        warn "同名 MCP 已有不同配置，拒绝覆盖: $MCP_CONFIG"
+        return 1
+    fi
+    chown "$REAL_USER:$REAL_USER" "$tmp_file"
+    mv -f -- "$tmp_file" "$MCP_CONFIG"
+}
+
+    # 注册 kali-server API 的 stdio bridge
+    write_mcp_update '.mcpServers["kali-server"] = {"command": "mcp-server", "args": ["--server", "http://127.0.0.1:5000"]}'
 
     # 注册 metasploit-mcp
-    jq '.mcpServers["metasploit-mcp"] = {"command": "metasploitmcp", "args": ["--transport", "stdio"]}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
+    write_mcp_update '.mcpServers["metasploit-mcp"] = {"command": "metasploitmcp", "args": ["--transport", "stdio"]}'
 
     # 注册 hexstrike
-    jq '.mcpServers["hexstrike"] = {"command": "hexstrike-ai", "args": []}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
+    write_mcp_update '.mcpServers["hexstrike"] = {"command": "hexstrike-ai", "args": []}'
 
     # 注册 jshook
-    jq '.mcpServers["jshook"] = {"command": "npx", "args": ["-y", "@jshookmcp/jshook@0.3.4"], "env": {"JSHOOK_BASE_PROFILE": "search"}}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
+    write_mcp_update '.mcpServers["jshook"] = {"command": "npx", "args": ["-y", "@jshookmcp/jshook@0.3.4"], "env": {"JSHOOK_BASE_PROFILE": "search"}}'
 
     chown "$REAL_USER:$REAL_USER" "$MCP_CONFIG" "$MCP_CONFIG_DIR"
     ok "MCP 配置已写入: $MCP_CONFIG"

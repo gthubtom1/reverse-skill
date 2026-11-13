@@ -25,6 +25,36 @@ PATH_TYPES = {"attack", "callflow", "solve"}
 NETWORK_MODES = {"offline", "lab_only", "authorized_target_only", "unrestricted_lab"}
 
 
+def section_matches(text, title):
+    pattern = re.compile(
+        r"(?mi)^##[ \t]+" + re.escape(title) + r"[ \t]*\r?$"
+    )
+    return list(pattern.finditer(text))
+
+
+def section_text(text, title, match=None):
+    match = match or (section_matches(text, title)[:1] or [None])[0]
+    if match is None:
+        return ""
+    end_match = re.search(r"(?mi)^##[ \t]+", text[match.end():])
+    end = match.end() + end_match.start() if end_match else len(text)
+    return text[match.end():end]
+
+
+def scope_field_values(section, name):
+    pattern = re.compile(
+        r"(?mi)^-[ \t]+" + re.escape(name) + r":[ \t]*([^\r\n]*)\r?$"
+    )
+    return [match.group(1).strip() for match in pattern.finditer(section)]
+
+
+def scope_field_names(section):
+    return [
+        match.group(1).lower()
+        for match in re.finditer(r"(?mi)^-[ \t]+([A-Za-z0-9_]+):", section)
+    ]
+
+
 def field_value(text, name):
     lines = text.splitlines()
     for index, line in enumerate(lines):
@@ -44,14 +74,6 @@ def field_value(text, name):
                 block.append(continuation.strip())
         return "\n".join(block).strip()
     return ""
-
-
-def section_text(text, title):
-    pattern = re.compile(
-        r"(?ms)^##\s+" + re.escape(title) + r"\s*$\n?(.*?)(?=^##\s|\Z)"
-    )
-    match = pattern.search(text)
-    return match.group(1) if match else ""
 
 
 def ids_in(value, pattern):
@@ -142,22 +164,41 @@ def parse_scope(root, issues, strict):
         return result
 
     text = path.read_text(encoding="utf-8-sig")
-    auth = section_text(text, "auth")
-    scope_section = section_text(text, "in_scope")
-    network = section_text(text, "network_profile")
-    signoff = section_text(text, "signoff")
-    result["auth_status"] = field_value(auth, "status").lower()
-    result["network_mode"] = field_value(network, "mode").lower()
-    result["ready_for_act"] = field_value(signoff, "ready_for_act").lower()
+    required_sections = ("auth", "in_scope", "network_profile", "signoff")
+    sections = {}
+    for title in required_sections:
+        matches = section_matches(text, title)
+        if len(matches) != 1:
+            code = "scope.section_duplicate" if matches else "scope.section_missing"
+            issue(issues, "error", code, f"scope section {title!r} must appear exactly once (found {len(matches)})", "scope.md")
+        sections[title] = section_text(text, title, matches[0] if matches else None)
+
+    auth = sections["auth"]
+    scope_section = sections["in_scope"]
+    network = sections["network_profile"]
+    signoff = sections["signoff"]
+    for section_name, section in (("auth", auth), ("in_scope", scope_section), ("network_profile", network), ("signoff", signoff)):
+        names = scope_field_names(section)
+        for name in sorted({item for item in names if names.count(item) > 1}):
+            issue(issues, "error", "scope.field_duplicate", f"scope field {name!r} is duplicated in {section_name}", "scope.md")
+
+    for section, name in ((auth, "status"), (network, "mode"), (signoff, "ready_for_act")):
+        values = scope_field_values(section, name)
+        if len(values) != 1:
+            issue(issues, "error", "scope.field_duplicate" if values else "scope.field_missing", f"scope field {name!r} must appear exactly once (found {len(values)})", "scope.md")
+
+    result["auth_status"] = (scope_field_values(auth, "status") or [""])[0].lower()
+    result["network_mode"] = (scope_field_values(network, "mode") or [""])[0].lower()
+    result["ready_for_act"] = (scope_field_values(signoff, "ready_for_act") or [""])[0].lower()
 
     # Only a top-level "- field:" ends the assets block. Indented Windows
-    # paths such as "  - D:\\repo" contain a colon but are asset values.
-    assets_match = re.search(r"(?ms)^\s*-\s+assets:\s*\n(?P<body>.*?)(?=^-\s+[A-Za-z0-9_]+:|\Z)", scope_section)
+    # paths such as "  - D:\\repo" remain asset values, including under CRLF.
+    assets_match = re.search(r"(?ims)^-[ \t]+assets:[ \t]*\r?$\n(?P<body>.*?)(?=^-[ \t]+[A-Za-z0-9_]+:|\Z)", scope_section)
     if assets_match:
         result["assets"] = [
             line.strip()[2:].strip()
             for line in assets_match.group("body").splitlines()
-            if re.match(r"^\s+-\s+\S+", line) and line.strip()[2:].strip() != "[]"
+            if re.match(r"^[ \t]+-[ \t]+\S+", line) and line.strip()[2:].strip() != "[]"
         ]
 
     if not result["auth_status"]:
@@ -177,6 +218,22 @@ def parse_scope(root, issues, strict):
 
     if result["network_mode"] != "offline" and not result["assets"]:
         issue(issues, "error", "scope.assets_missing", "in_scope.assets is empty for a network case", "scope.md")
+    if result["network_mode"] == "offline":
+        readable_assets = []
+        for asset in result["assets"]:
+            if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", asset):
+                continue
+            candidate = Path(asset).expanduser()
+            if not candidate.is_absolute():
+                candidate = root / candidate
+            try:
+                if candidate.is_file() and not candidate.is_symlink():
+                    with candidate.open("rb"):
+                        readable_assets.append(asset)
+            except OSError:
+                continue
+        if not readable_assets:
+            issue(issues, "error", "scope.offline_sample_missing", "offline scope has no local in_scope asset that is a readable regular file (unable to determine a local sample)", "scope.md")
 
     if result["auth_status"] != "granted" or result["ready_for_act"] != "true":
         message = "scope is not ready for target ACT"

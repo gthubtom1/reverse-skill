@@ -32,7 +32,7 @@ class ReviewCaseTests(unittest.TestCase):
 
 ## in_scope
 - assets:
-  - sample.bin
+  - evidence/sample.bin
 
 ## network_profile
 - mode: offline
@@ -184,13 +184,38 @@ class ReviewCaseTests(unittest.TestCase):
             scope = root / "scope.md"
             scope.write_text(
                 scope.read_text(encoding="utf-8")
-                .replace("  - sample.bin", r"  - D:\reverse-skill")
+                .replace("  - evidence/sample.bin", r"  - D:\reverse-skill")
                 .replace("- mode: offline", "- mode: lab_only"),
                 encoding="utf-8",
             )
             result = REVIEW_CASE.review_case(root)
             self.assertEqual(result["scope"]["assets"], [r"D:\reverse-skill"])
             self.assertFalse(any(item["code"] == "scope.assets_missing" for item in result["issues"]))
+    def test_offline_domain_does_not_count_as_local_sample(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_case(root)
+            scope = root / "scope.md"
+            scope.write_text(
+                scope.read_text(encoding="utf-8").replace("sample.bin", "sample.example.com"),
+                encoding="utf-8",
+            )
+            result = REVIEW_CASE.review_case(root)
+            self.assertTrue(any(item["code"] == "scope.offline_sample_missing" for item in result["issues"]))
+
+    def test_crlf_duplicate_authoritative_scope_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_case(root)
+            scope = root / "scope.md"
+            text = scope.read_text(encoding="utf-8")
+            text = text.replace("## network_profile\n- mode: offline", "## network_profile\n- mode: offline\n- mode: offline")
+            text += "\n## auth\n- status: granted\n"
+            scope.write_bytes(text.replace("\n", "\r\n").encode("utf-8-sig"))
+            result = REVIEW_CASE.review_case(root)
+            codes = {item["code"] for item in result["issues"]}
+            self.assertIn("scope.section_duplicate", codes)
+            self.assertIn("scope.field_duplicate", codes)
 
 
 if __name__ == "__main__":

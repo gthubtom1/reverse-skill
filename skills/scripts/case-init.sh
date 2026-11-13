@@ -56,10 +56,21 @@ if [[ -z "$PROJECT_ROOT" ]]; then
     PROJECT_ROOT="$(pwd -P)"
   fi
 fi
+if [[ ! -d "$PROJECT_ROOT" ]]; then
+  mkdir -p "$PROJECT_ROOT"
+fi
+PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd -P)"
+
+single_line() {
+  local value="${1:-}"
+  value="${value//$'\r'/ }"
+  value="${value//$'\n'/ }"
+  printf '%s' "$value" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//'
+}
 
 if [[ -n "$SAMPLE" ]]; then
-  if [[ ! -f "$SAMPLE" ]]; then
-    echo "Local --sample file not found: $SAMPLE" >&2
+  if [[ ! -f "$SAMPLE" || ! -r "$SAMPLE" || -L "$SAMPLE" ]]; then
+    echo "Local --sample must be a readable regular file: $SAMPLE" >&2
     exit 2
   fi
   sample_dir="$(cd "$(dirname "$SAMPLE")" && pwd -P)"
@@ -125,11 +136,24 @@ if [[ -n "$NETWORK_PROFILE" ]]; then
 fi
 
 CASE_ROOT="$PROJECT_ROOT/work/$CASE_NAME"
-if [[ -d "$CASE_ROOT" ]] && find "$CASE_ROOT" -type f -print -quit | grep -q .; then
-  echo "Case already contains files: $CASE_ROOT. Refusing to overwrite scope, timeline, workitems, evidence, or reports; choose a new case name or continue the existing case." >&2
+WORK_ROOT="$PROJECT_ROOT/work"
+if [[ -e "$WORK_ROOT" || -L "$WORK_ROOT" ]]; then
+  if [[ ! -d "$WORK_ROOT" || -L "$WORK_ROOT" ]]; then
+    echo "Project work path must be a real filesystem directory: $WORK_ROOT" >&2
+    exit 2
+  fi
+else
+  mkdir "$WORK_ROOT"
+fi
+if [[ -e "$CASE_ROOT" || -L "$CASE_ROOT" ]]; then
+  echo "Case path already exists: $CASE_ROOT. Refusing to overwrite an existing case; choose a new case name or continue the existing case." >&2
   exit 2
 fi
-mkdir -p "$CASE_ROOT/evidence" "$CASE_ROOT/notes" "$CASE_ROOT/report"
+if ! mkdir "$CASE_ROOT"; then
+  echo "Case path appeared during initialization: $CASE_ROOT. Refusing to overwrite it; choose a new case name or continue the existing case." >&2
+  exit 2
+fi
+mkdir "$CASE_ROOT/evidence" "$CASE_ROOT/notes" "$CASE_ROOT/report"
 
 auth_status_resolved="pending"
 if [[ $AUTH_GRANTED -eq 1 ]]; then auth_status_resolved="granted"; fi
@@ -183,9 +207,10 @@ case "$network_mode" in
     ;;
 esac
 
-HINT_SAFE="${HINT//$'\n'/ }"
-HINT_SAFE="${HINT_SAFE//$'\r'/ }"
-HINT_SAFE="$(printf '%s' "$HINT_SAFE" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
+HINT_SAFE="$(single_line "$HINT")"
+PROJECT_ROOT_SAFE="$(single_line "$PROJECT_ROOT")"
+AUTH_BASIS_SAFE="$(single_line "$AUTH_BASIS")"
+EVIDENCE_AUTH_SAFE="$(single_line "$evidence_auth")"
 
 # Route PRIMARY via bash master-route
 ROUTE_TMP="$(mktemp -d "${TMPDIR:-/tmp}/rs-case-route.XXXXXX")"
@@ -193,7 +218,7 @@ primary="reverse-engineering/SKILL.md"
 primary_id="R0"
 if [[ -f "$SCRIPT_DIR/master-route.sh" ]]; then
   set +e
-  bash "$SCRIPT_DIR/master-route.sh" --hint "$HINT" --project-root "$PROJECT_ROOT" --out-dir "$ROUTE_TMP" >/dev/null 2>&1
+  bash "$SCRIPT_DIR/master-route.sh" --hint "$HINT_SAFE" --project-root "$PROJECT_ROOT" --out-dir "$ROUTE_TMP" >/dev/null 2>&1
   set -e
   if [[ -f "$ROUTE_TMP/route-scope.md" ]]; then
     rt="$(cat "$ROUTE_TMP/route-scope.md")"
@@ -207,9 +232,17 @@ if [[ -f "$SCRIPT_DIR/master-route.sh" ]]; then
 fi
 rm -rf "$ROUTE_TMP"
 
+if [[ ! "$primary" =~ ^[A-Za-z0-9_./-]+$ ]]; then primary="reverse-engineering/SKILL.md"; fi
+if [[ ! "$primary_id" =~ ^[A-Za-z0-9_-]+$ ]]; then primary_id="R0"; fi
+
 created="$(date -Iseconds 2>/dev/null || date +%Y-%m-%dT%H:%M:%S%z)"
 if [[ ${#ASSETS[@]} -gt 0 ]]; then
-  assets_block="$(printf '  - %s\n' "${ASSETS[@]}")"
+  assets_block=""
+  for asset in "${ASSETS[@]}"; do
+    asset_safe="$(single_line "$asset")"
+    [[ -n "$asset_safe" ]] && assets_block+="  - $asset_safe"$'\n'
+  done
+  [[ -n "$assets_block" ]] || assets_block="  []"
 else
   assets_block="  []"
 fi
@@ -224,7 +257,7 @@ if [[ "$auth_status_resolved" == "granted" ]]; then
 fi
 
 check_auth="[ ]"; [[ "$auth_status_resolved" == "granted" ]] && check_auth="[x]"
-check_scope="[ ]"; [[ ${#ASSETS[@]} -gt 0 || "$network_mode" == "offline" ]] && check_scope="[x]"
+check_scope="[ ]"; [[ ${#ASSETS[@]} -gt 0 ]] && check_scope="[x]"
 check_net="[ ]"; [[ -n "$network_mode" ]] && check_net="[x]"
 ready_str="false"; [[ "$ready" == true ]] && ready_str="true"
 
@@ -243,7 +276,7 @@ cat > "$CASE_ROOT/scope.md" <<EOF
 - case_id: $CASE_NAME
 - created: $created
 - operator: local
-- project_root: $PROJECT_ROOT
+- project_root: $PROJECT_ROOT_SAFE
 - primary_skill: $primary
 - primary_id: $primary_id
 - lead_role: lead
@@ -253,8 +286,8 @@ cat > "$CASE_ROOT/scope.md" <<EOF
 
 ## auth
 - status: $auth_status_resolved
-- basis: $AUTH_BASIS
-- evidence_of_auth: $evidence_auth
+- basis: $AUTH_BASIS_SAFE
+- evidence_of_auth: $EVIDENCE_AUTH_SAFE
 - MUST NOT proceed if status != granted
 
 ## in_scope
@@ -353,13 +386,14 @@ else
 # Case $CASE_NAME
 
 1. Edit \`scope.md\` — set auth.status=granted and in_scope
-   - or re-run: \`bash skills/scripts/case-init.sh --hint "..." --preset offline-sample --sample ./sample.apk\`
+   - for a new case, choose a new case name and use: \`--preset offline-sample --sample ./sample.apk\`
    - or: \`--preset ctf-public --target-url https://...\`
-2. Set ready_for_act when checklist complete
-3. Open primary skill: skills/$primary
-4. Append \`timeline.md\`; update \`workitems.md\`
-5. Promote findings with Evidence chain (skills/ops/evidence-finding-path.md)
-6. Report via docs-generator; journal via field-journal
+2. Continue the existing case; do not re-run case-init over an existing case directory
+3. Set ready_for_act when checklist complete
+4. Open primary skill: skills/$primary
+5. Append \`timeline.md\`; update \`workitems.md\`
+6. Promote findings with Evidence chain (skills/ops/evidence-finding-path.md)
+7. Report via docs-generator; journal via field-journal
 EOF
 fi
 

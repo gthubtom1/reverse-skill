@@ -61,9 +61,10 @@ The review is read-only and checks scope fields, Evidence records, work item and
 
 **MUST**：`evidence_ids` 非空；`status=validated` 时 confidence 不得为 low（除非标注 residual risk）。
 
-## 2.1 授权面与回归覆盖
+Evidence ID 必须是单一 `E-...` 文件名；consolidate 不接受重复 ID、路径分隔符或目录/符号链接，并拒绝重复的 Finding ID。Finding 的 title/location 只能是单行值；description 不能包含新的 Markdown heading 或 `- field:` 行。并发 consolidate 使用 case report 内的最小文件锁追加，不能覆盖其他已写 Finding。
 
-当任务涉及授权、许可证、entitlement、feature gate、完整性或旁路时，Evidence 只能关闭对应的单个观察或组件。按 [`authorization-coverage.md`](authorization-coverage.md) 为每个 in-scope component/gate 建立独立 row，绑定 target identity、Evidence、patch、regression result 和 rollback。一个组件通过不能推出其他组件通过；任一回归失败都要把受影响 row 重新标为 `patched` / `unknown`，并阻止 aggregate completion。报告使用 `N/M required surfaces verified`，不把模型自述或工具退出码当业务证明。
+## 2.1 授权面与回归覆盖
+授权、许可证、entitlement、feature gate、完整性或旁路时，Evidence 只能关闭对应的单个观察或组件。按 [`authorization-coverage.md`](authorization-coverage.md) 为每个 in-scope component/gate 建立独立 row，绑定 target identity、Evidence、patch、regression result 和 rollback。一个组件通过不能推出其他组件通过；任一回归失败都要把受影响 row 重新标为 `patched` / `unknown`，并阻止 aggregate completion。报告使用 `N/M required surfaces verified`，不把模型自述或工具退出码当业务证明。
 
 ## 3. Path（攻击路径 / 调用路径 / 解题路径）
 

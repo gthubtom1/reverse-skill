@@ -502,21 +502,68 @@ PY
 write_claude_mcp_server() {
   local name="$1"
   local json_payload="$2"
-  ensure_dir "$(dirname "$CLAUDE_MCP_CONFIG_PATH")"
-  python3 - "$CLAUDE_MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY'
-import json, pathlib, sys
+  python3 - "$CLAUDE_MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY' || return 1
+import json, os, pathlib, stat, sys, tempfile
 path = pathlib.Path(sys.argv[1])
 name = sys.argv[2]
 payload = json.loads(sys.argv[3])
-if path.exists():
+
+def read_input():
     try:
-        data = json.loads(path.read_text(encoding='utf-8'))
-    except Exception:
-        data = {}
-else:
-    data = {}
-data.setdefault('mcpServers', {})[name] = payload
-path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return None
+    if not stat.S_ISREG(mode):
+        raise SystemExit(f'Refusing non-regular Claude MCP config: {path}')
+    return path.read_bytes()
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'duplicate JSON key: {key}')
+        result[key] = value
+    return result
+
+def reject_constant(value):
+    raise ValueError(f'invalid JSON constant: {value}')
+
+original = read_input()
+try:
+    data = json.loads(original.decode('utf-8-sig'), object_pairs_hook=unique_object,
+                      parse_constant=reject_constant) if original is not None else {}
+except (UnicodeError, ValueError) as exc:
+    raise SystemExit(f'Invalid Claude MCP config; original preserved: {exc}')
+if not isinstance(data, dict):
+    raise SystemExit('Claude MCP config must be a JSON object; original preserved')
+servers = data.get('mcpServers', {})
+if not isinstance(servers, dict) or any(not isinstance(server, dict) for server in servers.values()):
+    raise SystemExit('Claude mcpServers must be an object of server objects; original preserved')
+if not isinstance(payload, dict):
+    raise SystemExit('Claude MCP server payload must be a JSON object')
+if name in servers:
+    if servers[name] != payload:
+        raise SystemExit(f"MCP server '{name}' has different configuration; original preserved")
+    if read_input() != original:
+        raise SystemExit('Claude MCP config changed during registration; refusing to overwrite')
+    raise SystemExit(0)
+servers[name] = payload
+data['mcpServers'] = servers
+output = (json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
+path.parent.mkdir(parents=True, exist_ok=True)
+fd, temporary = tempfile.mkstemp(prefix='.mcp-config-', dir=str(path.parent))
+try:
+    with os.fdopen(fd, 'wb') as stream:
+        stream.write(output)
+        stream.flush()
+        os.fsync(stream.fileno())
+    # Detect observed edits/creation/deletion before the atomic replacement.
+    if read_input() != original:
+        raise SystemExit('Claude MCP config changed during registration; refusing to overwrite')
+    os.replace(temporary, path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
 PY
   log_ok "MCP server '$name' registered for Claude in $CLAUDE_MCP_CONFIG_PATH"
 }
@@ -524,54 +571,191 @@ PY
 write_codex_mcp_server() {
   local name="$1"
   local json_payload="$2"
-  ensure_dir "$(dirname "$CODEX_MCP_CONFIG_PATH")"
-  python3 - "$CODEX_MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY'
-import json, pathlib, re, sys
+  python3 - "$CODEX_MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY' || return 1
+import copy
+import json
+import math
+import os
+import pathlib
+import stat
+import sys
+import tempfile
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    raise SystemExit(
+        'Codex MCP registration requires Python 3.11+ with stdlib tomllib; refusing to write'
+    )
+
 path = pathlib.Path(sys.argv[1])
 name = sys.argv[2]
-payload = json.loads(sys.argv[3])
-lines = path.read_text(encoding='utf-8').splitlines() if path.exists() else []
-header = re.compile(r'^\s*\[mcp_servers\.([^\].]+)(?:\.env)?\]\s*$')
-out = []
-skip = False
-for line in lines:
-    match = header.match(line)
-    if line.lstrip().startswith('['):
-        if match and match.group(1) == name:
-            skip = True
-            continue
-        if skip:
-            skip = False
-    if not skip:
-        out.append(line)
-while out and not out[-1].strip():
-    out.pop()
-if out:
-    out.append('')
 
-def literal(value):
+
+def fail(message):
+    raise SystemExit(message)
+
+
+def read_input():
+    try:
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return None
+    if not stat.S_ISREG(mode):
+        fail(f'Refusing non-regular Codex config (including symlink): {path}')
+    return path.read_bytes()
+
+
+def parse_document(raw, label):
+    if raw is None:
+        root = {}
+    else:
+        try:
+            root = tomllib.loads(raw.decode('utf-8'))
+        except (UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:
+            fail(f'Invalid Codex TOML ({label}); refusing to write: {exc}')
+    if not isinstance(root, dict):
+        fail(f'Codex TOML root must be a table ({label}); refusing to write')
+    servers = root.get('mcp_servers', {})
+    if not isinstance(servers, dict):
+        fail(f'Codex mcp_servers must be a table ({label}); refusing to write')
+    for server_name, server in servers.items():
+        if not isinstance(server_name, str) or not isinstance(server, dict):
+            fail(f'Codex mcp_servers entries must be tables ({label}); refusing to write')
+    return root
+
+
+def quoted_key(value, location):
+    if not isinstance(value, str):
+        fail(f'{location} key must be a string; refusing to write')
+    return json.dumps(value, ensure_ascii=False)
+
+
+def value_kind(value):
     if isinstance(value, bool):
-        return 'true' if value else 'false'
-    if isinstance(value, (int, float)):
-        return str(value)
+        return 'bool'
+    if isinstance(value, int):
+        return 'int'
+    if isinstance(value, float):
+        return 'float'
+    if isinstance(value, str):
+        return 'string'
     if isinstance(value, list):
-        return '[' + ', '.join(literal(v) for v in value) + ']'
-    text = str(value).replace('\\', '\\\\').replace('"', '\\"')
-    return f'"{text}"'
+        return 'array'
+    if isinstance(value, dict):
+        return 'inline-table'
+    return None
 
-out.append(f'[mcp_servers.{name}]')
-for key in ('type', 'url', 'command', 'args', 'bearer_token_env_var'):
-    if key in payload:
-        out.append(f'{key} = {literal(payload[key])}')
-for key in sorted(k for k in payload if k not in {'type', 'url', 'command', 'args', 'bearer_token_env_var', 'env', 'headers'}):
-    out.append(f'{key} = {literal(payload[key])}')
-env = payload.get('env')
-if isinstance(env, dict) and env:
-    out.append('')
-    out.append(f'[mcp_servers.{name}.env]')
-    for key in sorted(env):
-        out.append(f'{key} = {literal(env[key])}')
-path.write_text('\n'.join(out) + '\n', encoding='utf-8')
+
+def toml_value(value, location):
+    kind = value_kind(value)
+    if kind == 'bool':
+        return 'true' if value else 'false'
+    if kind == 'int':
+        return str(value)
+    if kind == 'float':
+        if not math.isfinite(value):
+            fail(f'{location} contains a non-finite number; refusing to write')
+        return repr(value)
+    if kind == 'string':
+        return json.dumps(value, ensure_ascii=False)
+    if kind == 'array':
+        if None in {value_kind(item) for item in value}:
+            fail(f'{location} contains an unsupported array value; refusing to write')
+        return '[' + ', '.join(toml_value(item, f'{location}[]') for item in value) + ']'
+    if kind == 'inline-table':
+        fields = []
+        for key, item in value.items():
+            fields.append(
+                f'{quoted_key(key, location)} = {toml_value(item, f"{location}.{key}")}'
+            )
+        return '{' + ', '.join(fields) + '}'
+    fail(f'{location} has unsupported type {type(value).__name__}; refusing to write')
+
+
+def validate_payload(payload):
+    if not isinstance(payload, dict):
+        fail('Codex MCP payload must be an object/table; refusing to write')
+    if 'headers' in payload:
+        fail('Codex MCP payload.headers has no verified TOML mapping; refusing to write')
+    if 'env' in payload and not isinstance(payload['env'], dict):
+        fail('Codex MCP payload.env must be an object/table; refusing to write')
+    for key, value in payload.items():
+        quoted_key(key, 'Codex MCP payload')
+        toml_value(value, f'payload.{key}')
+
+
+def server_fragment(server_name, payload):
+    server_key = quoted_key(server_name, 'Codex MCP server')
+    lines = [f'[mcp_servers.{server_key}]']
+    for key, value in payload.items():
+        if key == 'env':
+            continue
+        lines.append(f'{quoted_key(key, "Codex MCP payload")} = {toml_value(value, f"payload.{key}")}')
+    if 'env' in payload:
+        env = payload['env']
+        if env:
+            lines.append('')
+            lines.append(f'[mcp_servers.{server_key}.env]')
+            for key, value in env.items():
+                lines.append(
+                    f'{quoted_key(key, "Codex MCP payload.env")} = '
+                    f'{toml_value(value, f"payload.env.{key}")}'
+                )
+        else:
+            lines.append('env = {}')
+    return ('\n'.join(lines) + '\n').encode('utf-8')
+
+
+def without_server(root, server_name):
+    result = copy.deepcopy(root)
+    servers = dict(result.get('mcp_servers', {}))
+    servers.pop(server_name, None)
+    # An absent mcp_servers table and an empty one are equivalent for this comparison.
+    result['mcp_servers'] = servers
+    return result
+
+
+try:
+    payload = json.loads(sys.argv[3])
+except (TypeError, json.JSONDecodeError) as exc:
+    fail(f'Invalid Codex MCP payload JSON; refusing to write: {exc}')
+validate_payload(payload)
+original = read_input()
+before = parse_document(original, 'existing file')
+servers = before.get('mcp_servers', {})
+if name in servers:
+    if servers[name] != payload:
+        fail(f"MCP server '{name}' has different configuration; original preserved")
+    if read_input() != original:
+        fail('Codex config changed during idempotent registration; refusing to overwrite')
+    raise SystemExit(0)
+
+fragment = server_fragment(name, payload)
+prefix = b'' if original is None else original
+if prefix and not prefix.endswith(b'\n'):
+    prefix += b'\n'
+output = prefix + fragment
+after = parse_document(output, 'generated output')
+if after.get('mcp_servers', {}).get(name) != payload:
+    fail('Generated Codex MCP table does not match the requested payload; refusing to write')
+if without_server(before, name) != without_server(after, name):
+    fail('Generated Codex TOML changed a non-target value; refusing to write')
+
+path.parent.mkdir(parents=True, exist_ok=True)
+fd, temporary = tempfile.mkstemp(prefix='.codex-config-', dir=str(path.parent))
+try:
+    os.chmod(temporary, 0o600)
+    with os.fdopen(fd, 'wb') as stream:
+        stream.write(output)
+        stream.flush()
+        os.fsync(stream.fileno())
+    if read_input() != original:
+        fail('Codex config changed during registration; refusing to overwrite')
+    os.replace(temporary, path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
 PY
   log_ok "MCP server '$name' registered for Codex in $CODEX_MCP_CONFIG_PATH"
 }
@@ -585,14 +769,14 @@ write_mcp_server() {
       log_warn "MCP registration skipped for '$name' (client-neutral default). Re-run with --mcp-host=claude, codex, or both."
       ;;
     claude)
-      write_claude_mcp_server "$name" "$json_payload"
+      write_claude_mcp_server "$name" "$json_payload" || return 1
       ;;
     codex)
-      write_codex_mcp_server "$name" "$json_payload"
+      write_codex_mcp_server "$name" "$json_payload" || return 1
       ;;
     both)
-      write_claude_mcp_server "$name" "$json_payload"
-      write_codex_mcp_server "$name" "$json_payload"
+      write_claude_mcp_server "$name" "$json_payload" || return 1
+      write_codex_mcp_server "$name" "$json_payload" || return 1
       ;;
   esac
 }
@@ -733,7 +917,7 @@ ensure_jshookmcp() {
 import json, sys
 print(json.dumps({'command':'npx','args':['-y',sys.argv[1]],'env':{'JSHOOK_BASE_PROFILE':'search'}}))
 PY
-)"
+)" || return 1
 }
 
 ensure_reqable_mcp() {
@@ -744,7 +928,7 @@ ensure_reqable_mcp() {
 import json, sys
 print(json.dumps({'command':'npx','args':['-y',sys.argv[1]]}))
 PY
-)"
+)" || return 1
   log_warn "Reqable MCP requires the separately installed Reqable desktop application and its local API."
 }
 
@@ -756,7 +940,7 @@ import json, sys
 print(json.dumps({'url': sys.argv[1]}))
 PY
 )
-  write_mcp_server "xquik" "$payload"
+  write_mcp_server "xquik" "$payload" || return 1
   if ! $LAST_CAPABILITY_REGISTRATION_REQUIRED; then
     log_ok "xquik remote MCP registered; complete OAuth in the selected MCP client"
   fi
@@ -773,7 +957,7 @@ ensure_anything_analyzer() {
   install_git_commit "$repo" "$commit" "$dir" || return 1
   ensure_node_runtime || return 1
   ensure_pnpm || return 1
-  write_mcp_server "anything-analyzer" '{"url":"http://localhost:23816/mcp"}'
+  write_mcp_server "anything-analyzer" '{"url":"http://localhost:23816/mcp"}' || return 1
   if $START_SERVICES; then
     (cd "$dir" && pnpm install --frozen-lockfile) || return 1
     install_git_commit "$repo" "$commit" "$dir" || return 1
@@ -784,22 +968,24 @@ ensure_anything_analyzer() {
       else
         pnpm dev >/tmp/anything-analyzer.log 2>&1 &
       fi
-    )
+    ) || return 1
     if wait_for_port 23816 120; then
       if test_mcp_http 23816; then
         log_ok "anything-analyzer MCP server ready on port 23816 (HTTP verified)"
       else
-        log_warn "anything-analyzer port 23816 open but MCP HTTP handshake failed; check /tmp/anything-analyzer.log"
+        log_err "anything-analyzer port 23816 open but MCP HTTP handshake failed; check /tmp/anything-analyzer.log"
+        return 1
       fi
     else
-      log_warn "anything-analyzer did not open port 23816; see /tmp/anything-analyzer.log"
+      log_err "anything-analyzer did not open port 23816; see /tmp/anything-analyzer.log"
+      return 1
     fi
   fi
 }
 
 ensure_idapro() {
-  ensure_idalib_mcp
-  write_mcp_server "idapro" '{"url":"http://127.0.0.1:13337/mcp"}'
+  ensure_idalib_mcp || return 1
+  write_mcp_server "idapro" '{"url":"http://127.0.0.1:13337/mcp"}' || return 1
   if $START_SERVICES; then
     case "$PLATFORM" in
       linux)
@@ -809,11 +995,15 @@ ensure_idapro() {
         log_warn "Start IDA Pro manually on macOS and confirm MCP port in the IDA Output window."
         ;;
     esac
-    wait_for_port 13337 45 || log_warn "idapro MCP service is not online on port 13337 yet."
+    if ! wait_for_port 13337 45; then
+      log_err "idapro MCP service is not online on port 13337."
+      return 1
+    fi
     if test_mcp_http 13337 3; then
       log_ok "idapro MCP server ready (HTTP verified)"
     else
-      log_warn "idapro port 13337 open but MCP HTTP handshake failed; check IDA Output window"
+      log_err "idapro port 13337 open but MCP HTTP handshake failed; check IDA Output window"
+      return 1
     fi
   fi
 }
@@ -900,7 +1090,7 @@ import json, sys
 print(json.dumps({"command":"node","args":[sys.argv[1]]}))
 PY
 )
-  write_mcp_server "burpsuite" "$bridge_json"
+  write_mcp_server "burpsuite" "$bridge_json" || return 1
   manual_required burpsuite-mcp "Build burp-mcp-full and load build/libs/burp-mcp-full.jar in BurpSuite Extensions."
 }
 
@@ -917,14 +1107,14 @@ import json, sys
 print(json.dumps({"command": sys.argv[1], "args": ["mcp", "serve"]}))
 PY
 )
-  write_mcp_server "pentestswarm" "$definition"
+  write_mcp_server "pentestswarm" "$definition" || return 1
 }
 
 ensure_pentestswarm() {
   local pentestswarm_path
   pentestswarm_path="$(cmd_path pentestswarm)"
   if [[ -n "$pentestswarm_path" ]]; then
-    register_pentestswarm_mcp "$pentestswarm_path"
+    register_pentestswarm_mcp "$pentestswarm_path" || return 1
     log_ok "pentestswarm ready"
     return 0
   fi
@@ -941,7 +1131,7 @@ ensure_pentestswarm() {
       go_bin="$(go env GOPATH 2>/dev/null || true)/bin"
     fi
     if [[ -x "$go_bin/pentestswarm" ]]; then
-      register_pentestswarm_mcp "$go_bin/pentestswarm"
+      register_pentestswarm_mcp "$go_bin/pentestswarm" || return 1
       log_ok "pentestswarm installed and registered"
       return 0
     fi
@@ -952,7 +1142,7 @@ ensure_pentestswarm() {
 import json, sys
 print(json.dumps({'command':'docker','args':['run','--rm','-i',sys.argv[1],'mcp','serve']}))
 PY
-)"
+)" || return 1
     log_warn "pentestswarm Go install failed or produced no runnable binary; prepared Docker fallback $docker_image"
   else
     manual_required pentestswarm "Install Go 1.24+ or Docker, then install Pentest-Swarm-AI and ensure pentestswarm is on PATH."

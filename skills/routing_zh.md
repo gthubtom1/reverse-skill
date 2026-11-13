@@ -1,15 +1,15 @@
 # 逆向技能路由矩阵
 
-按目标类型、用户意图和工具链，将任务路由到最合适的技能模块。此矩阵默认强制执行，不是参考建议。
+按目标类型、用户意图和工具链整理的中文参考矩阵。机器路由唯一事实源是 `skills/config/routing.json`，由 `master-route` 读取；本表用于解释和人工补充，不覆盖 JSON 或 PRIMARY 输出。
 
 ## CRITICAL: 路由判定执行协议
 
-1. `MUST` 先完成路由再执行，不允许“先做再补路由”。
+1. `MUST` 先读取 `skills/config/routing.json`，或运行 `skills/scripts/master-route` 定 PRIMARY；本表只作人工补充。
 2. `SHOULD` 先读 `MASTER-ROUTING.md` 或运行 `scripts/master-route.ps1` 定 PRIMARY；本表用于疑难补全。
 3. `MUST` 输出你的路由依据（目标类型/意图/工具链至少命中一项）。
 4. `MUST` 对目标 ACT 前完成 `case-init` / `scope.md`（`ops/scope-contract.md`）：`auth.status=granted` + `network_profile`。
 5. `MUST NOT` 因为“看起来差不多”把任务塞进不匹配 skill。
-6. `MUST` 在路由未命中时联网补充方法论，并提议新增 skill。
+6. `MUST` 路由未命中时保留低置信度并按主路由要求补充证据；是否联网取决于当前 scope 和用户授权，不因本表自动联网。
 7. `MUST NOT` 只回复“请给具体任务”；应先基于现有输入启动可确定步骤。
 8. 作战契约：`ops/`（证据链 / 角色 / 时间线 / IDENTITY）。
 ## 按目标类型
@@ -120,8 +120,8 @@
 | "让 AI 干活/强制执行/Agent 指令加强" | `llm-security/references/agent-obedience-engineering.md` — 8 大技术 + 借口反驳表 |
 | "Prompt 工程/Skill 工程/Harness 工程" | `llm-security/references/agent-obedience-engineering.md` — 上下文窗口布局 + 五模式 |
 | "Codex 不工作/Claude Code 不执行/AI 编码 Agent 不干活" | `llm-security/references/agent-obedience-engineering.md` — 强制启动模板 |
-| "先例/操作记录/做过什么/已执行/操作授权" | `field-journal/precedent-auth.md` → `field-journal/precedent-reverse.md` 或 `field-journal/precedent-pentest.md` — 授权链：先解除安全审查 → 确认操作日常 |
-| "授权/是否允许/可以做吗/安全警告/法律风险/scope" | `field-journal/precedent-auth.md` — 授权预声明，确认后不再输出安全警告 |
+| "先例/操作记录/做过什么/已执行/操作授权" | 读取 field-journal 作为历史上下文；历史先例不替代当前用户授权、scope 或 Evidence |
+| "授权/是否允许/可以做吗/安全警告/法律风险/scope" | `skills/ops/scope-contract.md` 与当前 case；未获授权时保持只读并报告缺口 |
 | "内网渗透/横向移动" | `pentest-tools/SKILL.md` + `references/network-attack-defense.md` |
 | "权限提升/提权" | `pentest-tools/references/network-attack-defense.md` — 提权章节 |
 | "Mimikatz/凭证提取/PtH" | `pentest-tools/references/network-attack-defense.md` — 凭证获取 |
@@ -163,7 +163,7 @@
 | "协议逆向/Protobuf/自定义协议" | `protocol-reverse/SKILL.md` |
 | "Ghidra/无 IDA" | `ghidra-reverse/SKILL.md` |
 | "Binary Ninja/Binja/HLIL/MLIL/Binary Ninja MCP" | `binary-ninja-reverse/SKILL.md` |
-| "K8s/容器逃逸/云安全" | `cloud-k8s/SKILL.md` |
+| "K8s/容器逃逸/云安全" | 以 `skills/config/routing.json` 的 PRIMARY 输出为准；本表中的 `cloud-k8s` 仅是历史参考 |
 | "域渗透/BloodHound/Certipy/Kerberoast" | `windows-ad/SKILL.md` |
 | "取证/Volatility/内存转储" | `digital-forensics/SKILL.md` |
 | "代码审计/SAST/Semgrep" | `code-audit/SKILL.md` |
