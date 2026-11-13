@@ -151,7 +151,12 @@ printf "pnpm|%s\n" "$*" >> "$BOOTSTRAP_PS_LOG"
         }
     }
 
-    . (Join-Path $PSScriptRoot 'bootstrap-reverse.ps1') -Capability '__test_missing__' -SkipRefresh | Out-Null
+    $missingOutput = @(. (Join-Path $PSScriptRoot 'bootstrap-reverse.ps1') -Capability '__test_missing__' -SkipRefresh)
+    $missingExitCode = $LASTEXITCODE
+    $global:LASTEXITCODE = 0
+    $missingResult = ($missingOutput -join [Environment]::NewLine) | ConvertFrom-Json
+    Assert-True ($missingExitCode -ne 0) 'unknown capability must exit nonzero'
+    Assert-True ($missingResult.status -eq 'missing-definition') 'unknown capability status must remain explicit'
     $script:gitCloneDefinition = [pscustomobject]@{
         name = 'test-git-clone'
         bootstrapKind = 'git-clone'

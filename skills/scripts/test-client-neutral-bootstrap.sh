@@ -261,7 +261,31 @@ default_out="$(bash "$BOOTSTRAP" jshookmcp --skip-refresh)"
 codex_out="$(bash "$BOOTSTRAP" jshookmcp --skip-refresh --mcp-host=codex)"
 [[ "$codex_out" == *'"status":"ready"'* || "$codex_out" == *'"status": "ready"'* ]]
 [[ ! -e "$CLAUDE_CFG" ]]
-grep -Eq '^\[mcp_servers\.jshook\]$' "$CODEX_CFG"
+python3 - "$CODEX_CFG" <<'PY'
+import sys, tomllib
+from pathlib import Path
+config = tomllib.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+assert config['mcp_servers']['jshook'] == {
+    'command': 'npx',
+    'args': ['-y', '@jshookmcp/jshook@0.3.4'],
+    'env': {'JSHOOK_BASE_PROFILE': 'search'},
+}, 'Codex MCP registration must preserve the requested server semantics'
+PY
+(
+  unset TERM PWNLIB_NOTERM
+  TEST_REAL_HEAD="$REAL_HEAD" \
+    TEST_HEAD_SENTINEL_MARKER="$SCRATCH/generated-head-leak" \
+    bash "$REFRESH" "$MD" "$JSON" >/dev/null
+)
+[[ ! -e "$SCRATCH/generated-head-leak" ]]
+python3 - "$JSON" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+cap = {item['name']: item for item in data['capabilities']}['jshookmcp']
+assert cap['mcp_registered'] is True, 'discovery must read the generated Codex registration'
+assert cap['ready'] is True, 'generated registration plus available runtime must be ready'
+PY
 
 rm -f "$CLAUDE_CFG" "$CODEX_CFG"
 claude_out="$(bash "$BOOTSTRAP" jshookmcp --skip-refresh --mcp-host=claude)"

@@ -577,6 +577,7 @@ import json
 import math
 import os
 import pathlib
+import re
 import stat
 import sys
 import tempfile
@@ -628,6 +629,9 @@ def parse_document(raw, label):
 def quoted_key(value, location):
     if not isinstance(value, str):
         fail(f'{location} key must be a string; refusing to write')
+    # Keep ordinary generated names compatible with existing discovery readers.
+    if re.fullmatch(r'[A-Za-z0-9_-]+', value):
+        return value
     return json.dumps(value, ensure_ascii=False)
 
 
