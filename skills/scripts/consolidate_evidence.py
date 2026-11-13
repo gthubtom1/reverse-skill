@@ -57,9 +57,7 @@ def main():
 
     for eid in ids:
         f = evidence_dir / f"{eid}.md"
-        content = f.read_text(encoding="utf-8-sig")
-        f.write_text(mark_superseded(content, args.finding_id), encoding="utf-8-sig")
-        print(f"Marked {eid} as superseded")
+        print(f"Referenced {eid} without modifying immutable Evidence")
 
     report_file = report_dir / "report.md"
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

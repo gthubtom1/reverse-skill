@@ -101,7 +101,7 @@ if printf '%s\n' "$SCOPE" | awk '
 '; then
   has_asset=1
 fi
-if [[ $has_asset -eq 0 && "$net_mode" != "offline" ]]; then
+if [[ $has_asset -eq 0 ]]; then
   ISSUES+=("in_scope.assets appears empty")
 fi
 

@@ -29,15 +29,7 @@ foreach ($id in $idList) {
 
 foreach ($id in $idList) {
     $evidenceFile = Join-Path $evidenceDir "$id.md"
-    $content = Get-Content -LiteralPath $evidenceFile -Raw -Encoding UTF8
-    if ($content -match "(?m)^-\s*status:\s*.*$") {
-        $content = [regex]::Replace($content, "(?m)^-\s*status:\s*.*$", "- status: superseded by $FindingId")
-    } elseif ($content -match "(?m)^---\s*$") {
-        $content = [regex]::Replace($content, "(?m)^---\s*$", "---`r`n- status: superseded by $FindingId", 1)
-    } else {
-        $content = $content.TrimEnd() + "`r`n- status: superseded by $FindingId`r`n"
-    }
-    Set-Content -LiteralPath $evidenceFile -Value $content -Encoding UTF8 -NoNewline
+    Write-Host "Referenced $id without modifying immutable Evidence"
 }
 
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")

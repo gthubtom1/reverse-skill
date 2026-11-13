@@ -125,6 +125,10 @@ if [[ -n "$NETWORK_PROFILE" ]]; then
 fi
 
 CASE_ROOT="$PROJECT_ROOT/work/$CASE_NAME"
+if [[ -d "$CASE_ROOT" ]] && find "$CASE_ROOT" -type f -print -quit | grep -q .; then
+  echo "Case already contains files: $CASE_ROOT. Refusing to overwrite scope, timeline, workitems, evidence, or reports; choose a new case name or continue the existing case." >&2
+  exit 2
+fi
 mkdir -p "$CASE_ROOT/evidence" "$CASE_ROOT/notes" "$CASE_ROOT/report"
 
 auth_status_resolved="pending"
@@ -178,6 +182,10 @@ case "$network_mode" in
     exit 2
     ;;
 esac
+
+HINT_SAFE="${HINT//$'\n'/ }"
+HINT_SAFE="${HINT_SAFE//$'\r'/ }"
+HINT_SAFE="$(printf '%s' "$HINT_SAFE" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
 
 # Route PRIMARY via bash master-route
 ROUTE_TMP="$(mktemp -d "${TMPDIR:-/tmp}/rs-case-route.XXXXXX")"
@@ -240,7 +248,7 @@ cat > "$CASE_ROOT/scope.md" <<EOF
 - primary_id: $primary_id
 - lead_role: lead
 - specialist_roles: []
-- hint: $HINT
+- hint: $HINT_SAFE
 - preset: ${PRESET:-none}
 
 ## auth

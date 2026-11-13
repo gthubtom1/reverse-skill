@@ -3,7 +3,7 @@
 # 等价于 Windows 版的 bootstrap-reverse.ps1
 #
 # 用法:
-#   bash bootstrap-reverse.sh <capability1> [capability2] ... [--start-services] [--skip-refresh]
+#   bash bootstrap-reverse.sh <capability1> [capability2] ... [--start-services] [--skip-refresh] [--register-mcp]
 #
 # 示例:
 #   bash bootstrap-reverse.sh jadx apktool frida
@@ -21,6 +21,7 @@ source "$SCRIPT_DIR/lib/tool-discovery.sh"
 CAPABILITIES=()
 START_SERVICES=false
 SKIP_REFRESH=false
+REGISTER_MCP=false
 MANUAL_REQUIRED=false
 FAILED=false
 LAST_CAPABILITY_MANUAL=false
@@ -29,6 +30,7 @@ for arg in "$@"; do
     case "$arg" in
         --start-services) START_SERVICES=true ;;
         --skip-refresh) SKIP_REFRESH=true ;;
+        --register-mcp) REGISTER_MCP=true ;;
         --list|-l)
             echo "jadx apktool jeb-pro frida frida-ps idalib-mcp jshookmcp reqable-mcp xquik-mcp anything-analyzer idapro r2 rabin2 adb agent-browser ghidra-mcp seclists proxycat burpsuite-mcp nmap pentestswarm pwntools bkcrack"
             echo "mcp-kali-server metasploitmcp hexstrike-ai adaptixc2 atomic-operator sstimap xsstrike wpprobe fluxion gef coercer evil-winrm-py netexec responder bloodhound certipy"
@@ -310,6 +312,11 @@ install_github_release() {
 register_mcp_server() {
     local server_name="$1"
     local config_json="$2"  # JSON 格式的 server 配置
+
+    if [[ "$REGISTER_MCP" != "true" ]]; then
+        log_warn "已安装 $server_name，但未修改 Claude 全局 MCP；如需注册，请显式传 --register-mcp。"
+        return 0
+    fi
 
     local config_path
     config_path=$(get_claude_mcp_config_path)

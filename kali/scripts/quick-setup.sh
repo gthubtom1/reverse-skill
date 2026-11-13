@@ -9,7 +9,7 @@
 #   6. 输出配置报告
 #
 # 用法:
-#   sudo bash kali/scripts/quick-setup.sh [--skip-update] [--minimal]
+#   sudo bash kali/scripts/quick-setup.sh [--skip-update] [--minimal] [--register-mcp]
 
 set -euo pipefail
 
@@ -19,11 +19,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SKIP_UPDATE=false
 MINIMAL=false
+REGISTER_MCP=false
 
 for arg in "$@"; do
     case "$arg" in
         --skip-update) SKIP_UPDATE=true ;;
         --minimal) MINIMAL=true ;;
+        --register-mcp) REGISTER_MCP=true ;;
     esac
 done
 
@@ -179,6 +181,7 @@ fi
 MCP_CONFIG_DIR="$REAL_HOME/.claude"
 MCP_CONFIG="$MCP_CONFIG_DIR/mcp.json"
 
+if [[ "$REGISTER_MCP" == "true" ]]; then
 if command -v jq &>/dev/null; then
     mkdir -p "$MCP_CONFIG_DIR"
 
@@ -203,6 +206,9 @@ if command -v jq &>/dev/null; then
 else
     warn "未安装 jq，无法自动配置 MCP。请手动复制 kali/mcp-kali-example.json"
     info "安装 jq: apt install jq"
+fi
+else
+    warn "未请求全局 Claude MCP 注册；如需写入，请显式传 --register-mcp"
 fi
 
 # ─── 刷新工具索引 ──────────────────────────────────────────────────────────────────

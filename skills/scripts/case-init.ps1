@@ -102,6 +102,12 @@ if (-not [string]::IsNullOrWhiteSpace($NetworkProfile) -and
 
 $workRoot = Join-Path $projectRoot 'work'
 $caseRoot = Join-Path $workRoot $CaseName
+if (Test-Path -LiteralPath $caseRoot -PathType Container) {
+    $existingFiles = @(Get-ChildItem -LiteralPath $caseRoot -File -Recurse -Force)
+    if ($existingFiles.Count -gt 0) {
+        throw "Case already contains files: $caseRoot. Refusing to overwrite scope, timeline, workitems, evidence, or reports; choose a new CaseName or continue the existing case."
+    }
+}
 $dirs = @('evidence', 'notes', 'report')
 New-Item -ItemType Directory -Force -Path $caseRoot | Out-Null
 foreach ($d in $dirs) {
@@ -231,6 +237,7 @@ $timelineSummary = if ($ready) {
     'case directory created; scope pending auth'
 }
 
+$hintForFile = ($Hint -replace '[\r\n]+', ' ').Trim()
 $scope = @"
 # Case Scope
 
@@ -243,7 +250,7 @@ $scope = @"
 - primary_id: $primaryId
 - lead_role: lead
 - specialist_roles: []
-- hint: $Hint
+- hint: $hintForFile
 - preset: $(if ([string]::IsNullOrWhiteSpace($Preset)) { 'none' } else { $Preset })
 
 ## auth
