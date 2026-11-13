@@ -58,7 +58,7 @@
 ## 仓库结构
 
 ```text
-E:\WorkSpace\competition
+示例项目路径使用当前包根下的相对路径（例如 `./work/competition`）；不要把某台机器的 `E:\WorkSpace\competition` 当成安装或成果路径。
 ├─ ctf-sandbox-orchestrator
 ├─ competition-web-runtime
 ├─ competition-agent-cloud

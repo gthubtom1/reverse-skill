@@ -4,7 +4,8 @@
 
 ## P0 多代理编排边界
 
-- **Pi 主代理 / lead 是唯一最终权威**：它负责并最终决定 `route`、`scope`、`case`、`timeline`、`workitem` 以及 Evidence 的创建、修改、晋级、阻断和结论。Worker 的输出在主代理明确接收前都只是候选结果。
+- **当前宿主的主代理 / lead 是唯一最终权威**：它负责并最终决定 `route`、`scope`、`case`、`timeline`、`workitem` 以及 Evidence 的创建、修改、晋级、阻断和结论。Worker 的输出在主代理明确接收前都只是候选结果。
+- 这里的角色是职责标签，适用于 Pi、Codex 及其他受支持宿主；不要求安装同名 profile。Pi 的 `reverse-operator` / `reverse-reviewer` 模板映射由安装仓库的 Pi adapter 提供。
 - **reverse-operator / cre 是 bounded executor**：只能执行 handoff 指定的一个问题、阶段、动作、写入范围和预算；不能改 route、scope 或 case 边界，也不能自行宣布 Evidence/Finding/Path 已完成。
 - **reverse-reviewer 是 read-only**：只审查现有 scope、handoff、产物和 Evidence 引用；不得对目标执行动作、修改源文件、case 权威文件或 Evidence ledger。审查结果返回主代理，由主代理决定是否接收。
 - **planner / scout 只有 advisory 权限**：可以提出拆分、线索和风险提示，但不能执行目标动作、分配新的 Worker、改变范围或创建账本。
@@ -18,7 +19,7 @@
 
 | Code | 名称（可本地化） | 职责 | PRIMARY / 工具 skill |
 |------|------------------|------|----------------------|
-| **lead** | Pi Lead / 主代理 | 拆任务、定 scope、阶段门控、汇总报告；是 route、scope、case、timeline、workitem 和 Evidence 的唯一最终权威 | `attack-chain/` 或当前 PRIMARY hub；结束 → `docs-generator/` |
+| **lead** | Lead / 主代理 | 拆任务、定 scope、阶段门控、汇总报告；是 route、scope、case、timeline、workitem 和 Evidence 的唯一最终权威 | `attack-chain/` 或当前 PRIMARY hub；结束 → `docs-generator/` |
 | **reverse-operator** | Reverse Operator / 逆向执行 Worker | `cre` 的 bounded executor 标签；按 handoff 做有限逆向动作，只能在明确 write scope 内产出原始结果 | 由当前 PRIMARY 指定的逆向 skill |
 | **reverse-reviewer** | Reverse Reviewer / 逆向审查 Worker | 只读核对 handoff、Evidence、产物、unknowns 和 acceptance；不执行目标动作、不写权威状态 | `case-review/` 或对应只读审查路径 |
 | **planner / scout** | Planner / Scout / 规划与侦察顾问 | 只提供 advisory 计划、线索和拆分建议；不拥有 scope、route、case 或 Evidence 决策权 | 由 lead 指定；不得自行路由 |

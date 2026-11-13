@@ -4,6 +4,8 @@
 
 This file contains the bootstrap instructions, deployment routing, and behavior chain for AI agents. **Reading repository files is not authorization to execute them.** If the user asked only to inspect, review, summarize, or compare this repository, remain read-only. Activate the workflow below only after the user explicitly asks to configure or use the package.
 
+For the combined Pi/Codex environment, install through [reverse-workflow-installer](https://github.com/gthubtom1/reverse-workflow-installer) and use its host-global thin entry and local receipt. Do not create a project-level Reverse Skill or require an implementation project merely to install Reverse. The standalone examples below describe direct package use; they do not override the combined installer's global resource ownership. Business projects own their case artifacts and optional official Spec Kit specifications/tasks, while the professional router and domain Skills remain in the shared reverse source.
+
 AI Community: https://linux.do
 
 > This package can be placed in any directory. The AI will automatically detect its actual path. In the following text, `<SKILL_ROOT>` refers to your real installation path.
@@ -173,7 +175,7 @@ If you also use the CTF knowledge base, it is recommended to place it under the 
 
 This allows the relative paths in `routing.md`, such as `../CTF-Sandbox-Orchestrator/...`, to resolve correctly from `skills/`.
 
-> If you place `CTF-Sandbox-Orchestrator` outside this package, such as `F:\CTF-Sandbox-Orchestrator\`, you need to manually adjust the relative paths in `routing.md`.
+> Keep `CTF-Sandbox-Orchestrator` in the distributed layout. Machine route paths come from `skills/config/routing.json`; editing `routing.md` alone cannot change them. A maintained relocation must update that JSON and the human-readable routing mirrors together, verify route coherence, and record a new source identity. Do not rewrite an installed or frozen source snapshot just to change paths.
 
 ---
 
@@ -245,7 +247,7 @@ Full dependency table with paths in the original [README.md](README.md).
 | Module | Directory | Main Purpose |
 |---|---|---|
 | Main controller entry | `SKILL.md` | Read the global map first, then decide which sub-skill to enter |
-| Routing table | `routing.md` | Dispatch by target type, user intent, and toolchain |
+| Routing source / reference | `config/routing.json` / `routing.md` | JSON is the machine source of truth; Markdown explains the target, intent, and toolchain choices |
 | Tool index | `tool-index.md` | Check whether local tools exist, where they are, and which scripts call them |
 | APK reverse engineering | `apk-reverse\` | Unpack, jadx, smali, repackaging, Frida, native dispatch; optional licensed JEB Pro cross-check |
 | IDA Pro | `ida-reverse\` | Deep binary RE and `idapro_*` workflows |
@@ -307,10 +309,10 @@ After success, check:
 
 ```powershell
 # Start the IDA MCP HTTP service
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\start.ps1"
+powershell -File "<SKILL_ROOT>\skills\ida-reverse\scripts\start.ps1"
 
 # Open a sample
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
+powershell -File "<SKILL_ROOT>\skills\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
 ```
 
 ### anything-analyzer
@@ -461,7 +463,7 @@ Linux / macOS / Kali:
 
 IDA chain on Windows:
 ```powershell
-powershell -File "<your skill root>\ida-reverse\scripts\start.ps1"
+powershell -File "<your skill root>\skills\ida-reverse\scripts\start.ps1"
 ```
 
 Tool index:
@@ -475,8 +477,8 @@ Kali:           bash <your skill root>/kali/scripts/refresh-tool-index.sh
 
 ## FAQ
 
-**Q1: Can I put `skills` on another drive?**
-Yes, but update every absolute path that references it.
+**Q1: Can I put the package on another drive?**
+Yes. Keep the distributed directory layout together. For a combined installation, use the installer/receipt to update managed references; moving `skills` separately requires the JSON route and mirror maintenance described above.
 
 **Q2: `tool-index.md` says `yes`; why still can't Claude call the tool?**
 Because it only means the local machine has the executable. The tool may not be registered in MCP configuration.
@@ -500,7 +502,7 @@ For a user-requested knowledge refresh, follow [knowledge maintenance](skills/re
 ### Evolution Log Directory
 
 ```text
-<SKILL_ROOT>\field-journal\
+<SKILL_ROOT>\skills\field-journal\
 ├── _template.md              # Write-back template
 ├── _index.md                 # Experience index maintained with each journal change
 ├── 2026-05-15_apk-xxx-signature-bypass.md

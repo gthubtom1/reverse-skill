@@ -123,10 +123,22 @@ if ($recover -match '(?im)^\s*(&\s*)?taskkill(\.exe)?\s+[^\n]*/T\b') {
 }
 
 $start = Get-Content -LiteralPath $idaFiles['start.ps1'] -Raw
-if ($start -match 'Test-IdaMcpKeepaliveDeadlockFromFacts' -and $start -match 'Write-IdaMcpLastHealthy' -and $start -notmatch 'CreationDate') {
-    Ok 'start.ps1 deadlock uses last-healthy, not CreationDate'
+$startTokens = $null
+$startErrors = $null
+$startAst = [System.Management.Automation.Language.Parser]::ParseFile($idaFiles['start.ps1'], [ref]$startTokens, [ref]$startErrors)
+$deadlockCalls = @($startAst.FindAll({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and
+        $node.GetCommandName() -eq 'Test-IdaMcpKeepaliveDeadlockFromFacts'
+}, $true))
+$invalidDeadlockCalls = @($deadlockCalls | Where-Object {
+    $_.Extent.Text -notmatch '(?s)-LastHealthy\s+\(Read-IdaMcpLastHealthy\b.*?\)' -or
+        $_.Extent.Text -match 'CreationDate'
+})
+if ($deadlockCalls.Count -gt 0 -and $invalidDeadlockCalls.Count -eq 0 -and $start -match 'Write-IdaMcpLastHealthy') {
+    Ok 'start.ps1 deadlock uses last-healthy; creation time remains valid for ownership'
 } else {
-    Bad 'start.ps1 must use last-healthy deadlock, not process CreationDate'
+    Bad 'start.ps1 deadlock calls must use last-healthy rather than process CreationDate'
 }
 if ($start -match '(?im)^\s*(&\s*)?taskkill(\.exe)?\s+[^\n]*/T\b') {
     Bad 'start.ps1 must not taskkill /T'

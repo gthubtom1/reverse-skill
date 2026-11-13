@@ -16,6 +16,8 @@ process_lease:
   pid: <pid>
   parent_pid: <parent pid when known>
   executable: <resolved executable path>
+  root_process_executable: <observed Win32 executable path>
+  root_creation_filetime_utc: <observed Win32 creation time as UTC file time>
   started_at: <ISO-8601>
   expected_exit: true
   cleanup_on:
@@ -68,3 +70,11 @@ starting a replacement provider while the previous lease is active
 ```
 
 Use `skills/scripts/process-lease.ps1` for Windows raw fallback processes. REA-managed providers must expose equivalent session and cleanup status through the REA result contract.
+
+### Windows fallback limits
+
+`process-lease.ps1` records and rechecks creation time and executable path. Missing identity fields in old leases, inaccessible metadata, query failures, identity changes, snapshot cycles, and size/time limits block cleanup. Its descendant snapshot is limited to 256 processes. It pins and validates process handles in parent-first order before stopping observed processes in child-first order. Stop attempts have a 10-second budget and verification a 15-second budget, checked between operations; an in-flight CIM query or exit wait can extend these budgets.
+
+This fallback has no Job Object containment. A snapshot cannot account for late forks, detached descendants, or children of parents that exited before observation. Accordingly, `cleanup_completed` is always `false`; `observed_cleanup_completed` only reports that all identities in the accepted snapshot were observed absent without another error. `blocked` retains the containment limitation even when `remaining_pids` is empty. Remaining PIDs can include identities whose absence is unknown. An existing lease is never overwritten by Start; reconcile unresolved cleanup before retiring the lease and starting a replacement.
+
+The Windows IDA launcher records supervisor ownership in `%LOCALAPPDATA%\reverse-skill\ida-mcp\supervisor-<port>.lease.json`, binding the IDA directory and port to PID, creation time, executable, and command line. This launcher receipt is not a case/work-item lease or proof of descendant cleanup. It supports external Python with IDADIR supplied through the environment. Legacy processes without a receipt still require an explicit IDA path in the command line; env-only legacy ownership remains unknown and blocks replacement. Failed startup identity capture retains an unresolved receipt when it can be written. Stop refusal, stop failure, remaining listeners, and candidate supervisors block replacement. A readiness timeout attempts to stop only the recorded supervisor and reports unverified descendant cleanup; IDA GUI children are never terminated.

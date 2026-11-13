@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "kali-server": {
-      "command": "kali-server-mcp",
-      "args": ["--port", "5000"],
+      "command": "mcp-server",
+      "args": ["--server", "http://127.0.0.1:5000"],
       "_comment": "Kali 官方 MCP Server。apt install mcp-kali-server 后可用。可直接调用 nmap/nxc/curl/gobuster 等任意终端工具。"
     },
     "metasploit-mcp": {

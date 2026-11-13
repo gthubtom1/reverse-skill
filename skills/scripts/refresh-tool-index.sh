@@ -235,7 +235,7 @@ done
 
 MANIFEST_PATH="$SCRIPT_DIR/bootstrap-manifest.json"
 CLAUDE_MCP_CONFIG_PATH_FOR_CAP="${CLAUDE_MCP_CONFIG:-$HOME/.claude/mcp.json}"
-CODEX_MCP_CONFIG_PATH_FOR_CAP="${CODEX_CONFIG_PATH:-$HOME/.codex/config.toml}"
+CODEX_MCP_CONFIG_PATH_FOR_CAP="${CODEX_CONFIG_PATH:-${CODEX_HOME:-$HOME/.codex}/config.toml}"
 CAP_RECORDS_TMP="$(mktemp)"
 trap 'rm -f "$records_tmp" "$CAP_RECORDS_TMP"' EXIT
 

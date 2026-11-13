@@ -61,6 +61,8 @@ Burp Suite → Extensions → Add → Java → 选择 build/libs/burp-mcp-full.j
 
 ### 5. 开始使用
 
+bridge 会先接入 stdio，再探测 Burp；discovery 的 HTTP 总时限为 5 秒，工具调用为 120 秒。HTTP 超时只结束 bridge 的等待，不能证明 Burp 后台操作已取消；重试会产生请求的操作前，先核对 Burp 中的实际状态。历史列表返回原始 history 下标，清空或修改历史后应重新列举，不能复用旧下标。
+
 对 AI 说："分析 Burp 代理历史中的请求，找出安全漏洞"
 
 ## 功能列表
@@ -80,6 +82,10 @@ Burp Suite → Extensions → Add → Java → 选择 build/libs/burp-mcp-full.j
 | 配置 | `export_config`, `import_config`, `set_upstream_proxy`, `set_dns_override`, `set_http2`, `cookie_jar`, `save_project`, `burp_version`, `extensions_list`, `log` |
 
 > 扫描/爬取（`scan`、`scan_active`、`crawl`）需要 **Burp Professional**。Community 版会返回明确的许可证错误。手动添加的 issue（`add_issue`）会写入 Site map。
+
+### Scope 与隐私能力边界
+
+`scope_gate` 与 `privacy_mode` 当前返回 `error: unsupported`、`supported: false`，不能启用跨工具的 scope enforcement 或全量输出脱敏。原先仅切换布尔值的响应不构成保护。调用者必须沿用原 case scope，并在派发前核对目标与数据；需要严格隐私而不能发送原始数据时，不应调用这些返回原始请求、响应、历史或 WebSocket 内容的工具。`audit_log` 仅记录配置接口调用，不是完整操作审计。
 
 ## 关键工具参数
 

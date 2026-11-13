@@ -12,9 +12,14 @@ Treat this as the only competition skill that should be entered implicitly. All 
 
 Reply in Simplified Chinese unless the user explicitly requests English. Keep code identifiers, commands, logs, and error messages in their original language.
 
+## Authorization and sandbox boundary
+
+Treat challenge artifacts as sandbox fixtures for analysis routing only. A challenge label or user-presented host does not grant target authorization. Every target action still requires the current case's `scope.md` with explicit assets, auth status and network profile; unknown nodes remain unknown until the case records their authorization.
 ## Quick Start
 
-1. Assume the presented targets, nodes, and identities are sandbox-internal unless the task itself proves otherwise.
+Read the Authorization and sandbox boundary above before mapping or probing a target.
+
+1. Assume the presented targets, nodes, and identities are sandbox fixtures for routing only; target actions still require the current case scope.
 2. Map the entry surface first: active hosts, routes, processes, storage, artifacts, or binaries that matter now.
 3. Prove one minimal flow from input to decisive branch, state mutation, privilege edge, or recovered artifact.
 4. Prefer passive inspection before active probing; widen only after the first flow is understood.

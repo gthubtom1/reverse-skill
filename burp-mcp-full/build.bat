@@ -1,5 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
+if errorlevel 1 exit /b 1
 
 :: BurpSuite MCP Full Control - Windows Build Script
 :: Produces: build\libs\burp-mcp-full.jar (fat jar, Burp-loadable)
@@ -50,6 +52,13 @@ if not defined JAVAC (
     exit /b 1
 )
 
+:: Resolve jar from the same JDK selected for javac, including PATH-only setups.
+for %%J in ("%JAVAC%") do set "JAR_CMD=%%~dpJjar.exe"
+if not exist "%JAR_CMD%" (
+    echo ERROR: jar.exe not found beside javac.exe. Select a complete JDK 21+.
+    exit /b 1
+)
+
 set "SRC=src\main\java\com\burpmcp"
 set "RES=src\main\resources"
 set "LIB=lib"
@@ -72,18 +81,29 @@ if errorlevel 1 (
 
 :: Copy resources (extension descriptor) so the jar is loadable by Burp
 xcopy /e /i /y "%RES%\META-INF" "%OUT%\META-INF" >nul
+if errorlevel 1 exit /b 1
 
 echo [3/4] Packaging fat jar...
 if not exist %DIST% mkdir %DIST%
 
 :: Extract dependencies into classes dir
-cd %OUT%
+pushd "%OUT%"
+if errorlevel 1 exit /b 1
 "%JAR_CMD%" xf ..\..\%LIB%\gson.jar com
+if errorlevel 1 (
+    popd
+    exit /b 1
+)
 "%JAR_CMD%" xf ..\..\%LIB%\nanohttpd.jar fi
-cd ..\..
+if errorlevel 1 (
+    popd
+    exit /b 1
+)
+popd
 
 :: Create jar
 "%JAR_CMD%" cf %DIST%\burp-mcp-full.jar -C %OUT% .
+if errorlevel 1 exit /b 1
 
 echo [4/4] Done!
 echo Output: %DIST%\burp-mcp-full.jar

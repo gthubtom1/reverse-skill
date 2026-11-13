@@ -155,16 +155,18 @@ if dry_run == "1":
 
 out_dir.mkdir(parents=True, exist_ok=True)
 secondary = [f"skills/{routes[item]['skill']}" for item in selected_order if item != primary]
+hint_one_line = re.sub(r"[\x00-\x1f]+", " ", str(hint)).strip()
+project_one_line = re.sub(r"[\x00-\x1f]+", " ", str(project_root)).strip()
 lines = [
     "# reverse-skill Master route (PRIMARY)",
     f"- created: {datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()}",
     "- package: reverse-skill",
-    f"- hint: {hint}",
+    f"- hint: {hint_one_line}",
     f"- primary: {primary}",
     f"- primary_label: {route['label']}",
     f"- primary_skill: skills/{primary_path}",
     f"- confidence: {confidence}",
-    f"- project_root: {project_root}",
+    f"- project_root: {project_one_line}",
     f"- secondary: {', '.join(secondary) if secondary else '(none)'}",
     "",
     "## MUST open next",

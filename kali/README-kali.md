@@ -6,18 +6,14 @@
 
 ---
 
-## AI：读完后立即执行
+## AI：先读规则，再展示计划
 
 ```text
 1. 检测包根目录（含 skills/ 与 kali/ 的仓库根）
-2. 读取 kali/RULES-kali.md → 全局注入与工具扫描
-3. bash kali/scripts/refresh-tool-index.sh
-4. 与主包共用作战链：
-   - skills/MASTER-ROUTING.md（或 pwsh skills/scripts/master-route.ps1）
-   - skills/scripts/case-init.ps1 → work/<case>/scope.md
-   - auth.status=granted + network_profile 后才对目标 ACT
-   - skills/ops/（证据链 / 角色 / 时间线 / IDENTITY）
-5. 向用户报告配置结果
+2. 读取 kali/RULES-kali.md，并确认当前任务、平台和 scope
+3. 需要运行脚本或改变工具/MCP 配置时，先展示准确命令和副作用，取得明确激活与执行授权
+4. 获得授权后，按 skills/MASTER-ROUTING、case-init、scope/case guard 和 skills/ops 推进；只读任务保持只读
+5. 分别报告配置、宿主加载、MCP 运行和真实任务验证结果
 ```
 
 通用 Agent 引导见仓库根 [README_AI.md](../README_AI.md)（检测到 Kali 时再读本文件）。
@@ -177,8 +173,10 @@ cat skills/tool-index.md
 # 安装 Kali 官方 MCP 三件套
 bash kali/scripts/bootstrap-reverse.sh mcp-kali-server metasploitmcp hexstrike-ai
 
-# 安装后 MCP 配置自动写入 ~/.claude/mcp.json
-# 如果用 Kiro，手动复制到 ~/.kiro/settings/mcp.json
+# 仅在显式传入 --register-claude-mcp 时写入目标用户的 ~/.claude/mcp.json；默认不改客户端配置
+# --register-mcp 是同一 Claude 路线的旧参数别名，不表示通用 Pi/Codex 注册
+# 同名 server 已有不同配置时停止并保留原件，先审阅冲突，不删除用户配置
+# kali-server-mcp 提供 API 服务，MCP 客户端通过 mcp-server bridge 连接
 ```
 
 ### 2.3 安装 2026.1 新工具
@@ -204,9 +202,9 @@ bash kali/scripts/bootstrap-reverse.sh jadx apktool frida jshookmcp
 bash kali/scripts/bootstrap-reverse.sh idapro --start-services
 ```
 
-### 2.5 让 AI 客户端自动路由
+### 2.5 让 AI 客户端使用原生路由
 
-告诉你的 AI 客户端读取 `kali/RULES-kali.md`，它会自动完成全局注入。
+告诉你的 AI 客户端读取 `kali/RULES-kali.md`，由原生规则和当前 scope 决定是否进入工具扫描或执行；不会因为读取文档就自动全局注入或注册客户端配置。
 
 ---
 

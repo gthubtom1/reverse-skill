@@ -14,7 +14,7 @@
 逆向/渗透/安全技能路由包 — AI 自动路由 · 按需自举工具链 · 自动进化经验库</p>
 
 <p align="center">
-  <a href="https://github.com/gthubtom1/reverse-skill/releases"><img src="https://img.shields.io/badge/release-v1.8.2-blue" alt="release v1.8.2"></a>
+  <a href="VERSION"><img src="https://img.shields.io/badge/source-v1.9.0-blue" alt="source v1.9.0; 维护身份以 Git commit 为准"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/stargazers"><img src="https://img.shields.io/github/stars/gthubtom1/reverse-skill?style=flat&logo=github" alt="stars"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/forks"><img src="https://img.shields.io/github/forks/gthubtom1/reverse-skill?style=flat&logo=github" alt="forks"></a>
   <a href="https://github.com/gthubtom1/reverse-skill/issues"><img src="https://img.shields.io/github/issues/gthubtom1/reverse-skill?style=flat&logo=github" alt="issues"></a>

@@ -168,7 +168,7 @@ flowchart LR
     WriteLog --> UpdateIdx[更新 _index.md<br/>按场景分类]
     UpdateIdx --> CheckUpdate{需要更新系统?}
     
-    CheckUpdate -->|路由缺失| FixRoute[更新 routing.md]
+    CheckUpdate -->|路由缺失| FixRoute[更新 skills/config/routing.json<br/>同步 Markdown 镜像并核一致性]
     CheckUpdate -->|工具变化| FixTool[刷新 tool-index]
     CheckUpdate -->|新工具| FixManifest[更新 bootstrap-manifest]
     CheckUpdate -->|无需更新| Done([完成])

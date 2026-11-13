@@ -39,6 +39,21 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+function Enter-ExclusiveFileLock([string] $Path) {
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+    if ($null -ne $item -and (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+        throw "Lock path is a symlink or reparse point: $Path"
+    }
+    for ($attempt = 0; $attempt -lt 200; $attempt++) {
+        try {
+            return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+        } catch [System.IO.IOException] {
+            Start-Sleep -Milliseconds 25
+        }
+    }
+    throw "Timed out waiting for Evidence index lock: $Path"
+}
+
 # Advanced functions reject unknown positionals at bind time; keep explicit check for edge hosts.
 if ($args -and $args.Count -gt 0) {
     $extra = ($args | ForEach-Object { [string]$_ }) -join ' | '
@@ -71,8 +86,15 @@ function Read-OptionalFile([string] $path) {
     return [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $path), [System.Text.Encoding]::UTF8)
 }
 
-if (-not (Test-Path -LiteralPath $CaseRoot)) {
-    throw "CaseRoot does not exist: $CaseRoot"
+$CaseRoot = (Resolve-Path -LiteralPath $CaseRoot).Path
+$evPath = Join-Path $CaseRoot 'evidence'
+$evItem = Get-Item -LiteralPath $evPath -Force -ErrorAction SilentlyContinue
+if ($null -eq $evItem) {
+    [System.IO.Directory]::CreateDirectory($evPath) | Out-Null
+    $evItem = Get-Item -LiteralPath $evPath -Force
+}
+if (-not $evItem.PSIsContainer -or (($evItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+    throw "Case evidence directory is missing or a symlink: $CaseRoot/evidence"
 }
 
 # File overrides beat inline strings (safe path for special characters under powershell -File)
@@ -88,6 +110,7 @@ if ($null -ne $fromNotesFile) { $Notes = $fromNotesFile }
 $contentHash = 'n/a'
 $artifactRef = 'n/a'
 if (-not [string]::IsNullOrWhiteSpace($ArtifactPath)) {
+    if ($ArtifactPath -match '[\x00-\x1F]') { throw 'ArtifactPath must be a single-line path without control characters.' }
     $artifactCandidate = $ArtifactPath
     if (-not [System.IO.Path]::IsPathRooted($artifactCandidate)) {
         $caseArtifact = Join-Path $CaseRoot $artifactCandidate
@@ -102,19 +125,28 @@ if (-not [string]::IsNullOrWhiteSpace($ArtifactPath)) {
     if (-not $artifactFull.StartsWith($casePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "ArtifactPath must point inside CaseRoot: $ArtifactPath"
     }
+    $artifactCursor = $artifactFull
+    while ($artifactCursor) {
+        $artifactItem = Get-Item -LiteralPath $artifactCursor -Force
+        if (($artifactItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "ArtifactPath contains a symlink or reparse point inside CaseRoot: $ArtifactPath"
+        }
+        if ($artifactCursor.TrimEnd('\', '/') -eq $caseRootFull.TrimEnd('\', '/')) { break }
+        $artifactCursor = Split-Path -Parent $artifactCursor
+    }
     $artifactRef = $artifactFull.Substring($casePrefix.Length) -replace '\\', '/'
-    $contentHash = 'sha256:' + (Get-FileHash -LiteralPath $artifactFull -Algorithm SHA256).Hash.ToLowerInvariant()
+    $contentHash = (Get-FileHash -LiteralPath $artifactFull -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
 $evDir = Join-Path $CaseRoot 'evidence'
-New-Item -ItemType Directory -Force -Path $evDir | Out-Null
 
-$idSafe = ($Id -replace '[^\w\-]+', '-').Trim('-')
-if ($idSafe -notmatch '^E-') { $idSafe = 'E-' + $idSafe }
-$fileName = $idSafe + '.md'
+if ($Id -notmatch '^E-[A-Za-z0-9][A-Za-z0-9_-]*$') {
+    throw "Invalid -Id '$Id'. Evidence IDs must match E-<alphanumeric-or-_>-..."
+}
+$fileName = $Id + '.md'
 $path = Join-Path $evDir $fileName
 
-$observed = Get-Date -Format 'o'
+$observed = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ", [System.Globalization.CultureInfo]::InvariantCulture)
 $titleLine = ConvertTo-SingleLine $Title
 $sev = (ConvertTo-SingleLine $Severity).ToLowerInvariant()
 if ($allowedSeverity -notcontains $sev) {
@@ -134,7 +166,7 @@ $excerptBlock = ConvertTo-YamlBlock $(if ($RawExcerpt) { $RawExcerpt } else { 'n
 $notesBlock = ConvertTo-YamlBlock $(if ($Notes) { $Notes } else { 'n/a' })
 
 $body = @"
-### $idSafe
+### $Id
 - title: $titleLine
 - observed_at: $observed
 - source_type: $src
@@ -182,19 +214,44 @@ try {
 }
 
 $index = Join-Path $evDir 'INDEX.md'
-$line = "- $idSafe | $sev | $st | $titleLine | $fileName"
-if (-not (Test-Path -LiteralPath $index)) {
-    $hdr = @"
+$line = "- $Id | $sev | $st | $($titleLine -replace '\|', '\\|') | $fileName"
+$indexLock = Enter-ExclusiveFileLock (Join-Path $evDir '.INDEX.md.lock')
+try {
+    $indexItem = Get-Item -LiteralPath $index -Force -ErrorAction SilentlyContinue
+    if ($null -ne $indexItem -and (($indexItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+        throw "Evidence INDEX is a symlink or reparse point: $index"
+    }
+    if ($null -ne $indexItem -and $indexItem.PSIsContainer) { throw "Evidence INDEX is a directory: $index" }
+    if ($null -eq $indexItem) {
+        $hdr = @"
 # Evidence index
 
 | id | severity | status | title | file |
 |----|----------|--------|-------|------|
 
 "@
-    [System.IO.File]::WriteAllText($index, $hdr, $utf8)
+        [System.IO.File]::WriteAllText($index, $hdr, $utf8)
+    } else {
+        $indexText = [System.IO.File]::ReadAllText($index, [System.Text.Encoding]::UTF8)
+        if ($indexText -match ("(?m)^-\s+" + [regex]::Escape($Id) + "\s+\|")) {
+            throw "Evidence INDEX already contains $Id; refusing a duplicate index row."
+        }
+    }
+    $indexStream = $null
+    $indexWriter = $null
+    try {
+        $indexStream = [System.IO.File]::Open($index, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
+        $indexWriter = [System.IO.StreamWriter]::new($indexStream, $utf8)
+        $indexWriter.WriteLine($line)
+        $indexWriter.Flush()
+    } finally {
+        if ($null -ne $indexWriter) { $indexWriter.Dispose() }
+        elseif ($null -ne $indexStream) { $indexStream.Dispose() }
+    }
+} finally {
+    if ($null -ne $indexLock) { $indexLock.Dispose() }
 }
-Add-Content -Path $index -Value $line -Encoding UTF8
 
 Write-Host ("EVIDENCE -> {0}" -f $path) -ForegroundColor Green
-Write-Host ("ID: {0} | {1} | {2}" -f $idSafe, $sev, $st)
+Write-Host ("ID: {0} | {1} | {2}" -f $Id, $sev, $st)
 exit 0

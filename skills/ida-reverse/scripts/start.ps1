@@ -89,20 +89,53 @@ function Probe-IdaMcp {
 
 function Get-IdaMcpPortOwners {
     param([int]$Port)
-    try {
-        return @(
-            Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty OwningProcess -Unique |
-                Where-Object { $_ -and $_ -gt 0 }
-        )
-    } catch {
-        return @()
-    }
+    return @(
+        Get-NetTCPConnection -ErrorAction Stop |
+            Where-Object { $_.LocalPort -eq $Port -and $_.State -eq 'Listen' } |
+            Select-Object -ExpandProperty OwningProcess -Unique |
+            Where-Object { $_ -and $_ -gt 0 }
+    )
 }
 
 function Get-IdaMcpProcessInfo {
     param([int]$ProcessId)
-    return Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -ErrorAction SilentlyContinue
+    return Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -OperationTimeoutSec 2 -ErrorAction Stop
+}
+
+function Get-IdaMcpIdentity {
+    param($ProcessInfo)
+    if ($null -eq $ProcessInfo) { return $null }
+    $created = $null
+    try {
+        if ($ProcessInfo.CreationDate -is [datetime]) {
+            $created = $ProcessInfo.CreationDate.ToUniversalTime()
+        } elseif ($ProcessInfo.CreationDate -is [string] -and $ProcessInfo.CreationDate) {
+            $created = [System.Management.ManagementDateTimeConverter]::ToDateTime($ProcessInfo.CreationDate).ToUniversalTime()
+        }
+    } catch { $created = $null }
+    return [pscustomobject]@{
+        pid = [int]$ProcessInfo.ProcessId
+        executable = [string]$ProcessInfo.ExecutablePath
+        creation_filetime_utc = if ($null -ne $created) { $created.ToFileTimeUtc() } else { $null }
+        command_line = [string]$ProcessInfo.CommandLine
+    }
+}
+
+function Test-IdaMcpIdentity {
+    param($Expected, $Actual)
+    if ($null -eq $Expected -or $null -eq $Actual) { return $false }
+    foreach ($field in @('pid', 'executable', 'creation_filetime_utc', 'command_line')) {
+        if ($null -eq $Expected.PSObject.Properties[$field] -or $null -eq $Actual.PSObject.Properties[$field]) { return $false }
+    }
+    $expectedTime = 0L
+    $actualTime = 0L
+    if (-not [int64]::TryParse([string]$Expected.creation_filetime_utc, [ref]$expectedTime) -or $expectedTime -le 0) { return $false }
+    if (-not [int64]::TryParse([string]$Actual.creation_filetime_utc, [ref]$actualTime)) { return $false }
+    return ($Expected.pid -eq $Actual.pid -and $expectedTime -eq $actualTime -and
+        -not [string]::IsNullOrWhiteSpace($Expected.executable) -and
+        -not [string]::IsNullOrWhiteSpace($Expected.command_line) -and
+        [string]::Equals($Expected.executable, $Actual.executable, [System.StringComparison]::OrdinalIgnoreCase) -and
+        [string]::Equals($Expected.command_line, $Actual.command_line, [System.StringComparison]::Ordinal))
 }
 
 function Test-IdaGuiProcess {
@@ -112,40 +145,54 @@ function Test-IdaGuiProcess {
     return [string]$proc.Name -match '(?i)^(ida|ida64|idaq|idaq64)\.exe$'
 }
 
-function Test-ManagedSupervisorProcess {
-    param(
-        [int]$ProcessId,
-        [string]$IdaDirPath,
-        [int]$Port
-    )
-    $proc = Get-IdaMcpProcessInfo -ProcessId $ProcessId
-    if (-not $proc) { return $false }
-    $name = [string]$proc.Name
-    $cmd = [string]$proc.CommandLine
+function Test-IdaMcpSupervisorCandidate {
+    param($ProcessInfo, [int]$Port)
+    $name = [string]$ProcessInfo.Name
+    $cmd = [string]$ProcessInfo.CommandLine
     if ($name -match '(?i)^(ida|ida64|idaq|idaq64)\.exe$') { return $false }
     $managed = if ($name -match '(?i)^(python|pythonw|cmd)\.exe$') {
         $cmd -match '(?i)(run-supervisor\.py|idalib_supervisor|idalib-mcp|ida-pro-mcp)'
     } else {
         $name -match '(?i)^(idalib-mcp|ida-pro-mcp|idalib_supervisor)'
     }
-    if (-not $managed) { return $false }
-    # A process name is not ownership. Only stop a process whose command line
-    # carries this invocation's port and IDA installation identity.
     $portToken = '(?i)(^|\s)--port(?:\s|=)["'']?' + [regex]::Escape([string]$Port) + '["'']?(\s|$)'
-    $idaToken = [regex]::Escape(([string]$IdaDirPath).TrimEnd('\','/'))
-    return ($cmd -match $portToken) -and ($cmd -match $idaToken)
+    return $managed -and ($cmd -match $portToken)
 }
 
-function Get-ManagedSupervisorProcessIds {
+function Test-ManagedSupervisorProcess {
     param(
+        [int]$ProcessId,
         [string]$IdaDirPath,
-        [int]$Port
+        [int]$Port,
+        $ProcessInfo
     )
+    $proc = $ProcessInfo
+    if ($null -eq $proc) { $proc = Get-IdaMcpProcessInfo -ProcessId $ProcessId }
+    if (-not $proc -or -not (Test-IdaMcpSupervisorCandidate $proc $Port)) { return $false }
+    $cmd = [string]$proc.CommandLine
+    # Port alone is not ownership. A saved launch identity binds env-only IDADIR
+    # to this installation, including external Python + run-supervisor.py.
+    $lease = $script:IdaMcpLease
+    if ($null -ne $lease -and $null -ne $lease.PSObject.Properties['identity'] -and
+        $null -ne $lease.PSObject.Properties['ida_dir'] -and $null -ne $lease.PSObject.Properties['port'] -and
+        $lease.port -eq $Port -and
+        [string]::Equals([string]$lease.ida_dir, $IdaDirPath, [System.StringComparison]::OrdinalIgnoreCase) -and
+        (Test-IdaMcpIdentity $lease.identity (Get-IdaMcpIdentity $proc))) { return $true }
+    # Legacy processes need an explicit installation path in their command line.
+    # No receipt + env-only IDADIR is unknown, and must not be adopted by port/name.
+    $idaToken = '(?i)(^|[\s"''=])' + [regex]::Escape($IdaDirPath.TrimEnd('\','/')) + '(?=[\\/\s"'']|$)'
+    return $cmd -match $idaToken
+}
+
+function Get-IdaMcpSupervisorCandidateIds {
+    param([int]$Port)
     $ids = New-Object System.Collections.Generic.List[int]
-    foreach ($proc in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)) {
+    foreach ($proc in @(Get-CimInstance Win32_Process -OperationTimeoutSec 2 -ErrorAction Stop)) {
         if (-not $proc.ProcessId) { continue }
         $candidateId = [int]$proc.ProcessId
-        if (Test-ManagedSupervisorProcess -ProcessId $candidateId -IdaDirPath $IdaDirPath -Port $Port) {
+        # Include unknown candidates, even before they listen: Stop must refuse
+        # them and block replacement rather than silently overlooking them.
+        if (Test-IdaMcpSupervisorCandidate $proc $Port) {
             [void]$ids.Add($candidateId)
         }
     }
@@ -156,16 +203,36 @@ function Stop-IdaMcpManagedProcess {
     param(
         [int]$ProcessId,
         [string]$IdaDirPath,
-        [int]$Port
+        [int]$Port,
+        $ExpectedIdentity
     )
     if ($ProcessId -le 0) { return $false }
-    if (-not (Test-ManagedSupervisorProcess -ProcessId $ProcessId -IdaDirPath $IdaDirPath -Port $Port)) {
-        Write-Output "WARN: refusing to stop unowned IDA MCP process PID=$ProcessId; port/IDA identity did not match"
+    $process = $null
+    try {
+        $proc = Get-IdaMcpProcessInfo -ProcessId $ProcessId
+        if ($null -eq $proc) { return $true }
+        $identity = Get-IdaMcpIdentity $proc
+        if (-not (Test-IdaMcpIdentity $identity $identity) -or
+            ($null -ne $ExpectedIdentity -and -not (Test-IdaMcpIdentity $ExpectedIdentity $identity)) -or
+            -not (Test-ManagedSupervisorProcess -ProcessId $ProcessId -IdaDirPath $IdaDirPath -Port $Port -ProcessInfo $proc)) {
+            throw 'Ownership/creation/executable identity unknown or mismatched'
+        }
+        $process = Get-Process -Id $ProcessId -ErrorAction Stop
+        $null = $process.Handle
+        $current = Get-IdaMcpProcessInfo -ProcessId $ProcessId
+        if (-not (Test-IdaMcpIdentity $identity (Get-IdaMcpIdentity $current))) { throw 'Identity changed before stop' }
+        # Only this supervisor handle; never terminate GUI children or a PID tree.
+        $process.Kill()
+        if (-not $process.WaitForExit(1000)) { throw 'Supervisor exit not confirmed' }
+        if ($null -ne (Get-IdaMcpProcessInfo -ProcessId $ProcessId)) { throw 'PID still present or reused after stop' }
+        return $true
+    } catch {
+        # Keep the success stream boolean-only: warning strings must not become true.
+        Write-Warning "cleanup_blocked: PID=$ProcessId; $($_.Exception.Message)"
         return $false
+    } finally {
+        if ($null -ne $process) { $process.Dispose() }
     }
-    # No /T: force_gui may have spawned ida.exe as a child of the supervisor.
-    & taskkill.exe /F /PID $ProcessId 2>$null | Out-Null
-    return $true
 }
 
 function Get-PortableIdaCandidates {
@@ -361,6 +428,7 @@ function Find-IdalibServer {
     return $null
 }
 
+$script:IdaMcpLease = $null
 $probe = Probe-IdaMcp -Port $Port
 $guiOwners = @($probe.GuiOwners)
 
@@ -424,20 +492,37 @@ if (-not $server) {
     exit 1
 }
 
-# Replace only when down or stale (no py_eval). Busy/gui already exited above
-# unless -Force. Never taskkill ida.exe; never use /T.
-foreach ($procName in @('ida-pro-mcp', 'idalib-mcp', 'idalib_supervisor')) {
-    $old = Get-Process -Name $procName -ErrorAction SilentlyContinue
-    if ($old) {
-        foreach ($process in @($old)) {
-            Stop-IdaMcpManagedProcess -ProcessId $process.Id -IdaDirPath $IdaDir -Port $Port
+# Replace only proven supervisors. Any refusal/failure blocks this launch.
+$logDir = Get-IdaMcpLogDir
+$supervisorLeasePath = Join-Path $logDir "supervisor-$Port.lease.json"
+if (Test-Path -LiteralPath $supervisorLeasePath) {
+    try {
+        $script:IdaMcpLease = Get-Content -LiteralPath $supervisorLeasePath -Raw | ConvertFrom-Json
+        if ($null -ne $script:IdaMcpLease.PSObject.Properties['startup_blocked'] -and $script:IdaMcpLease.startup_blocked) {
+            throw 'Previous startup identity is unresolved'
         }
     }
+    catch {
+        Write-Output "ERR:cleanup_blocked:unresolved_or_invalid_supervisor_lease:$supervisorLeasePath"
+        exit 1
+    }
 }
-foreach ($managedPid in @(Get-ManagedSupervisorProcessIds -IdaDirPath $IdaDir -Port $Port)) {
-    Stop-IdaMcpManagedProcess -ProcessId $managedPid -IdaDirPath $IdaDir -Port $Port
+$stopIds = @(@(Get-IdaMcpPortOwners -Port $Port) + @(Get-IdaMcpSupervisorCandidateIds -Port $Port) | Select-Object -Unique)
+if ($stopIds.Count -gt 256) {
+    Write-Output 'ERR:cleanup_blocked:supervisor_count_limit'
+    exit 1
 }
-Start-Sleep -Seconds 1
+foreach ($managedPid in $stopIds) {
+    if (-not (Stop-IdaMcpManagedProcess -ProcessId $managedPid -IdaDirPath $IdaDir -Port $Port)) {
+        Write-Output "ERR:cleanup_blocked:pid=$managedPid"
+        exit 1
+    }
+}
+if (@(Get-IdaMcpPortOwners -Port $Port).Count -gt 0 -or
+    @(Get-IdaMcpSupervisorCandidateIds -Port $Port).Count -gt 0) {
+    Write-Output 'ERR:cleanup_blocked:supervisor_or_listener_remains'
+    exit 1
+}
 
 $wrapper = Join-Path $PSScriptRoot 'run-supervisor.py'
 # --unsafe exposes py_eval / py_exec_file. dbg_* stay hidden (need ?ext=dbg; do not add).
@@ -474,6 +559,7 @@ Write-Output 'INFO:window=hidden (pythonw / no console)'
 
 # Detached + hidden start:
 # pythonw + run-supervisor.py keeps logs without a cmd.exe window.
+# This persistent supervisor is not a Job Object with descendant cleanup guarantees.
 # Win32_Process.Create so the server survives agent/terminal Job Objects.
 $quotedArgs = foreach ($a in $argList) {
     if ($a -match '[\s"]') { '"' + ($a -replace '"', '\"') + '"' } else { $a }
@@ -485,6 +571,11 @@ if ($useCmd) {
     $commandLine = '"' + $filePath + '" ' + ($quotedArgs -join ' ')
 }
 $procId = 0
+$startedProcess = $null
+$launchNotBefore = [datetime]::UtcNow.AddMilliseconds(-1).ToFileTimeUtc()
+$expectedExecutable = if ($useCmd) { (Get-Command cmd.exe -CommandType Application -ErrorAction Stop).Source } else {
+    (Get-Command $filePath -CommandType Application -ErrorAction Stop).Source
+}
 
 try {
     $create = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
@@ -493,8 +584,15 @@ try {
     }
     if ($create -and $create.ReturnValue -eq 0 -and $create.ProcessId) {
         $procId = [int]$create.ProcessId
+    } elseif ($null -eq $create -or $create.ReturnValue -eq 0) {
+        throw 'Process creation result is unknown'
     }
-} catch {}
+} catch {
+    # A failed CIM call may have created a process before losing its reply.
+    # Only an explicit failure result permits the alternate start path.
+    Write-Output "ERR:startup_blocked:creation_result_unknown; $($_.Exception.Message)"
+    exit 1
+}
 
 if ($procId -le 0) {
     try {
@@ -511,7 +609,11 @@ if ($procId -le 0) {
         $psi.CreateNoWindow = $true
         $psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
         $p = [System.Diagnostics.Process]::Start($psi)
-        if ($p) { $procId = $p.Id }
+        if ($p) {
+            $procId = $p.Id
+            $startedProcess = $p
+            $commandLine = '"' + $psi.FileName.Trim('"') + '" ' + $psi.Arguments
+        }
     } catch {}
 }
 
@@ -521,22 +623,65 @@ if ($procId -le 0) {
 }
 Write-Output "INFO:pid=$procId"
 
-# Wait for readiness via MCP tools/list
+$launchedIdentity = $null
+$launchProcess = $startedProcess
+try {
+    # Preserve an unresolved startup across invocations instead of losing its PID.
+    $script:IdaMcpLease = [pscustomobject]@{ ida_dir = $IdaDir; port = $Port; pid = $procId; identity = $null; startup_blocked = $true }
+    $script:IdaMcpLease | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $supervisorLeasePath -Encoding UTF8
+    if ($null -eq $launchProcess) { $launchProcess = Get-Process -Id $procId -ErrorAction Stop }
+    $null = $launchProcess.Handle
+    $launchedIdentity = Get-IdaMcpIdentity (Get-IdaMcpProcessInfo -ProcessId $procId)
+    if ($launchProcess.HasExited -or -not (Test-IdaMcpIdentity $launchedIdentity $launchedIdentity) -or
+        $launchedIdentity.creation_filetime_utc -lt $launchNotBefore -or
+        -not [string]::Equals($launchedIdentity.executable, $expectedExecutable, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not [string]::Equals($launchedIdentity.command_line, $commandLine, [System.StringComparison]::Ordinal)) {
+        throw 'Launched process identity could not be established'
+    }
+    $script:IdaMcpLease.identity = $launchedIdentity
+    $script:IdaMcpLease.startup_blocked = $false
+    $script:IdaMcpLease | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $supervisorLeasePath -Encoding UTF8
+} catch {
+    Write-Output "ERR:startup_identity_blocked:pid=$procId; $($_.Exception.Message)"
+    # Unknown identity must not trigger a bare-PID kill or another launch.
+    exit 1
+} finally {
+    if ($null -ne $launchProcess) { $launchProcess.Dispose() }
+}
+
+# Wait for readiness via MCP tools/list, with a wall-clock deadline.
 $ready = $false
 $toolCount = 0
-for ($i = 0; $i -lt $WaitSeconds; $i++) {
-    Start-Sleep -Seconds 1
-    $toolCount = Test-IdaMcpHealth -Port $Port
-    if ($toolCount -gt 0) {
-        Write-IdaMcpLastHealthy -Port $Port
-        Write-Output "OK:$toolCount"
-        $ready = $true
-        break
+$readyDeadline = [datetime]::UtcNow.AddSeconds([math]::Max(0, $WaitSeconds))
+try {
+    while ([datetime]::UtcNow -lt $readyDeadline) {
+        Start-Sleep -Seconds 1
+        $health = Probe-IdaMcp -Port $Port
+        if ($health.Status -eq 'healthy') {
+            $current = Get-IdaMcpIdentity (Get-IdaMcpProcessInfo -ProcessId $procId)
+            if (-not (Test-IdaMcpIdentity $launchedIdentity $current) -or
+                $health.Owners.Count -ne 1 -or $health.Owners[0] -ne $procId) {
+                throw 'Healthy listener does not match the launched supervisor'
+            }
+            $toolCount = $health.Count
+            Write-IdaMcpLastHealthy -Port $Port
+            Write-Output "OK:$toolCount"
+            $ready = $true
+            break
+        }
     }
+} catch {
+    Write-Warning "startup_wait_failed: $($_.Exception.Message)"
 }
 
 if (-not $ready) {
+    $stopped = Stop-IdaMcpManagedProcess -ProcessId $procId -IdaDirPath $IdaDir -Port $Port -ExpectedIdentity $launchedIdentity
     Write-Output "ERR:timeout"
+    if ($stopped) {
+        Write-Output 'INFO:launched_supervisor_exit_verified; descendant_cleanup_unverified'
+    } else {
+        Write-Output "ERR:cleanup_blocked:pid=$procId"
+    }
     Write-Output "HINT:check $logFile"
     exit 1
 }

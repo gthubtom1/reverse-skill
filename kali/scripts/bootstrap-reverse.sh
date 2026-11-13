@@ -3,7 +3,7 @@
 # 等价于 Windows 版的 bootstrap-reverse.ps1
 #
 # 用法:
-#   bash bootstrap-reverse.sh <capability1> [capability2] ... [--start-services] [--skip-refresh]
+#   bash bootstrap-reverse.sh <capability1> [capability2] ... [--start-services] [--skip-refresh] [--register-mcp]
 #
 # 示例:
 #   bash bootstrap-reverse.sh jadx apktool frida
@@ -21,6 +21,7 @@ source "$SCRIPT_DIR/lib/tool-discovery.sh"
 CAPABILITIES=()
 START_SERVICES=false
 SKIP_REFRESH=false
+REGISTER_MCP=false
 MANUAL_REQUIRED=false
 FAILED=false
 LAST_CAPABILITY_MANUAL=false
@@ -29,6 +30,7 @@ for arg in "$@"; do
     case "$arg" in
         --start-services) START_SERVICES=true ;;
         --skip-refresh) SKIP_REFRESH=true ;;
+        --register-mcp|--register-claude-mcp) REGISTER_MCP=true ;;
         --list|-l)
             echo "jadx apktool jeb-pro frida frida-ps idalib-mcp jshookmcp reqable-mcp xquik-mcp anything-analyzer idapro r2 rabin2 adb agent-browser ghidra-mcp seclists proxycat burpsuite-mcp nmap pentestswarm pwntools bkcrack"
             echo "mcp-kali-server metasploitmcp hexstrike-ai adaptixc2 atomic-operator sstimap xsstrike wpprobe fluxion gef coercer evil-winrm-py netexec responder bloodhound certipy"
@@ -311,25 +313,73 @@ register_mcp_server() {
     local server_name="$1"
     local config_json="$2"  # JSON 格式的 server 配置
 
+    if [[ "$REGISTER_MCP" != "true" ]]; then
+        log_warn "已安装 $server_name，但未修改 Claude 全局 MCP；如需注册，请显式传 --register-mcp。"
+        return 0
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+        log_err "未安装 jq，无法安全注册 Claude MCP；未改配置"
+        return 1
+    fi
     local config_path
     config_path=$(get_claude_mcp_config_path)
     local config_dir
     config_dir=$(dirname "$config_path")
 
     mkdir -p "$config_dir"
+    if [[ -L "$config_path" ]]; then
+        log_err "Claude MCP 配置是符号链接，拒绝替换: $config_path"
+        return 1
+    fi
 
     if [[ ! -f "$config_path" ]]; then
         echo '{"mcpServers":{}}' > "$config_path"
     fi
 
+    # Existing entries are user-owned; a different same-name server must be
+    # reconciled explicitly instead of being silently replaced.
+    jq -e --arg name "$server_name" --argjson desired "$config_json" \
+        '(.mcpServers // {}) as $servers | ($servers | has($name) | not) or $servers[$name] == $desired' "$config_path" >/dev/null || {
+        log_err "MCP server '$server_name' 已有不同配置，拒绝覆盖: $config_path"
+        return 1
+    }
     if command -v jq &>/dev/null; then
-        local tmp_file="/tmp/mcp-config-$$.json"
-        jq ".mcpServers.\"${server_name}\" = ${config_json}" "$config_path" > "$tmp_file"
-        mv "$tmp_file" "$config_path"
+        local tmp_file
+        tmp_file=$(mktemp "$config_dir/.mcp-config.XXXXXX")
+        chmod 600 "$tmp_file"
+        if ! jq ".mcpServers.\"${server_name}\" = ${config_json}" "$config_path" > "$tmp_file"; then
+            rm -f -- "$tmp_file"
+            log_err "MCP server '$server_name' 配置生成失败；保留原文件"
+            return 1
+        fi
+        mv -f -- "$tmp_file" "$config_path"
         log_ok "MCP server '$server_name' 已注册到 $config_path"
     else
         log_warn "未安装 jq，无法自动注册 MCP server。请手动编辑 $config_path"
     fi
+}
+
+# Bundled Burp uses the stdio bridge. Marketplace extensions have their own
+# transport contracts; do not infer them from the bundled HTTP port or manifest URL.
+register_burpsuite_mcp() {
+    if [[ "$REGISTER_MCP" != "true" ]]; then
+        log_warn "未修改 Burp MCP 注册；如需注册 bundled bridge，请显式传 --register-mcp。"
+        return 0
+    fi
+
+    local bridge_path="$PROJECT_ROOT/burp-mcp-full/mcp-bridge.js"
+    if ! command -v node >/dev/null 2>&1; then
+        log_err "未找到 Node.js，无法注册 bundled Burp stdio bridge；请先安装 nodejs。"
+        return 1
+    fi
+    if [[ ! -f "$bridge_path" || ! -r "$bridge_path" ]]; then
+        log_err "Bundled Burp bridge 不存在或不可读: $bridge_path"
+        return 1
+    fi
+    local config_json
+    config_json=$(jq -cn --arg bridge "$bridge_path" '{command:"node",args:[$bridge]}') || return 1
+    register_mcp_server "burpsuite" "$config_json" || return 1
 }
 
 # 等待端口就绪
@@ -400,11 +450,30 @@ ensure_capability() {
     local verify_command="$name"
     if [[ "$name" == "pwntools" ]]; then
         verify_command="pwn"
+    elif [[ "$name" == "mcp-kali-server" ]]; then
+        verify_command="kali-server-mcp"
     fi
 
-    # 先检查是否已可用
+    # 已有命令也必须继续处理显式 MCP 注册；安装存在不等于客户端已有注册。
     if command -v "$verify_command" &>/dev/null; then
         log_ok "$name 已可用: $(command -v "$verify_command")"
+        case "$name" in
+            burpsuite-mcp)
+                register_burpsuite_mcp || return 1
+                ;;
+            mcp-kali-server)
+                register_mcp_server "kali-server" '{"command":"mcp-server","args":["--server","http://127.0.0.1:5000"]}' || return 1
+                ;;
+            metasploitmcp)
+                register_mcp_server "metasploit-mcp" '{"command":"metasploitmcp","args":["--transport","stdio"]}' || return 1
+                ;;
+            hexstrike-ai)
+                register_mcp_server "hexstrike" '{"command":"hexstrike-ai","args":[]}' || return 1
+                ;;
+            pentestswarm)
+                register_mcp_server "pentestswarm" '{"command":"pentestswarm","args":["mcp","serve"]}' || return 1
+                ;;
+        esac
         return 0
     fi
 
@@ -481,30 +550,30 @@ ensure_capability() {
             ;;
         # ─── Kali 原生 MCP 工具（apt 安装 + MCP 注册） ───
         mcp-kali-server)
-            install_apt_package "mcp-kali-server"
+            install_apt_package "mcp-kali-server" || return 1
             register_mcp_server "kali-server" '{
-                "command": "kali-server-mcp",
-                "args": ["--port", "5000"]
-            }'
-            log_info "启动方式: kali-server-mcp --port 5000"
-            log_info "然后用 mcp-server 连接 AI 客户端到 API server"
+                "command": "mcp-server",
+                "args": ["--server", "http://127.0.0.1:5000"]
+            }' || return 1
+            log_info "启动 API: kali-server-mcp --port 5000"
+            log_info "MCP bridge: mcp-server --server http://127.0.0.1:5000"
             ;;
         metasploitmcp)
-            install_apt_package "metasploitmcp"
+            install_apt_package "metasploitmcp" || return 1
             register_mcp_server "metasploit-mcp" '{
                 "command": "metasploitmcp",
                 "args": ["--transport", "stdio"]
-            }'
+            }' || return 1
             log_info "MetasploitMCP 支持 stdio 和 HTTP 两种模式"
             log_info "  stdio: metasploitmcp --transport stdio"
             log_info "  HTTP:  metasploitmcp --transport http --port 8085"
             ;;
         hexstrike-ai)
-            install_apt_package "hexstrike-ai"
+            install_apt_package "hexstrike-ai" || return 1
             register_mcp_server "hexstrike" '{
                 "command": "hexstrike-ai",
                 "args": []
-            }'
+            }' || return 1
             log_info "HexStrike AI 已安装。150+ 安全工具通过 MCP 暴露给 AI agent。"
             ;;
         # ─── Pentest Swarm AI（群体智能渗透框架） ───
@@ -527,7 +596,7 @@ ensure_capability() {
             register_mcp_server "pentestswarm" '{
                 "command": "pentestswarm",
                 "args": ["mcp", "serve"]
-            }'
+            }' || return 1
             log_info "Pentest Swarm AI 已配置"
             log_info "  MCP 模式: pentestswarm mcp serve"
             log_info "  扫描模式: pentestswarm scan <target> --scope <scope> --swarm"
@@ -657,8 +726,8 @@ EOF
         # ─── 手动安装 ───
         burpsuite-mcp)
             log_warn "MANUAL_INSTALL_REQUIRED: burpsuite-mcp"
-            log_warn "Kali 预装 BurpSuite，在扩展市场搜索 MCP 插件安装"
-            register_mcp_server "burpsuite" "{\"url\": \"http://localhost:9876/mcp\"}"
+            log_warn "请构建本仓库 burp-mcp-full，并在 BurpSuite Extensions 加载 build/libs/burp-mcp-full.jar。"
+            register_burpsuite_mcp || return 1
             ;;
 
         *)
@@ -742,7 +811,10 @@ done
 # 刷新工具索引
 if [[ "$SKIP_REFRESH" != "true" ]]; then
     log_info "刷新工具索引 ..."
-    bash "$SCRIPT_DIR/refresh-tool-index.sh" >/dev/null 2>&1 || true
+    bash "$SCRIPT_DIR/refresh-tool-index.sh" || {
+        log_err "工具索引刷新失败；安装结果与索引就绪分别记录"
+        FAILED=true
+    }
 fi
 
 final_exit_code=0

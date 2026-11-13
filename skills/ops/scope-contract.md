@@ -33,6 +33,8 @@ bash skills/scripts/case-init.sh \
 
 `-PackageRoot` / `--package-root` 保留为兼容参数；新流程应以 `ProjectRoot` / `--project-root` 表示 case artifact 的归属项目。
 
+`offline` 只有在 `in_scope.assets` 中至少有一个能按 case root 相对路径（或明确绝对路径）打开的可读 regular file 时才可进入 ready 状态。URL、域名、普通字符串或仅因包含 `sample`/扩展名而看起来像文件的值不能满足该条件；无法判定为可读本地文件时，guard/review 必须记录失败原因。`in_scope.assets`、`network_profile.mode` 等权威字段以及四个硬门 section 必须唯一，CRLF 与 LF 等价。
+
 ## scope.md 完整模板
 
 ```markdown

@@ -125,7 +125,7 @@ if (-not (Test-Path $hashedEvidence)) { Bad 'E-002.md not written' }
 else {
     $hashedText = Get-Content $hashedEvidence -Raw -Encoding UTF8
     $expectedHash = (Get-FileHash -LiteralPath $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($hashedText -match [regex]::Escape('sha256:' + $expectedHash)) { Ok 'evidence SHA-256 recorded' } else { Bad 'evidence SHA-256 missing or incorrect' }
+    if ($hashedText -match '(?i)(?:sha256:)?' + [regex]::Escape($expectedHash)) { Ok 'evidence SHA-256 recorded' } else { Bad 'evidence SHA-256 missing or incorrect' }
     if ($hashedText -match '(?m)^- artifact_path:\s*evidence/fixture\.bin\s*$') { Ok 'evidence artifact path recorded' } else { Bad 'evidence artifact path missing' }
 }
 

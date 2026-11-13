@@ -6,8 +6,8 @@ set -euo pipefail
 
 # ─── 路径推导 ───────────────────────────────────────────────────────────────────
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-KALI_SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KALI_SCRIPTS_DIR="$(cd "$LIB_DIR/.." && pwd)"
 KALI_DIR="$(cd "$KALI_SCRIPTS_DIR/.." && pwd)"
 PROJECT_ROOT="$(cd "$KALI_DIR/.." && pwd)"
 SKILL_ROOT="$PROJECT_ROOT/skills"

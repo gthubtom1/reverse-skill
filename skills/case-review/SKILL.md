@@ -77,7 +77,7 @@ When an Evidence record contains both `content_hash` and `artifact_path`, verify
 python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --strict
 ```
 
-The script accepts `sha256:<64 hex characters>` and checks that the artifact remains inside the case root. A hash mismatch is a hard failure.
+The script accepts both a bare 64-character hexadecimal SHA-256 and the legacy `sha256:<64 hex characters>` form, and checks that the artifact remains inside the case root. A hash mismatch is a hard failure.
 
 The PowerShell Evidence helper can record a hash while appending a record:
 

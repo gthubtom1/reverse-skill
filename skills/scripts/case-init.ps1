@@ -41,6 +41,16 @@ $requestedProjectRoot = if (-not [string]::IsNullOrWhiteSpace($ProjectRoot)) {
     ''
 }
 $projectRoot = Resolve-ReverseProjectRoot -RequestedRoot $requestedProjectRoot
+$projectItem = Get-Item -LiteralPath $projectRoot -Force
+if (-not $projectItem.PSIsContainer -or (($projectItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+    throw "Project root must be a real filesystem directory: $projectRoot"
+}
+
+function ConvertTo-SingleLine([string] $Text) {
+    if ($null -eq $Text) { return '' }
+    $clean = $Text -replace '[\x00-\x1F]', ' '
+    return (($clean -replace '\s+', ' ').Trim())
+}
 
 if (-not [string]::IsNullOrWhiteSpace($Sample)) {
     try {
@@ -48,8 +58,17 @@ if (-not [string]::IsNullOrWhiteSpace($Sample)) {
     } catch {
         throw "Invalid -Sample path '$Sample': $($_.Exception.Message)"
     }
-    if (-not (Test-Path -LiteralPath $Sample -PathType Leaf)) {
-        throw "Local -Sample file not found: $Sample"
+    $sampleItem = Get-Item -LiteralPath $Sample -Force -ErrorAction SilentlyContinue
+    if ($null -eq $sampleItem -or $sampleItem.PSIsContainer -or (($sampleItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+        throw "Local -Sample must be a readable regular file: $Sample"
+    }
+    $sampleStream = $null
+    try {
+        $sampleStream = [System.IO.File]::Open($sampleItem.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    } catch {
+        throw "Local -Sample must be a readable regular file: $Sample"
+    } finally {
+        if ($null -ne $sampleStream) { $sampleStream.Dispose() }
     }
 }
 
@@ -101,11 +120,31 @@ if (-not [string]::IsNullOrWhiteSpace($NetworkProfile) -and
 }
 
 $workRoot = Join-Path $projectRoot 'work'
+$workItem = Get-Item -LiteralPath $workRoot -Force -ErrorAction SilentlyContinue
+if ($null -ne $workItem) {
+    if (-not $workItem.PSIsContainer -or (($workItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+        throw "Project work path must be a real filesystem directory: $workRoot"
+    }
+} else {
+    New-Item -ItemType Directory -Path $workRoot -ErrorAction Stop | Out-Null
+    $workItem = Get-Item -LiteralPath $workRoot -Force -ErrorAction Stop
+    if (($workItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Project work path became a reparse point: $workRoot"
+    }
+}
 $caseRoot = Join-Path $workRoot $CaseName
+$existingCase = Get-Item -LiteralPath $caseRoot -Force -ErrorAction SilentlyContinue
+if ($null -ne $existingCase) {
+    throw "Case path already exists: $caseRoot. Refusing to overwrite an existing case; choose a new CaseName or continue the existing case."
+}
+try {
+    New-Item -ItemType Directory -Path $caseRoot -ErrorAction Stop | Out-Null
+} catch {
+    throw "Case path appeared during initialization: $caseRoot. Refusing to overwrite it; choose a new CaseName or continue the existing case."
+}
 $dirs = @('evidence', 'notes', 'report')
-New-Item -ItemType Directory -Force -Path $caseRoot | Out-Null
 foreach ($d in $dirs) {
-    New-Item -ItemType Directory -Force -Path (Join-Path $caseRoot $d) | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $caseRoot $d) -ErrorAction Stop | Out-Null
 }
 
 # Resolve auth / network / assets
@@ -209,9 +248,22 @@ if ((Test-Path $routeScript) -and $Hint) {
     }
 }
 
+$hintForFile = ConvertTo-SingleLine $Hint
+$projectRootForFile = ConvertTo-SingleLine $projectRoot
+$authBasisForFile = ConvertTo-SingleLine $AuthBasis
+$evidenceAuthForFile = ConvertTo-SingleLine $evidenceAuth
+$primary = ConvertTo-SingleLine $primary
+$primaryId = ConvertTo-SingleLine $primaryId
+if ($primary -notmatch '^[A-Za-z0-9_./-]+$') { $primary = 'reverse-engineering/SKILL.md' }
+if ($primaryId -notmatch '^[A-Za-z0-9_-]+$') { $primaryId = 'R0' }
+
 $created = Get-Date -Format 'o'
 if ($assets.Count -gt 0) {
-    $assetsBlock = ($assets | ForEach-Object { "  - $_" }) -join [Environment]::NewLine
+    $assetLines = @($assets | ForEach-Object {
+        $safeAsset = ConvertTo-SingleLine $_
+        if (-not [string]::IsNullOrWhiteSpace($safeAsset)) { "  - $safeAsset" }
+    } | Where-Object { $_ })
+    $assetsBlock = if ($assetLines.Count -gt 0) { $assetLines -join [Environment]::NewLine } else { '  []' }
 } else {
     $assetsBlock = '  []'
 }
@@ -238,18 +290,18 @@ $scope = @"
 - case_id: $CaseName
 - created: $created
 - operator: local
-- project_root: $projectRoot
+- project_root: $projectRootForFile
 - primary_skill: $primary
 - primary_id: $primaryId
 - lead_role: lead
 - specialist_roles: []
-- hint: $Hint
+- hint: $hintForFile
 - preset: $(if ([string]::IsNullOrWhiteSpace($Preset)) { 'none' } else { $Preset })
 
 ## auth
 - status: $authStatusResolved
-- basis: $AuthBasis
-- evidence_of_auth: $evidenceAuth
+- basis: $authBasisForFile
+- evidence_of_auth: $evidenceAuthForFile
 - MUST NOT proceed if status != granted
 
 ## in_scope
@@ -348,13 +400,14 @@ $readmeNext = if ($ready) {
 } else {
     @"
 1. Edit ``scope.md`` — set auth.status=granted and in_scope
-   - network target: re-run with ``-AuthGranted -TargetUrl <url>``
-   - local sample: re-run with ``-Preset offline-sample -Sample <path>``
-2. Set ready_for_act when checklist complete
-3. Open primary skill: skills/$primary
-4. Append ``timeline.md``; update ``workitems.md``
-5. Promote findings with Evidence chain (skills/ops/evidence-finding-path.md)
-6. Report via docs-generator; journal via field-journal
+   - for a new case, choose a new CaseName and use ``-Preset offline-sample -Sample <path>``
+   - or ``-Preset ctf-public -TargetUrl <url>``
+2. Continue the existing case; do not re-run case-init over an existing case directory
+3. Set ready_for_act when checklist complete
+4. Open primary skill: skills/$primary
+5. Append ``timeline.md``; update ``workitems.md``
+6. Promote findings with Evidence chain (skills/ops/evidence-finding-path.md)
+7. Report via docs-generator; journal via field-journal
 "@
 }
 

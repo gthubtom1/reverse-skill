@@ -109,8 +109,8 @@ function Get-ReverseToolCatalog {
             Name = 'idalib-mcp'
             Skill = 'ida-reverse'
             Purpose = 'IDA Pro idalib MCP HTTP/stdio 服务器'
-            FixedVersion = 'v0.5.0'
-            VersionArgs = @('--help')
+            # Help output is not version evidence; no verified version query is configured.
+            VersionArgs = @()
             Fallbacks = @(
                 [pscustomobject]@{ Type = 'command'; Value = 'idalib-mcp' },
                 [pscustomobject]@{ Type = 'path'; Value = (Join-Path $userProfile 'Tools\bin\idalib-mcp.cmd') },
@@ -126,8 +126,8 @@ function Get-ReverseToolCatalog {
             Name = 'ida-pro-mcp'
             Skill = 'ida-reverse'
             Purpose = 'IDA Pro MCP CLI / 插件安装器'
-            FixedVersion = 'v0.5.0'
-            VersionArgs = @('--help')
+            # Help output is not version evidence; no verified version query is configured.
+            VersionArgs = @()
             Fallbacks = @(
                 [pscustomobject]@{ Type = 'command'; Value = 'ida-pro-mcp' },
                 [pscustomobject]@{ Type = 'path'; Value = (Join-Path $userProfile 'Tools\bin\ida-pro-mcp.cmd') },
@@ -705,6 +705,9 @@ function Get-CodexConfigPath {
     if (-not [string]::IsNullOrWhiteSpace($env:CODEX_CONFIG_PATH)) {
         return $env:CODEX_CONFIG_PATH
     }
+    if (-not [string]::IsNullOrWhiteSpace($env:CODEX_HOME)) {
+        return Join-Path $env:CODEX_HOME 'config.toml'
+    }
     $profilePath = Get-ReverseUserProfilePath
     return Join-Path (Join-Path $profilePath '.codex') 'config.toml'
 }
@@ -1109,6 +1112,10 @@ function Get-ReverseToolVersion {
         return ''
     }
     if ([string]::IsNullOrWhiteSpace([string]$Spec.Command) -or @($Spec.VersionArgs).Count -eq 0) {
+        # Keep an unknown observation separate from the requested installation pin.
+        if ($Spec.PSObject.Properties['Name'] -and $Spec.Name -in @('idalib-mcp', 'ida-pro-mcp')) {
+            return 'unknown'
+        }
         return ''
     }
     if ($Spec.PSObject.Properties['FixedVersion'] -and -not [string]::IsNullOrWhiteSpace([string]$Spec.FixedVersion)) {

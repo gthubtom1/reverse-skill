@@ -269,30 +269,39 @@ public class McpHttpServer extends NanoHTTPD {
         String filterMethod = params.has("method_filter") ? params.get("method_filter").getAsString() : null;
         int filterStatus = params.has("status_filter") ? params.get("status_filter").getAsInt() : 0;
 
-        List<ProxyHttpRequestResponse> filtered = new ArrayList<>(history);
+        List<Integer> filteredIndices = new ArrayList<>();
+        for (int i = 0; i < history.size(); i++) filteredIndices.add(i);
         if (filterUrl != null) {
-            filtered = filtered.stream().filter(r -> r.finalRequest().url().contains(filterUrl)).collect(Collectors.toList());
+            filteredIndices = filteredIndices.stream()
+                    .filter(i -> history.get(i).finalRequest().url().contains(filterUrl))
+                    .collect(Collectors.toList());
         }
         if (filterMethod != null) {
-            filtered = filtered.stream().filter(r -> r.finalRequest().method().equalsIgnoreCase(filterMethod)).collect(Collectors.toList());
+            filteredIndices = filteredIndices.stream()
+                    .filter(i -> history.get(i).finalRequest().method().equalsIgnoreCase(filterMethod))
+                    .collect(Collectors.toList());
         }
         if (filterStatus > 0) {
-            filtered = filtered.stream().filter(r -> r.response() != null && r.response().statusCode() == filterStatus).collect(Collectors.toList());
+            filteredIndices = filteredIndices.stream()
+                    .filter(i -> history.get(i).response() != null
+                            && history.get(i).response().statusCode() == filterStatus)
+                    .collect(Collectors.toList());
         }
-        Collections.reverse(filtered);
-        int end = Math.min(offset + limit, filtered.size());
+        Collections.reverse(filteredIndices);
+        int end = Math.min(offset + limit, filteredIndices.size());
         JsonArray items = new JsonArray();
         for (int i = offset; i < end; i++) {
-            ProxyHttpRequestResponse entry = filtered.get(i);
+            int historyIndex = filteredIndices.get(i);
+            ProxyHttpRequestResponse entry = history.get(historyIndex);
             JsonObject item = new JsonObject();
-            item.addProperty("index", i);
+            item.addProperty("index", historyIndex);
             item.addProperty("method", entry.finalRequest().method());
             item.addProperty("url", entry.finalRequest().url());
             item.addProperty("status", entry.response() != null ? entry.response().statusCode() : 0);
             item.addProperty("length", entry.response() != null ? entry.response().body().length() : 0);
             items.add(item);
         }
-        result.addProperty("total", filtered.size());
+        result.addProperty("total", filteredIndices.size());
         result.add("items", items);
         return result;
     }
@@ -1541,8 +1550,6 @@ public class McpHttpServer extends NanoHTTPD {
     private final java.util.Map<String, ExtensionWebSocket> wsConnections = new java.util.concurrent.ConcurrentHashMap();
     private int wsCounter = 0;
     private volatile Registration sessionActionRegistration = null;
-    private boolean scopeGateEnabled = false;
-    private boolean privacyStrict = false;
     private java.util.ArrayList<String> auditLogEntries = new java.util.ArrayList();
     private java.util.concurrent.ExecutorService threadPool = java.util.concurrent.Executors.newFixedThreadPool(20);
 
@@ -1671,12 +1678,24 @@ public class McpHttpServer extends NanoHTTPD {
         }catch(Exception e){r.addProperty("error",e.getMessage());} return r; }
 
     // === PHASE 3-4 ===
-    private JsonObject scopeGate(JsonObject p) { JsonObject r=new JsonObject();
-        String a=p.has("action")?p.get("action").getAsString():""; if("enable".equals(a)){scopeGateEnabled=true;addAuditLog("scope:enabled");r.addProperty("scope_gate",true);}
-        else if("disable".equals(a)){scopeGateEnabled=false;addAuditLog("scope:disabled");r.addProperty("scope_gate",false);} else r.addProperty("scope_gate",scopeGateEnabled); return r; }
-    private JsonObject privacyMode(JsonObject p) { JsonObject r=new JsonObject();
-        String m=p.has("mode")?p.get("mode").getAsString():""; if("strict".equals(m)){privacyStrict=true;addAuditLog("privacy:strict");r.addProperty("privacy","strict");}
-        else if("off".equals(m)){privacyStrict=false;addAuditLog("privacy:off");r.addProperty("privacy","off");} else r.addProperty("privacy",privacyStrict?"strict":"off"); return r; }
+    private JsonObject scopeGate(JsonObject p) {
+        JsonObject r = new JsonObject();
+        r.addProperty("error", "unsupported");
+        r.addProperty("supported", false);
+        r.addProperty("scope_gate", false);
+        r.addProperty("message", "This extension does not enforce a scope gate across all tools. Use the original case scope and review each target before dispatch; this tool cannot enable protection.");
+        addAuditLog("scope:unsupported");
+        return r;
+    }
+    private JsonObject privacyMode(JsonObject p) {
+        JsonObject r = new JsonObject();
+        r.addProperty("error", "unsupported");
+        r.addProperty("supported", false);
+        r.addProperty("privacy", "off");
+        r.addProperty("message", "This extension does not redact all request, response, history or WebSocket outputs. Do not dispatch data that requires strict privacy; this tool cannot enable protection.");
+        addAuditLog("privacy:unsupported");
+        return r;
+    }
     private JsonObject auditLog(JsonObject p) { JsonObject r=new JsonObject();
         int lim=p.has("limit")?p.get("limit").getAsInt():50; var items=new JsonArray();
         int start=Math.max(0,auditLogEntries.size()-lim); for(int i=start;i<auditLogEntries.size();i++) items.add((String)auditLogEntries.get(i));

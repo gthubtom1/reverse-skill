@@ -3,14 +3,14 @@
 > **详细说明以 [kali/README-kali.md](kali/README-kali.md) 为准。**  
 > 本文件仅作仓库根目录的 Kali 快捷入口，避免与 `kali/` 下正文重复维护。
 
-## AI：读完后立即执行
+## AI：先读规则，再展示计划
 
 ```text
 1. 检测包根目录（含 README.md / skills/ 的目录）
-2. 读 kali/README-kali.md → 再读 kali/RULES-kali.md 并执行
-3. bash kali/scripts/refresh-tool-index.sh
-4. 任务路由与 Windows 共用：skills/MASTER-ROUTING.md、skills/ops/（scope 门）
-5. 向用户报告配置结果
+2. 读取 kali/README-kali.md 与 kali/RULES-kali.md，确认当前任务、平台和 scope
+3. 需要运行仓库脚本或改变宿主/工具配置时，先列出准确命令和副作用，取得当前用户明确激活与执行授权
+4. 获得授权后再按主包共用的 MASTER-ROUTING、case/scope 和 ops 合同推进；只读任务保持只读
+5. 向用户分别报告配置、宿主加载和任务验证状态
 ```
 
 ## 人：30 秒上手
