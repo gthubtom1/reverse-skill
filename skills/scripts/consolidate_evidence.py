@@ -5,14 +5,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def mark_superseded(content, finding_id):
-    if re.search(r"(?m)^-\s*status:\s*.*$", content):
-        return re.sub(r"(?m)^-\s*status:\s*.*$", f"- status: superseded by {finding_id}", content)
-    if re.search(r"(?m)^---\s*$", content):
-        return re.sub(r"(?m)^---\s*$", f"---\n- status: superseded by {finding_id}", content, count=1)
-    return content.rstrip() + f"\n- status: superseded by {finding_id}\n"
-
-
 def finding_block(finding_id, title, severity, status, confidence, location, ids, description, ts):
     return (
         f"### {finding_id}\n"

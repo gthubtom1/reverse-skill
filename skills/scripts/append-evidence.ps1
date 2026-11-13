@@ -103,7 +103,7 @@ if (-not [string]::IsNullOrWhiteSpace($ArtifactPath)) {
         throw "ArtifactPath must point inside CaseRoot: $ArtifactPath"
     }
     $artifactRef = $artifactFull.Substring($casePrefix.Length) -replace '\\', '/'
-    $contentHash = 'sha256:' + (Get-FileHash -LiteralPath $artifactFull -Algorithm SHA256).Hash.ToLowerInvariant()
+    $contentHash = (Get-FileHash -LiteralPath $artifactFull -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
 $evDir = Join-Path $CaseRoot 'evidence'
@@ -114,7 +114,7 @@ if ($idSafe -notmatch '^E-') { $idSafe = 'E-' + $idSafe }
 $fileName = $idSafe + '.md'
 $path = Join-Path $evDir $fileName
 
-$observed = Get-Date -Format 'o'
+$observed = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ")
 $titleLine = ConvertTo-SingleLine $Title
 $sev = (ConvertTo-SingleLine $Severity).ToLowerInvariant()
 if ($allowedSeverity -notcontains $sev) {
