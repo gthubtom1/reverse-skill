@@ -705,6 +705,9 @@ function Get-CodexConfigPath {
     if (-not [string]::IsNullOrWhiteSpace($env:CODEX_CONFIG_PATH)) {
         return $env:CODEX_CONFIG_PATH
     }
+    if (-not [string]::IsNullOrWhiteSpace($env:CODEX_HOME)) {
+        return Join-Path $env:CODEX_HOME 'config.toml'
+    }
     $profilePath = Get-ReverseUserProfilePath
     return Join-Path (Join-Path $profilePath '.codex') 'config.toml'
 }

@@ -27,7 +27,7 @@ if [[ -z "$TOOLS_ROOT" || "$TOOLS_ROOT" == "/" || "$TOOLS_ROOT" == "$HOME" ]]; t
   exit 2
 fi
 CLAUDE_MCP_CONFIG_PATH="${CLAUDE_MCP_CONFIG:-$HOME/.claude/mcp.json}"
-CODEX_MCP_CONFIG_PATH="${CODEX_CONFIG_PATH:-$HOME/.codex/config.toml}"
+CODEX_MCP_CONFIG_PATH="${CODEX_CONFIG_PATH:-${CODEX_HOME:-$HOME/.codex}/config.toml}"
 MCP_HOST_TARGET="none"
 MANIFEST_PATH="$SCRIPT_DIR/bootstrap-manifest.json"
 

@@ -13,7 +13,9 @@ concurrency:
 jobs:
   validate-and-merge:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
+      checks: read
       contents: write
       pull-requests: write
     env:
@@ -161,7 +163,10 @@ jobs:
 
       - name: Merge validated head when branch checks allow
         if: steps.validate.outputs.valid == 'true'
+        timeout-minutes: 6
         run: |
+          # Wait for existing required checks without dispatching or rerunning them.
+          gh pr checks "$PR_NUMBER" --required --watch --fail-fast
           # Do not leave deferred auto-merge enabled for a later, unscanned head.
           gh pr merge "$PR_NUMBER" \
             --squash \
