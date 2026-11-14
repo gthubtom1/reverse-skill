@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "contract_id": "reverse.r46.codex-execution-backend",
+  "contract_version": 1,
+  "min_reverse_version": "1.9.0",
+  "capabilities": [
+    "r46.accepted-research-v1",
+    "r46.single-implementation-owner-v1",
+    "r46.bounded-codex-builder-v1",
+    "r46.candidate-independent-acceptance-v1"
+  ],
+  "required_files": [
+    {
+      "path": "skills/reconstruction/references/execution-backend.md",
+      "sha256": "275c7ee111cda92f2c47e4e0ef71ab7c90b9e1436f23d311ad12fe57163559d0"
+    },
+    {
+      "path": "skills/reconstruction/SKILL.md",
+      "sha256": "65d06fb8f3c70841d893671b8ef855749dab9f934e8a4b664d73903dff8dd14f"
+    },
+    {
+      "path": "skills/ops/role-map.md",
+      "sha256": "00e727b0ccb23d360381865319a663e7faeb605f9e6b03c391e38c5f3a20ef59"
+    },
+    {
+      "path": "skills/reconstruction/references/spec-kit-workflow.md",
+      "sha256": "ac1b7432fbe50246fd0015518741897e40a3b679aa9439d3967c1ae0ffb2a632"
+    }
+  ]
+}
